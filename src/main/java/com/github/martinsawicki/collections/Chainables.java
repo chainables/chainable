@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 /**
@@ -23,6 +24,18 @@ public final class Chainables {
 
     public interface Chainable<T> extends Iterable<T> {
         /**
+         * Determines whether this chain contains any items.
+         * @return {@code true} if not empty (i.e. the opposite of {@link #isEmpty()})
+         * @sawicki.similar
+         * <table summary="Similar to:">
+         * <tr><td><i>C#:</i></td><td>{@code Enumerable.Any()}</td></tr>
+         * </table>
+         */
+        default boolean any() {
+            return !Chainables.isNullOrEmpty(this);
+        }
+
+        /**
          * Returns an empty chain.
          * @return an empty {@link Chainable}
          * @sawicki.similar
@@ -34,6 +47,19 @@ public final class Chainables {
          */
         static <T> Chainable<T> empty() {
             return Chain.empty();
+        }
+
+        /**
+         * Determines whether this chain contains any items.
+         * @return {@code true} if empty, else {@code false}
+         * @sawicki.similar
+         * <table summary="Similar to:">
+         * <tr><td><i>C#:</i></td><td>{@code Enumerable.Any()}, but negated</td></tr>
+         * </table>
+         * @see #any()
+         */
+        default boolean isEmpty() {
+            return Chainables.isNullOrEmpty(this);
         }
 
         /**
@@ -167,6 +193,55 @@ public final class Chainables {
         public String toString() {
             return this.iterable.toString();
         }
+    }
+
+    /**
+     * Determines whether the specified iterable contains at least one element.
+     *
+     * @param iterable the {@link java.lang.Iterable} to check
+     * @return {@code true} if the specified {@code iterable} has at least one item
+     * @see Chainable#any()
+     */
+    public static <V> boolean any(Iterable<V> iterable) {
+        return !isNullOrEmpty(iterable);
+    }
+
+    /**
+     * @param iterable the {@link java.lang.Iterable} to check
+     * @return {@code true} if the specified {@code iterable} is null or empty, else false
+     */
+    public static boolean isNullOrEmpty(Iterable<?> iterable) {
+        return (iterable != null) ? !iterable.iterator().hasNext() : true;
+    }
+
+    /**
+     * @param iterables
+     * @return {@code true} if any of the specified {@code iterables} are null or empty
+     */
+    public static boolean isNullOrEmptyEither(Iterable<?>...iterables) {
+        for (Iterable<?> iterable : iterables) {
+            if (Chainables.isNullOrEmpty(iterable)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param map
+     * @return {@code true} if the specified {@code map} is null or empty
+     */
+    public static <K, V> boolean isNullOrEmpty(Map<K,V> map) {
+        return (map != null) ? map.isEmpty() : true;
+    }
+
+    /**
+     * @param iterator
+     * @return {@code true} if the specified {@code iterator} is null or empty
+     */
+    public static <V> boolean isNullOrEmpty(Iterator<V> iterator) {
+        return (iterator != null) ? !iterator.hasNext() : true;
     }
 
     /**

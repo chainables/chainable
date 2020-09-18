@@ -30,4 +30,17 @@ public class ChainableTest {
         // Then
         assertEquals(expected, actual);
     }
+
+    @Test
+    public void testEmpty() {
+        // Given
+        Chainable<String> emptyChain = Chainable.empty();
+        Chainable<String> nonEmptyChain = Chainable.from("a");
+
+        // When/Then
+        assertTrue(emptyChain.isEmpty());
+        assertFalse(nonEmptyChain.isEmpty());
+        assertFalse(emptyChain.any());
+        assertTrue(nonEmptyChain.any());
+    }
 }
