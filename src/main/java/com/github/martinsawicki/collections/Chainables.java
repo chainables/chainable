@@ -168,5 +168,57 @@ public final class Chainables {
             return this.iterable.toString();
         }
     }
+
+    /**
+     * Joins the items produced by the specified {@code iterator} into a single string, invoking {@code toString()) on each item,
+     * separating each string with the specified {@code delimiter}, skipping {@code null} values.
+     * @param delimiter the text to insert between items
+     * @param iterator the iterator to traverse
+     * @return the joined string
+     */
+    public static <T> String join(String delimiter, Iterator<T> iterator) {
+        if (iterator == null) {
+            return null;
+        }
+
+        StringBuilder info = new StringBuilder();
+        while (iterator.hasNext()) {
+            T next = iterator.next();
+            if (next != null) {
+                info
+                    .append(next.toString())
+                    .append(delimiter);
+
+            }
+        }
+
+        if (info.length() > delimiter.length()) {
+            info.setLength(info.length() - delimiter.length());
+        }
+
+        return info.toString();
+    }
+
+    /**
+     * Joins the items in specified {@code stream} into a single string, applying a {@code toString()} to each item and separating them with the specified
+     * {@code delimiter, skipping {@code null} values..
+     * @param delimiter the text to insert between consecutive strings
+     * @param stream the stream whose items are to be joined
+     * @return the joined string
+     */
+    public static <T> String join(String delimiter, Stream<T> stream) {
+        return (stream != null) ? Chainables.join(delimiter, stream.iterator()) : null;
+    }
+
+    /**
+     * Joins the specified {@code items} into a single string, invoking {@code toString()}) on each, separating them with the specified {@code delimiter},
+     * skipping {@code null} values.
+     * @param delimiter the text to insert between the items
+     * @param items the items to join
+     * @return the joined string
+     */
+    public static <T> String join(String delimiter, Iterable<T> items) {
+        return join(delimiter, items.iterator());
+    }
 }
 
