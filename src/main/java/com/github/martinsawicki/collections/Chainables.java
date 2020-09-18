@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -126,6 +127,43 @@ public final class Chainables {
          */
         default boolean any() {
             return !Chainables.isNullOrEmpty(this);
+        }
+
+        /**
+         * Ensures all items are traversed, forcing any of the predecessors in the chain to be fully evaluated.
+         * <p>This is somewhat similar to {@link #toList()}, except that what is returned is still a {@link Chainable}.
+         * @return self
+         */
+        default Chainable<T> apply() {
+            return Chainables.apply(this);
+        }
+
+        /**
+         * Applies the specified {@code action} to all the items in this chain, triggering a full evaluation of all the items.
+         * @param action
+         * @return self
+         * @sawicki.similar
+         * <table summary="Similar to:">
+         * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#forEach(Consumer)}</td></tr>
+         * </table>
+         */
+        default Chainable<T> apply(Consumer<T> action) {
+            return Chainables.apply(this, action);
+        }
+
+        /**
+         * Applies the specified {@code action} to each item one by one lazily, i.e. without triggering a full evaluation of the entire {@link Chainable},
+         * but only to the extent that the returned {@link Chainable} is evaluated using another function.
+         * @param action
+         * @return self
+         * @sawicki.similar
+         * <table summary="Similar to:">
+         * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#peek(Consumer)}</td></tr>
+         * <tr><td><i>C#:</i></td><td>{@code Enumerable.Select()}</td></tr>
+         * </table>
+         */
+        default Chainable<T> applyAsYouGo(Consumer<T> action) {
+            return Chainables.applyAsYouGo(this, action); // TODO: shouldn't this call applyAsYouGo?
         }
 
         /**
@@ -300,6 +338,81 @@ public final class Chainables {
      */
     public static <V> boolean any(Iterable<V> iterable) {
         return !isNullOrEmpty(iterable);
+    }
+
+    /**
+     * @param items
+     * @param action
+     * @return
+     * @see Chainable#apply(Consumer)
+     */
+    public static <T> Chainable<T> apply(Iterable<T> items, Consumer<T> action) {
+        if (items == null) {
+            return null;
+        } else if (action == null) {
+            return Chainable.from(items);
+        }
+
+        // Apply to all
+        List<T> itemsList = Chainables.toList(items);
+        for (T item : itemsList) {
+            try {
+                action.accept(item);
+            } catch (Exception e) {
+                // TODO What to do with exceptions
+                // String s = e.getMessage();
+            }
+        }
+
+        return Chainable.from(itemsList);
+    }
+
+    /**
+     * @param items
+     * @return
+     * @see Chainable#apply()
+     */
+    public static <T> Chainable<T> apply(Iterable<T> items) {
+        return apply(items, o -> {}); // NOP
+    }
+
+    /**
+     * @param items
+     * @param action
+     * @return
+     * @see Chainable#applyAsYouGo(Consumer)
+     */
+    public static <T> Chainable<T> applyAsYouGo(Iterable<T> items, Consumer<T> action) {
+        if (items == null) {
+            return null;
+        } else if (action == null) {
+            return Chainable.from(items);
+        } else {
+            return Chainable.from(new Iterable<T>() {
+                @Override
+                public Iterator<T> iterator() {
+                    return new Iterator<T>() {
+                        final private Iterator<T> itemIter = items.iterator();
+
+                        @Override
+                        public boolean hasNext() {
+                            return this.itemIter.hasNext();
+                        }
+
+                        @Override
+                        public T next() {
+                            if (this.hasNext()) {
+                                T item = this.itemIter.next();
+                                action.accept(item);
+                                return item;
+                            } else {
+                                return null;
+                            }
+                        }
+                    };
+                }
+            });
+        }
     }
 
     /**

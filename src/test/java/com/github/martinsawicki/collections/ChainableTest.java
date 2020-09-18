@@ -18,6 +18,23 @@ import java.util.List;
  */
 public class ChainableTest {
     @Test
+    public void testApply() {
+        // Given
+        Iterable<String> items = Arrays.asList("a", "b", "c");
+        String expected = "axbxcx";
+
+        // When
+        Iterable<String> transformed = Chainables
+                .transform(items, s -> new StringBuilder(s))
+                .apply(sb -> sb.append("x"))
+                .transform(sb -> sb.toString());
+        String actual = Chainables.join("", transformed);
+
+        // Then
+        assertEquals(expected, actual);
+    }
+
+    @Test
     public void testEmpty() {
         // Given
         Chainable<String> emptyChain = Chainable.empty();
