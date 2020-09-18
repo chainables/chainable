@@ -93,4 +93,18 @@ public class ChainableTest {
         // Then
         assertEquals(expected, actual);
     }
+
+    @Test
+    public void testToList() {
+        // Given
+        Chainable<String> chain = Chainable.from("a", "b", "c");
+        String expected = "abc";
+
+        // When
+        List<String> list = chain.toList();
+        String actual = String.join("", list);
+
+        // Then
+        assertEquals(expected, actual);
+    }
 }

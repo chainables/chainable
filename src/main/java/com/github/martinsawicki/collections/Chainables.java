@@ -142,6 +142,18 @@ public final class Chainables {
         }
 
         /**
+         * Transforms this chain into a list, tigerring a full evaluation.
+         * @return a new list containing all the items
+         * @sawicki.similar
+         * <table summary="Similar to:">
+         * <tr><td><i>C#:</i></td><td>{@code Enumerable.ToList()}</td></tr>
+         * </table>
+         */
+        default List<T> toList() {
+            return Chainables.toList(this);
+        }
+
+        /**
          * Transforms each item into another item, of a possibly different type, by applying the specified {@code transformer}
          * @param transformer
          * @return the resulting items from the transformation
@@ -325,6 +337,26 @@ public final class Chainables {
      */
     public static <T> String join(String delimiter, Iterable<T> items) {
         return join(delimiter, items.iterator());
+    }
+
+    /**
+     * @param items
+     * @return
+     * @see Chainable#toList()
+     */
+    public static <T> List<T> toList(Iterable<T> items) {
+        if (items == null) {
+            return null;
+        } else if (items instanceof List<?>) {
+            return (List<T>) items;
+        } else {
+            List<T> list = new ArrayList<>();
+            for (T item : items) {
+                list.add(item);
+            }
+
+            return list;
+        }
     }
 
     /**
