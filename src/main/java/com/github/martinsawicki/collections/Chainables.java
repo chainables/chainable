@@ -142,6 +142,21 @@ public final class Chainables {
         }
 
         /**
+         * Transforms each item into another item, of a possibly different type, by applying the specified {@code transformer}
+         * @param transformer
+         * @return the resulting items from the transformation
+         * @sawicki.similar
+         * <table summary="Similar to:">
+         * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#map(Function)}</td></tr>
+         * <tr><td><i>C#:</i></td><td>{@code Enumerable.Select()}</td></tr>
+         * </table>
+         * @see #transformAndFlatten(Function)
+         */
+        default <O> Chainable<O> transform(Function<T, O> transformer) {
+            return Chainables.transform(this, transformer);
+        }
+
+        /**
          * Transforms each item into several other items, possibly of a different type, using the specified {@code transformer}.
          * @param transformer
          * @return the resulting items from the transformation
@@ -310,6 +325,40 @@ public final class Chainables {
      */
     public static <T> String join(String delimiter, Iterable<T> items) {
         return join(delimiter, items.iterator());
+    }
+
+    /**
+     * Uses the specified transformer function to transform the specified items and returns the resulting items.
+     * @param items items to be transformed (LINQ: select())
+     * @param transformer function performing the transformation
+     * @return the transformed items
+     * @see Chainable#transform(Function)
+     */
+    public static <I, O> Chainable<O> transform(Iterable<I> items, Function<I, O> transformer) {
+        if (items == null || transformer == null) {
+            return null;
+        }
+
+        // TODO: transform should perhaps ignore NULL?
+        return Chainable.from(new Iterable<O>() {
+            @Override
+            public Iterator<O> iterator() {
+                return new Iterator<O>() {
+                    Iterator<I> iterator = items.iterator();
+
+                    @Override
+                    public boolean hasNext() {
+                        return this.iterator.hasNext();
+                    }
+
+                    @Override
+                    public O next() {
+                        return (this.iterator.hasNext()) ?
+                                transformer.apply(this.iterator.next()) : null;
+                    }
+                };
+            }
+        });
     }
 
     /**

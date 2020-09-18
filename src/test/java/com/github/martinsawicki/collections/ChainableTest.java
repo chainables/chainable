@@ -45,6 +45,41 @@ public class ChainableTest {
     }
 
     @Test
+    public void testFrom() {
+        // Given
+        String inputs[] = { "A", "B", "C", "D" };
+        String expected = String.join("", inputs);
+        String expectedTransformed = "abcd";
+
+        // When
+        Chainable<String> items = Chainable.from("A", "B", "C", "D");
+        String actual = Chainables.join("", items);
+
+        Chainable<String> itemsTransformed = items.transform(s -> s.toLowerCase());
+        String actualTransformed = Chainables.join("", itemsTransformed);
+
+        // Then
+        assertEquals(expected, actual);
+        assertEquals(expectedTransformed, actualTransformed);
+    }
+
+    @Test
+    public void testTransform() {
+        // Given
+        Iterable<String> items = Arrays.asList("a", "aa", "aaa", "aaaa");
+
+        // When
+        Iterable<Integer> lengths = Chainables.transform(items, String::length);
+        int sum = 0;
+        for (int l : lengths) {
+            sum += l;
+        }
+
+        // Then
+        assertEquals(10, sum);
+    }
+
+    @Test
     public void testTransformAndFlatten() {
         // Given
         String[][] items = { { "a", "b" }, { "c", "d", "e" }, null, { "f" }};
