@@ -25,18 +25,6 @@ public final class Chainables {
 
     public interface Chainable<T> extends Iterable<T> {
         /**
-         * Determines whether this chain contains any items.
-         * @return {@code true} if not empty (i.e. the opposite of {@link #isEmpty()})
-         * @sawicki.similar
-         * <table summary="Similar to:">
-         * <tr><td><i>C#:</i></td><td>{@code Enumerable.Any()}</td></tr>
-         * </table>
-         */
-        default boolean any() {
-            return !Chainables.isNullOrEmpty(this);
-        }
-
-        /**
          * Returns an empty chain.
          * @return an empty {@link Chainable}
          * @sawicki.similar
@@ -48,19 +36,6 @@ public final class Chainables {
          */
         static <T> Chainable<T> empty() {
             return Chain.empty();
-        }
-
-        /**
-         * Determines whether this chain contains any items.
-         * @return {@code true} if empty, else {@code false}
-         * @sawicki.similar
-         * <table summary="Similar to:">
-         * <tr><td><i>C#:</i></td><td>{@code Enumerable.Any()}, but negated</td></tr>
-         * </table>
-         * @see #any()
-         */
-        default boolean isEmpty() {
-            return Chainables.isNullOrEmpty(this);
         }
 
         /**
@@ -139,6 +114,46 @@ public final class Chainables {
                     }
                 }
             });
+        }
+
+        /**
+         * Determines whether this chain contains any items.
+         * @return {@code true} if not empty (i.e. the opposite of {@link #isEmpty()})
+         * @sawicki.similar
+         * <table summary="Similar to:">
+         * <tr><td><i>C#:</i></td><td>{@code Enumerable.Any()}</td></tr>
+         * </table>
+         */
+        default boolean any() {
+            return !Chainables.isNullOrEmpty(this);
+        }
+
+        /**
+         * Determines whether this chain contains any items.
+         * @return {@code true} if empty, else {@code false}
+         * @sawicki.similar
+         * <table summary="Similar to:">
+         * <tr><td><i>C#:</i></td><td>{@code Enumerable.Any()}, but negated</td></tr>
+         * </table>
+         * @see #any()
+         */
+        default boolean isEmpty() {
+            return Chainables.isNullOrEmpty(this);
+        }
+
+        /**
+         * Counts the items in this chain.
+         * <p>
+         * This triggers a full traversal/evaluation of the items.
+         * @return total number of items
+         * @sawicki.similar
+         * <table summary="Similar to:">
+         * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#count()}</td></tr>
+         * <tr><td><i>C#:</i></td><td>{@code Enumerable.Count()}</td></tr>
+         * </table>
+         */
+        default int size() {
+            return Chainables.count(this);
         }
 
         /**
@@ -248,6 +263,33 @@ public final class Chainables {
     public static <V> boolean any(Iterable<V> iterable) {
         return !isNullOrEmpty(iterable);
     }
+
+    /**
+     * Counts the number of items, forcing a complete traversal.
+     *
+     * @param items an items to count
+     * @return the number of items
+     * @see Chainable#size()
+     */
+    public static <T> int count(Iterable<T> items) {
+        if (items == null) {
+            return 0;
+        }
+
+        if (items instanceof Collection<?>) {
+            return ((Collection<?>)items).size();
+        }
+
+        Iterator<T> iter = items.iterator();
+        int size = 0;
+        while (iter.hasNext()) {
+            iter.next();
+            size++;
+        }
+
+        return size;
+    }
+
 
     /**
      * @param iterable the {@link java.lang.Iterable} to check
