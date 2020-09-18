@@ -129,6 +129,44 @@ public final class Chainables {
         }
 
         /**
+         * Determines whether this chain consists of the same items, in the same order, as those in the specified {@code items}, triggering a full traversal/evaluation of the chain if needed.
+         * @param items
+         * @return {@code true} the items match exactly
+         * @sawicki.similar
+         * <table summary="Similar to:">
+         * <tr><td><i>C#:</i></td><td>{@code Enumerable.SequenceEqual()}</td></tr>
+         * </table>
+         * @see #equalsEither(Iterable...)
+         */
+        default boolean equals(Iterable<T> items) {
+            return Chainables.equal(this, items);
+        }
+
+        /**
+         * Determines whether this chain consists of the same items, in the same order, as in any of the specified {@code iterables}.
+         * <p>
+         * This triggers a full traversal/evaluation of the chain if needed.
+         * @param iterables
+         * @return true if the underlying items are the same as those in any of the specified {@code iterables}
+         * in the same order
+         * @see #equalsEither(Iterable...)
+         */
+        @SuppressWarnings("unchecked")
+        default boolean equalsEither(Iterable<T>...iterables) {
+            if (iterables == null) {
+                return false;
+            } else {
+                for (Iterable<T> iterable : iterables) {
+                    if (Chainables.equal(this, iterable)) {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        /**
          * Determines whether this chain contains any items.
          * @return {@code true} if empty, else {@code false}
          * @sawicki.similar
@@ -290,6 +328,34 @@ public final class Chainables {
         return size;
     }
 
+    /**
+     * @param items1
+     * @param items2
+     * @return
+     * @see Chainable#equals(Iterable)
+     */
+    public static <T> boolean equal(Iterable<T> items1, Iterable<T> items2) {
+        if (items1 == items2) {
+            return true;
+        } else if (items1 == null || items2 == null) {
+            return false;
+        } else {
+            Iterator<T> iterator1 = items1.iterator();
+            Iterator<T> iterator2 = items2.iterator();
+            while (iterator1.hasNext() && iterator2.hasNext()) {
+                if (!iterator1.next().equals(iterator2.next())) {
+                    return false;
+                }
+            }
+
+            if (iterator1.hasNext() || iterator2.hasNext()) {
+                // One is longer than the other
+                return false;
+            } else {
+                return true;
+            }
+        }
+    }
 
     /**
      * @param iterable the {@link java.lang.Iterable} to check

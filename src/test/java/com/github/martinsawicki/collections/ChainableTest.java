@@ -18,20 +18,6 @@ import java.util.List;
  */
 public class ChainableTest {
     @Test
-    public void testJoin() {
-        // Given
-        List<String> items = Arrays.asList("a", "b", "c", "d");
-        Chainable<String> chain = Chainable.from(items);
-        String expected = String.join(", ", items);
-
-        // When
-        String actual = Chainables.join(", ", chain);
-
-        // Then
-        assertEquals(expected, actual);
-    }
-
-    @Test
     public void testEmpty() {
         // Given
         Chainable<String> emptyChain = Chainable.empty();
@@ -42,6 +28,29 @@ public class ChainableTest {
         assertFalse(nonEmptyChain.isEmpty());
         assertFalse(emptyChain.any());
         assertTrue(nonEmptyChain.any());
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testEquals() {
+        // Given
+        Chainable<String> items1 = Chainable.from("A", "B", "C");
+        Chainable<String> equal = Chainable.from("A", "B", "C");
+        Chainable<String> superset = Chainable.from("A", "B", "C", "D");
+        Chainable<String> empty = Chainable.from();
+        Chainable<String> different = Chainable.from("A", "C", "X");
+
+        // When/Then
+        assertTrue(Chainables.equal(items1, equal));
+        assertFalse(Chainables.equal(items1, superset));
+        assertFalse(Chainables.equal(superset, items1));
+        assertFalse(Chainables.equal(items1, empty));
+        assertFalse(Chainables.equal(empty, items1));
+        assertFalse(Chainables.equal(items1, different));
+        assertFalse(Chainables.equal(empty, items1));
+        assertTrue(Chainables.equal(empty,  empty));
+        assertTrue(items1.equalsEither(different, equal));
+        assertFalse(items1.equalsEither(different, superset));
     }
 
     @Test
@@ -61,6 +70,20 @@ public class ChainableTest {
         // Then
         assertEquals(expected, actual);
         assertEquals(expectedTransformed, actualTransformed);
+    }
+
+    @Test
+    public void testJoin() {
+        // Given
+        List<String> items = Arrays.asList("a", "b", "c", "d");
+        Chainable<String> chain = Chainable.from(items);
+        String expected = String.join(", ", items);
+
+        // When
+        String actual = Chainables.join(", ", chain);
+
+        // Then
+        assertEquals(expected, actual);
     }
 
     @Test
