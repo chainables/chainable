@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 /**
@@ -138,6 +139,21 @@ public final class Chainables {
                     }
                 }
             });
+        }
+
+        /**
+         * Transforms each item into several other items, possibly of a different type, using the specified {@code transformer}.
+         * @param transformer
+         * @return the resulting items from the transformation
+         * @sawicki.similar
+         * <table summary="Similar to:">
+         * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#flatMap(Function)}</td></tr>
+         * <tr><td><i>C#:</i></td><td>{@code Enumerable.SelectMany()}</td></tr>
+         * </table>
+         * @see #transform(Function)
+         */
+        default <O> Chainable<O> transformAndFlatten(Function<T, Iterable<O>> transformer) {
+            return Chainables.transformAndFlatten(this, transformer);
         }
     }
 
@@ -294,6 +310,55 @@ public final class Chainables {
      */
     public static <T> String join(String delimiter, Iterable<T> items) {
         return join(delimiter, items.iterator());
+    }
+
+    /**
+     * @param items
+     * @param transformer
+     * @return
+     * @see Chainable#transformAndFlatten(Function)
+     */
+    public static <I, O> Chainable<O> transformAndFlatten(Iterable<I> items, Function<I, Iterable<O>> transformer) {
+        if (items == null || transformer == null) {
+            return null;
+        }
+
+        return Chainable.from(new Iterable<O>() {
+            @Override
+            public Iterator<O> iterator() {
+                return new Iterator<O>() {
+                    private final Iterator<I> iterIn = items.iterator();
+                    private Iterator<O> iterOut = null;
+                    private boolean stopped = false;
+
+                    @Override
+                    public boolean hasNext() {
+                        if (stopped) {
+                            return false;
+                        } else if (!Chainables.isNullOrEmpty(this.iterOut)) {
+                            return true;
+                        } else {
+                            while (this.iterIn.hasNext()) {
+                                I itemIn = this.iterIn.next();
+                                Iterable<O> results = transformer.apply(itemIn);
+                                if (!Chainables.isNullOrEmpty(results)) {
+                                    this.iterOut = results.iterator();
+                                    return true;
+                                }
+                            }
+
+                            this.stopped = true;
+                            return false;
+                        }
+                    }
+
+                    @Override
+                    public O next() {
+                        return this.hasNext() ? this.iterOut.next() : null;
+                    }
+                };
+            }
+        });
     }
 }
 

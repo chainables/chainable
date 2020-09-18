@@ -43,4 +43,19 @@ public class ChainableTest {
         assertFalse(emptyChain.any());
         assertTrue(nonEmptyChain.any());
     }
+
+    @Test
+    public void testTransformAndFlatten() {
+        // Given
+        String[][] items = { { "a", "b" }, { "c", "d", "e" }, null, { "f" }};
+        Iterable<String[]> list = Arrays.asList(items);
+        String expected = "abcdef";
+
+        // When
+        Iterable<String> transformed = Chainables.transformAndFlatten(list, o -> (o != null) ? Arrays.asList(o) : null);
+        String actual = Chainables.join("", transformed);
+
+        // Then
+        assertEquals(expected, actual);
+    }
 }
