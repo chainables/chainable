@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -219,6 +220,21 @@ public final class Chainables {
         }
 
         /**
+         * Returns the items from this chain that do not satisy the specified {@code condition}.
+         * @param condition
+         * @return items that do not meet the specified {@code condition}
+         * @sawicki.similar
+         * <table summary="Similar to:">
+         * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#filter(Predicate)}, but with a negated predicate</td></tr>
+         * <tr><td><i>C#:</i></td><td>{@code Enumerable.Where()}, but with a negated predicate</td></tr>
+         * </table>
+         * @see #where(Predicate)
+         */
+        default Chainable<T> notWhere(Predicate<T> condition) {
+            return Chainables.notWhere(this, condition);
+        }
+
+        /**
          * Counts the items in this chain.
          * <p>
          * This triggers a full traversal/evaluation of the items.
@@ -281,6 +297,31 @@ public final class Chainables {
          */
         default <O> Chainable<O> transformAndFlatten(Function<T, Iterable<O>> transformer) {
             return Chainables.transformAndFlatten(this, transformer);
+        }
+
+        /**
+         * Returns a chain of items from this chain that satisfy the specified {@code condition}.
+         * @param condition
+         * @return matching items
+         * @sawicki.similar
+         * <table summary="Similar to:">
+         * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#filter(Predicate)}</td></tr>
+         * <tr><td><i>C#:</i></td><td>{@code Enumerable.Where()}</td></tr>
+         * </table>
+         */
+        default Chainable<T> where(Predicate<T> condition) {
+            return Chainables.whereEither(this, condition);
+        }
+
+        /**
+         * Returns a chain of items from this chain that satisfy any of the specified {@code conditions}.
+         * @param conditions
+         * @return items that meet any of the specified {@code conditions}
+         * @see #where(Predicate)
+         */
+        @SuppressWarnings("unchecked")
+        default Chainable<T> whereEither(Predicate<T>... conditions) {
+            return Chainables.whereEither(this, conditions);
         }
     }
 
@@ -571,6 +612,16 @@ public final class Chainables {
 
     /**
      * @param items
+     * @param condition
+     * @return
+     * @see Chainable#notWhere(Predicate)
+     */
+    public static final <T> Chainable<T> notWhere(Iterable<T> items, Predicate<T> condition) {
+        return (condition != null) ? Chainables.whereEither(items, condition.negate()) : Chainable.from(items);
+    }
+
+    /**
+     * @param items
      * @return
      */
     public static String[] toArray(Iterable<String> items) {
@@ -697,6 +748,72 @@ public final class Chainables {
                     @Override
                     public O next() {
                         return this.hasNext() ? this.iterOut.next() : null;
+                    }
+                };
+            }
+        });
+    }
+
+    /**
+     * @param items
+     * @param predicates
+     * @return
+     * @see Chainable#whereEither(Predicate...)
+     */
+    @SafeVarargs
+    public static final <T> Chainable<T> whereEither(Iterable<T> items, Predicate<T>... predicates) {
+        if (items == null) {
+            return null;
+        } else if (predicates == null || predicates.length == 0) {
+            return Chainable.from(items);
+        }
+
+        return Chainable.from(new Iterable<T>() {
+
+            @Override
+            public Iterator<T> iterator() {
+                return new Iterator<T>() {
+                    final Iterator<T> innerIterator = items.iterator();
+                    T nextItem = null;
+                    boolean stopped = false;
+
+                    @Override
+                    public boolean hasNext() {
+                        if (this.stopped) {
+                            return false;
+                        } else if (this.nextItem != null) {
+                            return true;
+                        }
+
+                        while (this.innerIterator.hasNext()) {
+                            this.nextItem = this.innerIterator.next();
+
+                            // Skip over null items TODO: really?
+                            if (this.nextItem == null) {
+                                continue;
+                            }
+
+                            for (Predicate<T> predicate : predicates) {
+                                if (predicate.test(this.nextItem)) {
+                                    return true;
+                                }
+                            }
+                        }
+
+                        this.nextItem = null;
+                        this.stopped = true;
+                        return false;
+                    }
+
+                    @Override
+                    public T next() {
+                        if (this.hasNext()) {
+                            T item = this.nextItem;
+                            this.nextItem = null;
+                            return item;
+                        } else {
+                            return null;
+                        }
                     }
                 };
             }

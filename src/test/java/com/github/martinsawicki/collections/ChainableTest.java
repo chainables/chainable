@@ -125,6 +125,22 @@ public class ChainableTest {
     }
 
     @Test
+    public void testStreamBasics() {
+        // Given
+        Integer inputs[] = { 1, 2, 3, 4, 5, 6, 7, 8 };
+        String expected = Chainables.join("", Chainable.from(inputs).where(i -> i % 2 != 0));
+
+        // When
+        Chainable<Integer> chain = Chainable.from(Stream
+                .of(inputs)
+                .filter(i -> i % 2 != 0));
+        String actual = Chainables.join("", chain);
+
+        // Then
+        assertEquals(expected, actual);
+    }
+
+    @Test
     public void testStreamGeneration() {
         // Given
         Chainable<Integer> ints = Chainable.from(1, 3, 2, 5, 2);
@@ -135,6 +151,23 @@ public class ChainableTest {
         StringBuilder info = new StringBuilder();
         stream.forEach(o -> info.append(o.toString()));
         String actual = info.toString();
+
+        // Then
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testStreamReEntry() {
+        // Given
+        Integer inputs[] = { 1, 2, 3, 4, 5, 6, 7, 8 };
+        String expected = Chainables.join("", Chainable.from(inputs).where(i -> i % 2 != 0));
+
+        // When
+        Chainable<Integer> chain = Chainable.from(Stream
+                .of(inputs)
+                .filter(i -> i % 2 != 0));
+        String actual = Chainables.join("", chain);
+        actual = Chainables.join("", chain); // Again, since streams are normally traversable only once
 
         // Then
         assertEquals(expected, actual);
@@ -182,6 +215,25 @@ public class ChainableTest {
         String actual = Chainables.join("", transformed);
 
         // Then
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testWhere() {
+        // Given
+        Iterable<Integer> testList = Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
+        String expected = "aabac";
+
+        // When
+        Iterable<Integer> greaterThan4 = Chainables.whereEither(testList, o -> o > 4);
+
+        Chainable<String> where = Chainable
+                .from("a", "b", "c", "ab", "ac", "bc")
+                .where(s -> s.startsWith("a"));
+        String actual = Chainables.join("", where);
+
+        // Then
+        assertEquals(5, Chainables.count(greaterThan4));
         assertEquals(expected, actual);
     }
 }
