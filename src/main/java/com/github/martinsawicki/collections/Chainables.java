@@ -572,6 +572,27 @@ public final class Chainables {
     /**
      * @param items
      * @return
+     */
+    public static String[] toArray(Iterable<String> items) {
+        int len;
+        if (items == null) {
+            len = 0;
+        } else {
+            len = count(items);
+        }
+
+        String[] array = new String[len];
+        int i = 0;
+        for (String item : items) {
+            array[i++] = item;
+        }
+
+        return array;
+    }
+
+    /**
+     * @param items
+     * @return
      * @see Chainable#toList()
      */
     public static <T> List<T> toList(Iterable<T> items) {
