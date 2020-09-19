@@ -236,4 +236,18 @@ public class ChainableTest {
         assertEquals(5, Chainables.count(greaterThan4));
         assertEquals(expected, actual);
     }
+
+    @Test
+    public void testWithoutNull() {
+        // Given
+        Iterable<String> items = Arrays.asList("a", null, "b", null);
+        String expected = "ab";
+
+        // When
+        Chainable<String> withoutNull = Chainables.withoutNull(items);
+        String actual = Chainables.join("", withoutNull);
+
+        // Then
+        assertEquals(expected, actual);
+    }
 }

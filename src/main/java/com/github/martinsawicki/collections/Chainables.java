@@ -323,6 +323,14 @@ public final class Chainables {
         default Chainable<T> whereEither(Predicate<T>... conditions) {
             return Chainables.whereEither(this, conditions);
         }
+
+        /**
+         * Filters out {@code null} values from the underlying {@link Chainable}.
+         * @return non-null items
+         */
+        default Chainable<T> withoutNull() {
+            return Chainables.withoutNull(this);
+        }
     }
 
     private static class Chain<T> implements Chainable<T> {
@@ -818,6 +826,15 @@ public final class Chainables {
                 };
             }
         });
+    }
+
+    /**
+     * @param items
+     * @return
+     * @see Chainable#withoutNull()
+     */
+    public static <T> Chainable<T> withoutNull(Iterable<T> items) {
+        return (items != null) ? Chainable.from(items).where(i -> i != null) : null;
     }
 }
 
