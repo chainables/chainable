@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -166,6 +167,19 @@ public final class Chainables {
          */
         default Chainable<T> applyAsYouGo(Consumer<T> action) {
             return Chainables.applyAsYouGo(this, action); // TODO: shouldn't this call applyAsYouGo?
+        }
+
+        /**
+         * Determines whether this chain contains items in the specified {@code subarray} in that exact order.
+         * @param subarray
+         * @return true if this contains the specified {@code subarray} of items
+         * (i.e. appearing consecutively at any point)
+         * @see #contains(Object)
+         * @see #containsAll(Object...)
+         * @see #containsAny(Object...)
+         */
+        default boolean containsSubarray(Iterable<T> subarray) {
+            return Chainables.containsSubarray(this, subarray);
         }
 
         /**
@@ -471,6 +485,40 @@ public final class Chainables {
                 }
             });
         }
+    }
+
+    /**
+     * @param items
+     * @param subarray
+     * @return
+     * @see Chainable#containsSubarray(Iterable)
+     */
+    public static <T> boolean containsSubarray(Iterable<T> items, Iterable<T> subarray) {
+        if (items == null) {
+            return false;
+        } else if (Chainables.isNullOrEmpty(subarray)) {
+            return true;
+        }
+
+        // Brute force evaluation of everything (TODO: make it lazy and faster?)
+        List<T> subList = Chainables.toList(subarray);
+        List<T> itemsCached = Chainables.toList(items);
+
+        for (int i = 0; i < itemsCached.size() - subList.size(); i++) {
+            boolean matched = true;
+            for (int j = 0; j < subList.size(); j++) {
+                if (!Objects.equals(itemsCached.get(i+j), subList.get(j))) {
+                    matched = false;
+                    break;
+                }
+            }
+
+            if (matched) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

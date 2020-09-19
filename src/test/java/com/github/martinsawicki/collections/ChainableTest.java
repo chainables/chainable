@@ -36,6 +36,19 @@ public class ChainableTest {
     }
 
     @Test
+    public void testContainsSubarray() {
+        // Given
+        Chainable<String> items1 = Chainable.from("a", "b", "x", "a", "b", "c", "d");
+        Iterable<String> subarray1 = Arrays.asList("a", "b", "c");
+        Iterable<String> notSubarray1 = Arrays.asList("a", "b", "x", "y");
+
+        // When/Then
+        assertTrue(items1.containsSubarray(subarray1));
+        assertFalse(items1.containsSubarray(notSubarray1));
+        //TODO: More tests
+    }
+
+    @Test
     public void testEmpty() {
         // Given
         Chainable<String> emptyChain = Chainable.empty();
