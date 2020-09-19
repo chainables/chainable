@@ -12,6 +12,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * Unit tests
@@ -121,6 +122,22 @@ public class ChainableTest {
         assertEquals(expectedItemsSize, actualItemsChainSize);
         assertEquals(0, actualEmptyChainSize);
         assertEquals(expectedItemsSize, actualTransformedChainSize);
+    }
+
+    @Test
+    public void testStreamGeneration() {
+        // Given
+        Chainable<Integer> ints = Chainable.from(1, 3, 2, 5, 2);
+        String expected = "22";
+
+        // When
+        Stream<Integer> stream = ints.stream().filter(i -> i % 2 == 0);
+        StringBuilder info = new StringBuilder();
+        stream.forEach(o -> info.append(o.toString()));
+        String actual = info.toString();
+
+        // Then
+        assertEquals(expected, actual);
     }
 
     @Test

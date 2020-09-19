@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * This is the source of all the static methods underlying the default implementation of {@link Chainable} as well as some other conveniences.
@@ -230,6 +231,14 @@ public final class Chainables {
          */
         default int size() {
             return Chainables.count(this);
+        }
+
+        /**
+         * Creates a stream from this chain.
+         * @return a stream representing this chain.
+         */
+        default Stream<T> stream() {
+            return Chainables.toStream(this);
         }
 
         /**
@@ -578,6 +587,16 @@ public final class Chainables {
 
             return list;
         }
+    }
+
+    /**
+     * Converts the specified {@code items} into a sequential stream.
+     * @param items the items to convert into a stream
+     * @return the resulting stream
+     * @see Chainable#stream()
+     */
+    public static <T> Stream<T> toStream(Iterable<T> items) {
+        return StreamSupport.stream(items.spliterator(), false);
     }
 
     /**
