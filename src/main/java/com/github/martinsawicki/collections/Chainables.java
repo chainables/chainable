@@ -5,12 +5,15 @@
 package com.github.martinsawicki.collections;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -167,6 +170,18 @@ public final class Chainables {
          */
         default Chainable<T> applyAsYouGo(Consumer<T> action) {
             return Chainables.applyAsYouGo(this, action); // TODO: shouldn't this call applyAsYouGo?
+        }
+
+        /**
+         * Determines whether this chain contains all of the specified {@code items}.
+         * @param items items to search for
+         * @return {@code true} if this chain contains all the specified {@code items}
+         * @see #contains(Object)
+         * @see #containsAny(Object...)
+         */
+        @SuppressWarnings("unchecked")
+        default boolean containsAll(T...items) {
+            return Chainables.containsAll(this, items);
         }
 
         /**
@@ -485,6 +500,45 @@ public final class Chainables {
                 }
             });
         }
+    }
+
+    /**
+     * @param container
+     * @param items
+     * @return
+     * @see Chainable#containsAll(Object...)
+     */
+    @SafeVarargs
+    public static <T> boolean containsAll(T[] container, T...items) {
+        return containsAll(Chainable.from(container), items);
+    }
+
+    /**
+     * @param container
+     * @param items
+     * @return
+     * @see Chainable#containsAll(Object...)
+     */
+    @SafeVarargs
+    public static <T> boolean containsAll(Iterable<T> container, T...items) {
+        Set<T> searchSet = new HashSet<>(Arrays.asList(items));
+        if (container == null) {
+            return false;
+        } else if (items == null) {
+            return true;
+        } else if (container instanceof Set<?>) {
+            // Fast path for wrapped sets
+            return ((Set<T>) container).containsAll(searchSet);
+        } else {
+            for (T item : container) {
+                searchSet.remove(item);
+                if (searchSet.isEmpty()) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /**

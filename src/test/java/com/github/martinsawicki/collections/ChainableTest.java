@@ -36,6 +36,16 @@ public class ChainableTest {
     }
 
     @Test
+    public void testContainsAll() {
+        // Given
+        String items[] = { "a", "b", "c", "d" };
+        Chainable<String> chain = Chainable.from(items);
+
+        // When / Then
+        assertTrue(chain.containsAll(items));
+    }
+
+    @Test
     public void testContainsSubarray() {
         // Given
         Chainable<String> items1 = Chainable.from("a", "b", "x", "a", "b", "c", "d");
