@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -25,18 +26,6 @@ public final class Chainables {
 
     public interface Chainable<T> extends Iterable<T> {
         /**
-         * Determines whether this chain contains any items.
-         * @return {@code true} if not empty (i.e. the opposite of {@link #isEmpty()})
-         * @sawicki.similar
-         * <table summary="Similar to:">
-         * <tr><td><i>C#:</i></td><td>{@code Enumerable.Any()}</td></tr>
-         * </table>
-         */
-        default boolean any() {
-            return !Chainables.isNullOrEmpty(this);
-        }
-
-        /**
          * Returns an empty chain.
          * @return an empty {@link Chainable}
          * @sawicki.similar
@@ -48,19 +37,6 @@ public final class Chainables {
          */
         static <T> Chainable<T> empty() {
             return Chain.empty();
-        }
-
-        /**
-         * Determines whether this chain contains any items.
-         * @return {@code true} if empty, else {@code false}
-         * @sawicki.similar
-         * <table summary="Similar to:">
-         * <tr><td><i>C#:</i></td><td>{@code Enumerable.Any()}, but negated</td></tr>
-         * </table>
-         * @see #any()
-         */
-        default boolean isEmpty() {
-            return Chainables.isNullOrEmpty(this);
         }
 
         /**
@@ -139,6 +115,121 @@ public final class Chainables {
                     }
                 }
             });
+        }
+
+        /**
+         * Determines whether this chain contains any items.
+         * @return {@code true} if not empty (i.e. the opposite of {@link #isEmpty()})
+         * @sawicki.similar
+         * <table summary="Similar to:">
+         * <tr><td><i>C#:</i></td><td>{@code Enumerable.Any()}</td></tr>
+         * </table>
+         */
+        default boolean any() {
+            return !Chainables.isNullOrEmpty(this);
+        }
+
+        /**
+         * Ensures all items are traversed, forcing any of the predecessors in the chain to be fully evaluated.
+         * <p>This is somewhat similar to {@link #toList()}, except that what is returned is still a {@link Chainable}.
+         * @return self
+         */
+        default Chainable<T> apply() {
+            return Chainables.apply(this);
+        }
+
+        /**
+         * Applies the specified {@code action} to all the items in this chain, triggering a full evaluation of all the items.
+         * @param action
+         * @return self
+         * @sawicki.similar
+         * <table summary="Similar to:">
+         * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#forEach(Consumer)}</td></tr>
+         * </table>
+         */
+        default Chainable<T> apply(Consumer<T> action) {
+            return Chainables.apply(this, action);
+        }
+
+        /**
+         * Applies the specified {@code action} to each item one by one lazily, i.e. without triggering a full evaluation of the entire {@link Chainable},
+         * but only to the extent that the returned {@link Chainable} is evaluated using another function.
+         * @param action
+         * @return self
+         * @sawicki.similar
+         * <table summary="Similar to:">
+         * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#peek(Consumer)}</td></tr>
+         * <tr><td><i>C#:</i></td><td>{@code Enumerable.Select()}</td></tr>
+         * </table>
+         */
+        default Chainable<T> applyAsYouGo(Consumer<T> action) {
+            return Chainables.applyAsYouGo(this, action); // TODO: shouldn't this call applyAsYouGo?
+        }
+
+        /**
+         * Determines whether this chain consists of the same items, in the same order, as those in the specified {@code items}, triggering a full traversal/evaluation of the chain if needed.
+         * @param items
+         * @return {@code true} the items match exactly
+         * @sawicki.similar
+         * <table summary="Similar to:">
+         * <tr><td><i>C#:</i></td><td>{@code Enumerable.SequenceEqual()}</td></tr>
+         * </table>
+         * @see #equalsEither(Iterable...)
+         */
+        default boolean equals(Iterable<T> items) {
+            return Chainables.equal(this, items);
+        }
+
+        /**
+         * Determines whether this chain consists of the same items, in the same order, as in any of the specified {@code iterables}.
+         * <p>
+         * This triggers a full traversal/evaluation of the chain if needed.
+         * @param iterables
+         * @return true if the underlying items are the same as those in any of the specified {@code iterables}
+         * in the same order
+         * @see #equalsEither(Iterable...)
+         */
+        @SuppressWarnings("unchecked")
+        default boolean equalsEither(Iterable<T>...iterables) {
+            if (iterables == null) {
+                return false;
+            } else {
+                for (Iterable<T> iterable : iterables) {
+                    if (Chainables.equal(this, iterable)) {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        /**
+         * Determines whether this chain contains any items.
+         * @return {@code true} if empty, else {@code false}
+         * @sawicki.similar
+         * <table summary="Similar to:">
+         * <tr><td><i>C#:</i></td><td>{@code Enumerable.Any()}, but negated</td></tr>
+         * </table>
+         * @see #any()
+         */
+        default boolean isEmpty() {
+            return Chainables.isNullOrEmpty(this);
+        }
+
+        /**
+         * Counts the items in this chain.
+         * <p>
+         * This triggers a full traversal/evaluation of the items.
+         * @return total number of items
+         * @sawicki.similar
+         * <table summary="Similar to:">
+         * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#count()}</td></tr>
+         * <tr><td><i>C#:</i></td><td>{@code Enumerable.Count()}</td></tr>
+         * </table>
+         */
+        default int size() {
+            return Chainables.count(this);
         }
 
         /**
@@ -247,6 +338,136 @@ public final class Chainables {
      */
     public static <V> boolean any(Iterable<V> iterable) {
         return !isNullOrEmpty(iterable);
+    }
+
+    /**
+     * @param items
+     * @param action
+     * @return
+     * @see Chainable#apply(Consumer)
+     */
+    public static <T> Chainable<T> apply(Iterable<T> items, Consumer<T> action) {
+        if (items == null) {
+            return null;
+        } else if (action == null) {
+            return Chainable.from(items);
+        }
+
+        // Apply to all
+        List<T> itemsList = Chainables.toList(items);
+        for (T item : itemsList) {
+            try {
+                action.accept(item);
+            } catch (Exception e) {
+                // TODO What to do with exceptions
+                // String s = e.getMessage();
+            }
+        }
+
+        return Chainable.from(itemsList);
+    }
+
+    /**
+     * @param items
+     * @return
+     * @see Chainable#apply()
+     */
+    public static <T> Chainable<T> apply(Iterable<T> items) {
+        return apply(items, o -> {}); // NOP
+    }
+
+    /**
+     * @param items
+     * @param action
+     * @return
+     * @see Chainable#applyAsYouGo(Consumer)
+     */
+    public static <T> Chainable<T> applyAsYouGo(Iterable<T> items, Consumer<T> action) {
+        if (items == null) {
+            return null;
+        } else if (action == null) {
+            return Chainable.from(items);
+        } else {
+            return Chainable.from(new Iterable<T>() {
+                @Override
+                public Iterator<T> iterator() {
+                    return new Iterator<T>() {
+                        final private Iterator<T> itemIter = items.iterator();
+
+                        @Override
+                        public boolean hasNext() {
+                            return this.itemIter.hasNext();
+                        }
+
+                        @Override
+                        public T next() {
+                            if (this.hasNext()) {
+                                T item = this.itemIter.next();
+                                action.accept(item);
+                                return item;
+                            } else {
+                                return null;
+                            }
+                        }
+                    };
+                }
+            });
+        }
+    }
+
+    /**
+     * Counts the number of items, forcing a complete traversal.
+     *
+     * @param items an items to count
+     * @return the number of items
+     * @see Chainable#size()
+     */
+    public static <T> int count(Iterable<T> items) {
+        if (items == null) {
+            return 0;
+        }
+
+        if (items instanceof Collection<?>) {
+            return ((Collection<?>)items).size();
+        }
+
+        Iterator<T> iter = items.iterator();
+        int size = 0;
+        while (iter.hasNext()) {
+            iter.next();
+            size++;
+        }
+
+        return size;
+    }
+
+    /**
+     * @param items1
+     * @param items2
+     * @return
+     * @see Chainable#equals(Iterable)
+     */
+    public static <T> boolean equal(Iterable<T> items1, Iterable<T> items2) {
+        if (items1 == items2) {
+            return true;
+        } else if (items1 == null || items2 == null) {
+            return false;
+        } else {
+            Iterator<T> iterator1 = items1.iterator();
+            Iterator<T> iterator2 = items2.iterator();
+            while (iterator1.hasNext() && iterator2.hasNext()) {
+                if (!iterator1.next().equals(iterator2.next())) {
+                    return false;
+                }
+            }
+
+            if (iterator1.hasNext() || iterator2.hasNext()) {
+                // One is longer than the other
+                return false;
+            } else {
+                return true;
+            }
+        }
     }
 
     /**
