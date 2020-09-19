@@ -36,6 +36,20 @@ public class ChainableTest {
     }
 
     @Test
+    public void testContains() {
+        // Given
+        Chainable<String> items = Chainable.from("a", "b", "c");
+
+        // When/Then
+        assertTrue(items.contains("b"));
+        assertFalse(items.contains("d"));
+        assertTrue(items.containsAny("b", "d"));
+        assertFalse(items.containsAny("x", "y"));
+        assertTrue(items.containsAll("c", "b"));
+        assertFalse(items.containsAll("b", "d"));
+    }
+
+    @Test
     public void testContainsAll() {
         // Given
         String items[] = { "a", "b", "c", "d" };

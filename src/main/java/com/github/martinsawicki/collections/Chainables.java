@@ -173,6 +173,22 @@ public final class Chainables {
         }
 
         /**
+         * Determines whether this chain contains the specified {@code item}.
+         * @param item the item to look for
+         * @return {@code true} if this contains the specified {@code item}
+         * @sawicki.similar
+         * <table summary="Similar to:">\
+         * <tr><td><i>C#:</i></td><td>{@code Enumerable.Contains()}</td></tr>
+         * </table>
+         * @see #containsAll(Object...)
+         * @see #containsAny(Object...)
+         * @see #containsSubarray(Iterable)
+         */
+        default boolean contains(T item) {
+            return Chainables.contains(this, item);
+        }
+
+        /**
          * Determines whether this chain contains all of the specified {@code items}.
          * @param items items to search for
          * @return {@code true} if this chain contains all the specified {@code items}
@@ -182,6 +198,18 @@ public final class Chainables {
         @SuppressWarnings("unchecked")
         default boolean containsAll(T...items) {
             return Chainables.containsAll(this, items);
+        }
+
+        /**
+         * Determines whether this chain contains any of the specified {@code items}.
+         * @param items items to search for
+         * @return {@code true} if this contains any of the specified {@code items}
+         * @see #contains(Object)
+         * @see #containsAll(Object...)
+         */
+        @SuppressWarnings("unchecked")
+        default boolean containsAny(T...items) {
+            return Chainables.containsAny(this, items);
         }
 
         /**
@@ -504,6 +532,23 @@ public final class Chainables {
 
     /**
      * @param container
+     * @param item
+     * @return true if the specified {@code item} is among the members of the specified {@code container}, else false
+     */
+    public static <T> boolean contains(Iterable<T> container, T item) {
+        if (container == null) {
+            return false;
+        } else if (!(container instanceof Set<?>)) {
+            return !Chainables.isNullOrEmpty(Chainables.whereEither(container, i -> i.equals(item)));
+        } else if (item == null) {
+            return false;
+        } else {
+            return ((Set<?>) container).contains(item);
+        }
+    }
+
+    /**
+     * @param container
      * @param items
      * @return
      * @see Chainable#containsAll(Object...)
@@ -539,6 +584,40 @@ public final class Chainables {
         }
 
         return false;
+    }
+
+    /**
+     * @param container
+     * @param items
+     * @return true if any of the specified {@code items} are among the members of the specified {@code container}
+     * @see Chainable#containsAny(Object...)
+     */
+    @SafeVarargs
+    public static <T> boolean containsAny(Iterable<T> container, T...items) {
+        if (container == null) {
+            return false;
+        } else if (items == null) {
+            return true;
+        }
+
+        for (T item : items) {
+            if (Chainables.contains(container, item)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param container
+     * @param items
+     * @return
+     * @see Chainable#containsAny(Object...)
+     */
+    @SafeVarargs
+    public static <T> boolean containsAny(T[] container, T...items) {
+        return containsAny(Chainable.from(container), items);
     }
 
     /**
