@@ -111,6 +111,34 @@ public class ChainableTest {
     }
 
     @Test
+    public void testDistinct() {
+        // Given
+        Chainable<String> items = Chainable.from("a", "b", "c", "a", "d", "b");
+
+        // When
+        Chainable<String> distinct = items.distinct();
+        String actual = Chainables.join("", distinct);
+        String expected = "abcd";
+
+        // Then
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testDistinctKey() {
+        // Given
+        Chainable<Integer> numbers = Chainable.from(1, 3, 4, 5, 8);
+        String expected = "14";
+
+        // When
+        Chainable<Integer> distinct = numbers.distinct(i -> i % 2);
+        String actual = Chainables.join("", distinct);
+
+        // Then
+        assertEquals(expected, actual);
+    }
+
+    @Test
     public void testEmpty() {
         // Given
         Chainable<String> emptyChain = Chainable.empty();

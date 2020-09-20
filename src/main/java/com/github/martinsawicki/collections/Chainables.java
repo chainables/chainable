@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -275,6 +276,34 @@ public final class Chainables {
          */
         default boolean containsSubarray(Iterable<T> subarray) {
             return Chainables.containsSubarray(this, subarray);
+        }
+
+        /**
+         * Returns a chain of items from this chain that are not duplicated.
+         * @return items that are unique (no duplicates)
+         * @sawicki.similar
+         * <table summary="Similar to:">
+         * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#distinct()}</td></tr>
+         * <tr><td><i>C#:</i></td><td>{@code Enumerable.Distinct()}</td></tr>
+         * </table>
+         */
+        default Chainable<T> distinct() {
+            return Chainables.distinct(this);
+        }
+
+        /**
+         * Returns a chain of items from this chain without duplicate keys, as returned by the specified {@code keyExtractor}.
+         * <P>
+         * In case of duplicates, the first item survives.
+         * @param keyExtractor
+         * @return first items whose keys, as extracted by the specified {@code keyExtractor}, are unique
+         * @sawicki.similar
+         * <table summary="Similar to:">
+         * <tr><td><i>C#:</i></td><td>{@code Enumerable.Distinct()} with a custom comparer</td></tr>
+         * </table>
+         */
+        default <V> Chainable<T> distinct(Function<T, V> keyExtractor) {
+            return Chainables.distinct(this, keyExtractor);
         }
 
         /**
@@ -880,6 +909,106 @@ public final class Chainables {
         }
 
         return size;
+    }
+
+    /**
+     * @param items
+     * @param keyExtractor
+     * @return
+     * @see Chainable#distinct(Function)
+     */
+    public static <T, V> Chainable<T> distinct(Iterable<T> items, Function<T, V> keyExtractor) {
+        return (keyExtractor == null) ? distinct(items) : Chainable.from(new Iterable<T>() {
+            @Override
+            public Iterator<T> iterator() {
+                return new Iterator<T>() {
+                    final Map<V, T> seen = new HashMap<>();
+                    final Iterator<T> iter = items.iterator();
+                    T next = null;
+                    V value = null;
+                    boolean hasNext = false;
+
+                    @Override
+                    public boolean hasNext() {
+                        if (this.hasNext) {
+                            return true;
+                        }
+
+                        while (this.iter.hasNext()) {
+                            this.next = this.iter.next();
+                            this.value = keyExtractor.apply(this.next);
+                            if (!seen.containsKey(this.value)) {
+                                this.hasNext = true;
+                                return true;
+                            }
+                        }
+
+                        return this.hasNext = false;
+                    }
+
+                    @Override
+                    public T next() {
+                        if (this.hasNext()) {
+                            this.seen.put(this.value, this.next);
+                            this.hasNext = false;
+                            return this.next;
+                        } else {
+                            return null;
+                        }
+                    }
+                };
+            }});
+    }
+
+    /**
+     * @param items
+     * @return
+     * @see Chainable#distinct()
+     */
+    public static <T> Chainable<T> distinct(Iterable<T> items) {
+        return Chainable.from(new Iterable<T>() {
+            @Override
+            public Iterator<T> iterator() {
+                return new Iterator<T>() {
+                    final Set<T> seen = new HashSet<>();
+                    final Iterator<T> iter = items.iterator();
+                    T next = null;
+
+                    @Override
+                    public boolean hasNext() {
+                        if (this.next != null) {
+                            return true;
+                        }
+
+                        while (this.iter.hasNext()) {
+                            this.next = this.iter.next();
+                            if (seen.contains(this.next)) {
+                                this.next = null;
+                            } else {
+                                return true;
+                            }
+                        }
+
+                        this.next = null;
+                        return false;
+                    }
+
+                    @Override
+                    public T next() {
+                        if (!this.hasNext()) {
+                            return null;
+                        } else if (this.next != null) {
+                            T item = this.next;
+                            this.seen.add(item);
+                            this.next = null;
+                            return item;
+                        } else {
+                            return null;
+                        }
+                    }
+                };
+            }
+        });
     }
 
     /**
