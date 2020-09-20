@@ -12,6 +12,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * Unit tests
@@ -32,6 +33,43 @@ public class ChainableTest {
 
         // Then
         assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testContains() {
+        // Given
+        Chainable<String> items = Chainable.from("a", "b", "c");
+
+        // When/Then
+        assertTrue(items.contains("b"));
+        assertFalse(items.contains("d"));
+        assertTrue(items.containsAny("b", "d"));
+        assertFalse(items.containsAny("x", "y"));
+        assertTrue(items.containsAll("c", "b"));
+        assertFalse(items.containsAll("b", "d"));
+    }
+
+    @Test
+    public void testContainsAll() {
+        // Given
+        String items[] = { "a", "b", "c", "d" };
+        Chainable<String> chain = Chainable.from(items);
+
+        // When / Then
+        assertTrue(chain.containsAll(items));
+    }
+
+    @Test
+    public void testContainsSubarray() {
+        // Given
+        Chainable<String> items1 = Chainable.from("a", "b", "x", "a", "b", "c", "d");
+        Iterable<String> subarray1 = Arrays.asList("a", "b", "c");
+        Iterable<String> notSubarray1 = Arrays.asList("a", "b", "x", "y");
+
+        // When/Then
+        assertTrue(items1.containsSubarray(subarray1));
+        assertFalse(items1.containsSubarray(notSubarray1));
+        //TODO: More tests
     }
 
     @Test
@@ -124,6 +162,55 @@ public class ChainableTest {
     }
 
     @Test
+    public void testStreamBasics() {
+        // Given
+        Integer inputs[] = { 1, 2, 3, 4, 5, 6, 7, 8 };
+        String expected = Chainables.join("", Chainable.from(inputs).where(i -> i % 2 != 0));
+
+        // When
+        Chainable<Integer> chain = Chainable.from(Stream
+                .of(inputs)
+                .filter(i -> i % 2 != 0));
+        String actual = Chainables.join("", chain);
+
+        // Then
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testStreamGeneration() {
+        // Given
+        Chainable<Integer> ints = Chainable.from(1, 3, 2, 5, 2);
+        String expected = "22";
+
+        // When
+        Stream<Integer> stream = ints.stream().filter(i -> i % 2 == 0);
+        StringBuilder info = new StringBuilder();
+        stream.forEach(o -> info.append(o.toString()));
+        String actual = info.toString();
+
+        // Then
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testStreamReEntry() {
+        // Given
+        Integer inputs[] = { 1, 2, 3, 4, 5, 6, 7, 8 };
+        String expected = Chainables.join("", Chainable.from(inputs).where(i -> i % 2 != 0));
+
+        // When
+        Chainable<Integer> chain = Chainable.from(Stream
+                .of(inputs)
+                .filter(i -> i % 2 != 0));
+        String actual = Chainables.join("", chain);
+        actual = Chainables.join("", chain); // Again, since streams are normally traversable only once
+
+        // Then
+        assertEquals(expected, actual);
+    }
+
+    @Test
     public void testToList() {
         // Given
         Chainable<String> chain = Chainable.from("a", "b", "c");
@@ -163,6 +250,39 @@ public class ChainableTest {
         // When
         Iterable<String> transformed = Chainables.transformAndFlatten(list, o -> (o != null) ? Arrays.asList(o) : null);
         String actual = Chainables.join("", transformed);
+
+        // Then
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testWhere() {
+        // Given
+        Iterable<Integer> testList = Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
+        String expected = "aabac";
+
+        // When
+        Iterable<Integer> greaterThan4 = Chainables.whereEither(testList, o -> o > 4);
+
+        Chainable<String> where = Chainable
+                .from("a", "b", "c", "ab", "ac", "bc")
+                .where(s -> s.startsWith("a"));
+        String actual = Chainables.join("", where);
+
+        // Then
+        assertEquals(5, Chainables.count(greaterThan4));
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testWithoutNull() {
+        // Given
+        Iterable<String> items = Arrays.asList("a", null, "b", null);
+        String expected = "ab";
+
+        // When
+        Chainable<String> withoutNull = Chainables.withoutNull(items);
+        String actual = Chainables.join("", withoutNull);
 
         // Then
         assertEquals(expected, actual);

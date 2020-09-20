@@ -5,14 +5,20 @@
 package com.github.martinsawicki.collections;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * This is the source of all the static methods underlying the default implementation of {@link Chainable} as well as some other conveniences.
@@ -167,6 +173,59 @@ public final class Chainables {
         }
 
         /**
+         * Determines whether this chain contains the specified {@code item}.
+         * @param item the item to look for
+         * @return {@code true} if this contains the specified {@code item}
+         * @sawicki.similar
+         * <table summary="Similar to:">\
+         * <tr><td><i>C#:</i></td><td>{@code Enumerable.Contains()}</td></tr>
+         * </table>
+         * @see #containsAll(Object...)
+         * @see #containsAny(Object...)
+         * @see #containsSubarray(Iterable)
+         */
+        default boolean contains(T item) {
+            return Chainables.contains(this, item);
+        }
+
+        /**
+         * Determines whether this chain contains all of the specified {@code items}.
+         * @param items items to search for
+         * @return {@code true} if this chain contains all the specified {@code items}
+         * @see #contains(Object)
+         * @see #containsAny(Object...)
+         */
+        @SuppressWarnings("unchecked")
+        default boolean containsAll(T...items) {
+            return Chainables.containsAll(this, items);
+        }
+
+        /**
+         * Determines whether this chain contains any of the specified {@code items}.
+         * @param items items to search for
+         * @return {@code true} if this contains any of the specified {@code items}
+         * @see #contains(Object)
+         * @see #containsAll(Object...)
+         */
+        @SuppressWarnings("unchecked")
+        default boolean containsAny(T...items) {
+            return Chainables.containsAny(this, items);
+        }
+
+        /**
+         * Determines whether this chain contains items in the specified {@code subarray} in that exact order.
+         * @param subarray
+         * @return true if this contains the specified {@code subarray} of items
+         * (i.e. appearing consecutively at any point)
+         * @see #contains(Object)
+         * @see #containsAll(Object...)
+         * @see #containsAny(Object...)
+         */
+        default boolean containsSubarray(Iterable<T> subarray) {
+            return Chainables.containsSubarray(this, subarray);
+        }
+
+        /**
          * Determines whether this chain consists of the same items, in the same order, as those in the specified {@code items}, triggering a full traversal/evaluation of the chain if needed.
          * @param items
          * @return {@code true} the items match exactly
@@ -218,6 +277,21 @@ public final class Chainables {
         }
 
         /**
+         * Returns the items from this chain that do not satisy the specified {@code condition}.
+         * @param condition
+         * @return items that do not meet the specified {@code condition}
+         * @sawicki.similar
+         * <table summary="Similar to:">
+         * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#filter(Predicate)}, but with a negated predicate</td></tr>
+         * <tr><td><i>C#:</i></td><td>{@code Enumerable.Where()}, but with a negated predicate</td></tr>
+         * </table>
+         * @see #where(Predicate)
+         */
+        default Chainable<T> notWhere(Predicate<T> condition) {
+            return Chainables.notWhere(this, condition);
+        }
+
+        /**
          * Counts the items in this chain.
          * <p>
          * This triggers a full traversal/evaluation of the items.
@@ -230,6 +304,14 @@ public final class Chainables {
          */
         default int size() {
             return Chainables.count(this);
+        }
+
+        /**
+         * Creates a stream from this chain.
+         * @return a stream representing this chain.
+         */
+        default Stream<T> stream() {
+            return Chainables.toStream(this);
         }
 
         /**
@@ -272,6 +354,39 @@ public final class Chainables {
          */
         default <O> Chainable<O> transformAndFlatten(Function<T, Iterable<O>> transformer) {
             return Chainables.transformAndFlatten(this, transformer);
+        }
+
+        /**
+         * Returns a chain of items from this chain that satisfy the specified {@code condition}.
+         * @param condition
+         * @return matching items
+         * @sawicki.similar
+         * <table summary="Similar to:">
+         * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#filter(Predicate)}</td></tr>
+         * <tr><td><i>C#:</i></td><td>{@code Enumerable.Where()}</td></tr>
+         * </table>
+         */
+        default Chainable<T> where(Predicate<T> condition) {
+            return Chainables.whereEither(this, condition);
+        }
+
+        /**
+         * Returns a chain of items from this chain that satisfy any of the specified {@code conditions}.
+         * @param conditions
+         * @return items that meet any of the specified {@code conditions}
+         * @see #where(Predicate)
+         */
+        @SuppressWarnings("unchecked")
+        default Chainable<T> whereEither(Predicate<T>... conditions) {
+            return Chainables.whereEither(this, conditions);
+        }
+
+        /**
+         * Filters out {@code null} values from the underlying {@link Chainable}.
+         * @return non-null items
+         */
+        default Chainable<T> withoutNull() {
+            return Chainables.withoutNull(this);
         }
     }
 
@@ -413,6 +528,130 @@ public final class Chainables {
                 }
             });
         }
+    }
+
+    /**
+     * @param container
+     * @param item
+     * @return true if the specified {@code item} is among the members of the specified {@code container}, else false
+     */
+    public static <T> boolean contains(Iterable<T> container, T item) {
+        if (container == null) {
+            return false;
+        } else if (!(container instanceof Set<?>)) {
+            return !Chainables.isNullOrEmpty(Chainables.whereEither(container, i -> i.equals(item)));
+        } else if (item == null) {
+            return false;
+        } else {
+            return ((Set<?>) container).contains(item);
+        }
+    }
+
+    /**
+     * @param container
+     * @param items
+     * @return
+     * @see Chainable#containsAll(Object...)
+     */
+    @SafeVarargs
+    public static <T> boolean containsAll(T[] container, T...items) {
+        return containsAll(Chainable.from(container), items);
+    }
+
+    /**
+     * @param container
+     * @param items
+     * @return
+     * @see Chainable#containsAll(Object...)
+     */
+    @SafeVarargs
+    public static <T> boolean containsAll(Iterable<T> container, T...items) {
+        Set<T> searchSet = new HashSet<>(Arrays.asList(items));
+        if (container == null) {
+            return false;
+        } else if (items == null) {
+            return true;
+        } else if (container instanceof Set<?>) {
+            // Fast path for wrapped sets
+            return ((Set<T>) container).containsAll(searchSet);
+        } else {
+            for (T item : container) {
+                searchSet.remove(item);
+                if (searchSet.isEmpty()) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param container
+     * @param items
+     * @return true if any of the specified {@code items} are among the members of the specified {@code container}
+     * @see Chainable#containsAny(Object...)
+     */
+    @SafeVarargs
+    public static <T> boolean containsAny(Iterable<T> container, T...items) {
+        if (container == null) {
+            return false;
+        } else if (items == null) {
+            return true;
+        }
+
+        for (T item : items) {
+            if (Chainables.contains(container, item)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param container
+     * @param items
+     * @return
+     * @see Chainable#containsAny(Object...)
+     */
+    @SafeVarargs
+    public static <T> boolean containsAny(T[] container, T...items) {
+        return containsAny(Chainable.from(container), items);
+    }
+
+    /**
+     * @param items
+     * @param subarray
+     * @return
+     * @see Chainable#containsSubarray(Iterable)
+     */
+    public static <T> boolean containsSubarray(Iterable<T> items, Iterable<T> subarray) {
+        if (items == null) {
+            return false;
+        } else if (Chainables.isNullOrEmpty(subarray)) {
+            return true;
+        }
+
+        // Brute force evaluation of everything (TODO: make it lazy and faster?)
+        List<T> subList = Chainables.toList(subarray);
+        List<T> itemsCached = Chainables.toList(items);
+
+        for (int i = 0; i < itemsCached.size() - subList.size(); i++) {
+            boolean matched = true;
+            for (int j = 0; j < subList.size(); j++) {
+                if (!Objects.equals(itemsCached.get(i+j), subList.get(j))) {
+                    matched = false;
+                    break;
+                }
+            }
+
+            if (matched) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -562,6 +801,37 @@ public final class Chainables {
 
     /**
      * @param items
+     * @param condition
+     * @return
+     * @see Chainable#notWhere(Predicate)
+     */
+    public static final <T> Chainable<T> notWhere(Iterable<T> items, Predicate<T> condition) {
+        return (condition != null) ? Chainables.whereEither(items, condition.negate()) : Chainable.from(items);
+    }
+
+    /**
+     * @param items
+     * @return
+     */
+    public static String[] toArray(Iterable<String> items) {
+        int len;
+        if (items == null) {
+            len = 0;
+        } else {
+            len = count(items);
+        }
+
+        String[] array = new String[len];
+        int i = 0;
+        for (String item : items) {
+            array[i++] = item;
+        }
+
+        return array;
+    }
+
+    /**
+     * @param items
      * @return
      * @see Chainable#toList()
      */
@@ -578,6 +848,16 @@ public final class Chainables {
 
             return list;
         }
+    }
+
+    /**
+     * Converts the specified {@code items} into a sequential stream.
+     * @param items the items to convert into a stream
+     * @return the resulting stream
+     * @see Chainable#stream()
+     */
+    public static <T> Stream<T> toStream(Iterable<T> items) {
+        return StreamSupport.stream(items.spliterator(), false);
     }
 
     /**
@@ -661,6 +941,81 @@ public final class Chainables {
                 };
             }
         });
+    }
+
+    /**
+     * @param items
+     * @param predicates
+     * @return
+     * @see Chainable#whereEither(Predicate...)
+     */
+    @SafeVarargs
+    public static final <T> Chainable<T> whereEither(Iterable<T> items, Predicate<T>... predicates) {
+        if (items == null) {
+            return null;
+        } else if (predicates == null || predicates.length == 0) {
+            return Chainable.from(items);
+        }
+
+        return Chainable.from(new Iterable<T>() {
+
+            @Override
+            public Iterator<T> iterator() {
+                return new Iterator<T>() {
+                    final Iterator<T> innerIterator = items.iterator();
+                    T nextItem = null;
+                    boolean stopped = false;
+
+                    @Override
+                    public boolean hasNext() {
+                        if (this.stopped) {
+                            return false;
+                        } else if (this.nextItem != null) {
+                            return true;
+                        }
+
+                        while (this.innerIterator.hasNext()) {
+                            this.nextItem = this.innerIterator.next();
+
+                            // Skip over null items TODO: really?
+                            if (this.nextItem == null) {
+                                continue;
+                            }
+
+                            for (Predicate<T> predicate : predicates) {
+                                if (predicate.test(this.nextItem)) {
+                                    return true;
+                                }
+                            }
+                        }
+
+                        this.nextItem = null;
+                        this.stopped = true;
+                        return false;
+                    }
+
+                    @Override
+                    public T next() {
+                        if (this.hasNext()) {
+                            T item = this.nextItem;
+                            this.nextItem = null;
+                            return item;
+                        } else {
+                            return null;
+                        }
+                    }
+                };
+            }
+        });
+    }
+
+    /**
+     * @param items
+     * @return
+     * @see Chainable#withoutNull()
+     */
+    public static <T> Chainable<T> withoutNull(Iterable<T> items) {
+        return (items != null) ? Chainable.from(items).where(i -> i != null) : null;
     }
 }
 
