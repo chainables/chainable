@@ -173,6 +173,58 @@ public final class Chainables {
         }
 
         /**
+         * Appends the specified {@code items} to this chain.
+         * @param items
+         * @return the chain resulting from appending the specified {@code items} to this chain
+         * @sawicki.similar
+         * <table summary="Similar to:">
+         * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#concat(Stream, Stream)}, except that this is a chainable method that concatenates the specified {@code items}
+         * to the {@link Chainable} it is invoked on)</td></tr>
+         * <tr><td><i>C#:</i></td><td>{@code Enumerable.Concat()}</td></tr>
+         * </table>
+         * @see #concat(Object)
+         */
+        default Chainable<T> concat(Iterable<T> items) {
+            return Chainables.concat(this, items);
+        }
+
+        /**
+         * Appends the items from the specified {@code iterables} to this chain, in the order they are provided.
+         * @param itemSequences
+         * @return the current items with the specified {@code itemSequences} added to the end
+         * @see #concat(Iterable)
+         */
+        @SuppressWarnings("unchecked")
+        default Chainable<T> concat(Iterable<T>...iterables) {
+            return this.concat(Chainables.concat(iterables));
+        }
+
+        /**
+         * Appends the specified {@code item} to this chain.
+         * @param item
+         * @return the chain resulting from appending the specified single {@code item} to this chain
+         * @sawicki.similar
+         * <table summary="Similar to:">
+         * <tr><td><i>C#:</i></td><td>{@code Enumerable.Append()}</td></tr>
+         * </table>
+         * @see #concat(Iterable)
+         */
+        default Chainable<T> concat(T item) {
+            return Chainables.concat(this, item);
+        }
+
+        /**
+         * Appends the items produced by the specified {@code lister} applied to the last item in this chain.
+         * @param lister
+         * @return the resulting chain
+         * @see #concat(Iterable)
+         * @see #chain(Function)
+         */
+        default Chainable<T> concat(Function<T, Iterable<T>> lister) {
+            return Chainables.concat(this, lister);
+        }
+
+        /**
          * Determines whether this chain contains the specified {@code item}.
          * @param item the item to look for
          * @return {@code true} if this contains the specified {@code item}
@@ -531,6 +583,156 @@ public final class Chainables {
     }
 
     /**
+     * @param items
+     * @param lister
+     * @return
+     * @see Chainable#concat(Function)
+     */
+    public static <T> Chainable<T> concat(Iterable<T> items, Function<T, Iterable<T>> lister) {
+        if (lister == null) {
+            return Chainable.from(items);
+        } else if (items == null) {
+            return null;
+        }
+
+        return Chainable.from(new Iterable<T>() {
+            @Override
+            public Iterator<T> iterator() {
+
+                return new Iterator<T>() {
+                    private final Iterator<T> iter1 = items.iterator();
+                    private Iterator<T> iter2 = null;
+
+                    @Override
+                    public boolean hasNext() {
+                        return this.iter1.hasNext() || !Chainables.isNullOrEmpty(this.iter2);
+                    }
+
+                    @Override
+                    public T next() {
+                        if (!this.hasNext()) {
+                            return null;
+                        } else if (Chainables.isNullOrEmpty(this.iter2)) {
+                            T item = this.iter1.next();
+                            Iterable<T> items2 = lister.apply(item);
+                            this.iter2 = (Chainables.isNullOrEmpty(items2)) ? null : items2.iterator();
+                            return item;
+                        } else {
+                            return this.iter2.next();
+                        }
+                    }
+                };
+            }
+        });
+    }
+
+    /**
+     * Concatenates the two iterables, by first iterating through the first iterable
+     * and the through the second.
+     * @param items1 the first iterable
+     * @param items2 the second iterable
+     * @return concatenated iterable
+     */
+    // TODO Should this be removed now that concat(...) exists?
+    public static <T> Chainable<T> concat(Iterable<T> items1, Iterable<T> items2) {
+        if (items1 == null && items2 == null) {
+            return null;
+        } else if (Chainables.isNullOrEmpty(items1)) {
+            return Chainable.from(items2);
+        } else if (Chainables.isNullOrEmpty(items2)) {
+            return Chainable.from(items1);
+        } else {
+            return Chainable.from(new Iterable<T>() {
+
+                @Override
+                public Iterator<T> iterator() {
+                    return new Iterator<T>() {
+                        private final Iterator<T> iter1 = items1.iterator();
+                        private final Iterator<T> iter2 = items2.iterator();
+
+                        @Override
+                        public boolean hasNext() {
+                            return this.iter1.hasNext() || this.iter2.hasNext();
+                        }
+
+                        @Override
+                        public T next() {
+                            if (this.iter1.hasNext()) {
+                                return this.iter1.next();
+                            } else if (this.iter2.hasNext()) {
+                                return this.iter2.next();
+                            } else {
+                                return null;
+                            }
+                        }
+                    };
+                }
+            });
+        }
+    }
+
+    /**
+     * Concatenates the specified iterable with the specified single item.
+     *
+     * @param items
+     *            the iterable to concatenate the single item with
+     * @param item
+     *            the item to concatenate
+     * @return the resulting concatenation
+     */
+    public static <T> Chainable<T> concat(Iterable<T> items, T item) {
+        return concat(items, (Iterable<T>) Arrays.asList(item));
+    }
+
+    /**
+     * @param itemSequences
+     * @return
+     * @see Chainable#concat(Iterable...)
+     */
+    @SafeVarargs
+    public static <T> Chainable<T> concat(Iterable<T>...itemSequences) {
+        if (Chainables.isNullOrEmpty(itemSequences)) {
+            return Chainable.empty();
+        } else {
+            return Chainable.from(new Iterable<T>() {
+                @Override
+                public Iterator<T> iterator() {
+                    return new Iterator<T>() {
+                        private int i = 0;
+                        private Iterator<T> curIter = null;
+
+                        @Override
+                        public boolean hasNext() {
+                            // Get the next non-empty iterator
+                            while (Chainables.isNullOrEmpty(this.curIter) && i < itemSequences.length) {
+                                this.curIter = (itemSequences[i] != null) ? itemSequences[i].iterator() : null;
+                                i++;
+                            }
+
+                            return (this.curIter != null) ? this.curIter.hasNext() : false;
+                        }
+
+                        @Override
+                        public T next() {
+                            return (this.hasNext()) ? this.curIter.next() : null;
+                        }
+                    };
+                }
+            });
+        }
+    }
+
+    /**
+     * @param item
+     * @param items
+     * @return
+     * @see Chainable#concat(Iterable)
+     */
+    public static <T> Chainable<T> concat(T item, Iterable<T> items) {
+        return concat((Iterable<T>) Arrays.asList(item), items);
+    }
+
+    /**
      * @param container
      * @param item
      * @return true if the specified {@code item} is among the members of the specified {@code container}, else false
@@ -707,6 +909,15 @@ public final class Chainables {
                 return true;
             }
         }
+    }
+
+    /**
+     * Determines whether the specified array is empty or null.
+     * @param array the array to check
+     * @return {@code true} if the specified array is null or empty, else {@code false}
+     */
+    public static boolean isNullOrEmpty(Object[] array) {
+        return (array != null) ? array.length == 0 : true;
     }
 
     /**

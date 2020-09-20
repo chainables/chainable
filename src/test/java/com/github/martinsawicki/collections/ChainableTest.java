@@ -36,6 +36,44 @@ public class ChainableTest {
     }
 
     @Test
+    public void testConcatFunctional() {
+        // Given
+        Iterable<String> items1 = Arrays.asList("a", "b", "c");
+
+        // When
+        Chainable<String> combined = Chainable.from(items1)
+                .concat(i -> (i != "b") ? Chainable.from("1", "2", "3") : Chainable.from());
+        String list = Chainables.join("", combined);
+
+        // Then
+        assertEquals("a123bc123", list);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testConcatSimple() {
+        // Given
+        Iterable<String> items1 = Arrays.asList("a", "b", "c");
+        Iterable<String> items2 = null;
+        Iterable<String> items3 = Arrays.asList("d", "e", "f");
+        Iterable<String> items4 = Arrays.asList("g", "h", "i");
+
+        // When
+        Iterable<String> combined = Chainables.concat(items1, items2);
+        combined = Chainables.concat(combined, items3);
+        combined = Chainables.concat(combined, items4);
+        String list = Chainables.join("", combined);
+
+        Chainable<String> combined2 = Chainable.from(items1).concat(items2, items3, items4); // Multi-concat
+        String list2 = Chainables.join("", combined2);
+
+        // Then
+        assertEquals(9, Chainables.count(combined));
+        assertEquals("abcdefghi", list);
+        assertEquals("abcdefghi", list2);
+    }
+
+    @Test
     public void testContains() {
         // Given
         Chainable<String> items = Chainable.from("a", "b", "c");
