@@ -358,6 +358,21 @@ public final class Chainables {
         }
 
         /**
+         * Returns a chain of initial items from this chain upto and including the fist item that satisfies the specified {@code condition}, and none after it.
+         * <p>
+         * For example, if the items are { 1, 3, 5, 2, 7, 9, ...} and the {@code condition} is true when the item is an even number, then the resulting chain
+         * will consist of { 1, 3, 5, 2 }.
+         * @param condition
+         * @return the resulting items
+         * @see #notBefore(Predicate)
+         * @see #asLongAs(Predicate)
+         * @see #notAsLongAs(Predicate)
+         */
+        default Chainable<T> notAfter(Predicate<T> condition) {
+            return Chainables.notAfter(this, condition);
+        }
+
+        /**
          * Returns the items from this chain that do not satisy the specified {@code condition}.
          * @param condition
          * @return items that do not meet the specified {@code condition}
@@ -1137,6 +1152,65 @@ public final class Chainables {
      */
     public static <T> String join(String delimiter, Iterable<T> items) {
         return join(delimiter, items.iterator());
+    }
+
+    /**
+     * Returns items until and including the first item satisfying the specified condition, and no items after that
+     * @param items items to return from
+     * @param condition the condition that the last item needs to meet
+     * @return items before and including the first item where the specified condition is satisfied
+     * @see Chainable#notAfter(Predicate)
+     */
+    public static <T> Chainable<T> notAfter(Iterable<T> items, Predicate<T> condition) {
+        if (items == null) {
+            return null;
+        } else if (condition == null) {
+            return Chainable.from(items);
+        }
+
+        return Chainable.from(new Iterable<T>() {
+
+            @Override
+            public Iterator<T> iterator() {
+                return new Iterator<T>() {
+                    private final Iterator<T> iterator = items.iterator();
+                    private T nextItem = null;
+                    boolean stopped = false;
+
+                    @Override
+                    public boolean hasNext() {
+                        if (this.stopped) {
+                            // Last item if any
+                            return this.nextItem != null;
+                        } else if (this.nextItem != null) {
+                            return true;
+                        } else if (!this.iterator.hasNext()) {
+                            this.stopped = true;
+                            this.nextItem = null;
+                            return false;
+                        } else {
+                            this.nextItem = this.iterator.next();
+                            if (condition.test(this.nextItem)) {
+                                this.stopped = true;
+                            }
+
+                            return true;
+                        }
+                    }
+
+                    @Override
+                    public T next() {
+                        if (this.hasNext()) {
+                            T item = this.nextItem;
+                            this.nextItem = null;
+                            return item;
+                        } else {
+                            return null;
+                        }
+                    }
+                };
+            }
+        });
     }
 
     /**

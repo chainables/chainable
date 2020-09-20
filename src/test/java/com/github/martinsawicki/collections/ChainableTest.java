@@ -208,6 +208,29 @@ public class ChainableTest {
     }
 
     @Test
+    public void testNotAfter() {
+        // Given
+        Chainable<Integer> integers = Chainable.from(1, 1, 1, 2, 3, 4);
+        String expectedTextNotAfter2 = "1112";
+        String expectedTextNotAfter4 = "111234";
+
+        // When
+        Chainable<Integer> actualNotAfter2 = integers.notAfter(i -> i == 2);
+        String actualTextNotAfter2 = Chainables.join("", actualNotAfter2);
+
+        Chainable<Integer> actualNotAfter4 = integers.notAfter(i -> i == 4);
+        String actualTextNotAfter4 = Chainables.join("", actualNotAfter4);
+
+        Chainable<Integer> actualNotAfter5 = integers.notAfter(i -> i == 5);
+        String actualTextNotAfter5 = String.join("", actualNotAfter5.transform(i -> i.toString()));
+
+        // Then
+        assertEquals(expectedTextNotAfter2, actualTextNotAfter2);
+        assertEquals(expectedTextNotAfter4, actualTextNotAfter4);
+        assertEquals(expectedTextNotAfter4, actualTextNotAfter5);
+    }
+
+    @Test
     public void testSize() {
         // Given
         List<Integer> items = Arrays.asList(1, 2, 3, 4, 5, 6, 7);
