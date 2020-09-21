@@ -317,6 +317,20 @@ public class ChainableTest {
     }
 
     @Test
+    public void testSplit() {
+        // Given
+        String text = "Hello World! This is Mr. Johnson speaking... Listen, how are you?";
+        int expected = 28;
+
+        // When
+        Chainable<String> tokens = Chainables.split(text, " ,'\"!?.()[]{};:-+=");
+        int actual = tokens.size();
+
+        // Then
+        assertEquals(expected, actual);
+    }
+
+    @Test
     public void testStreamBasics() {
         // Given
         Integer inputs[] = { 1, 2, 3, 4, 5, 6, 7, 8 };

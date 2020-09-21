@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -1509,6 +1510,48 @@ public final class Chainables {
                         @Override
                         public T next() {
                             return (this.hasNext()) ? list.get(this.nextIndex--) : null;
+                        }
+                    };
+                }
+            });
+        }
+    }
+
+    /**
+     * Splits the specified {@code text} using the specified {@code delimiterChars}.
+     * @param text
+     * @param delimiterCharacters
+     * @return the split strings, including the delimiters
+     */
+    public static Chainable<String> split(String text, String delimiterCharacters) {
+        return split(text, delimiterCharacters, true);
+    }
+
+    /**
+     * Splits the specified {@code text} using the specified {@code delimiterChars}.
+     * @param text
+     * @param delimiterCharacters
+     * @param includeDelimiters if true, the delimiter chars are included in the returned results
+     * @return the split strings
+     */
+    public static Chainable<String> split(String text, String delimiterCharacters, boolean includeDelimiters) {
+        if (text == null || delimiterCharacters == null) {
+            return null;
+        } else {
+            return Chainable.from(new Iterable<String>() {
+                @Override
+                public Iterator<String> iterator() {
+                    return new Iterator<String>() {
+                        StringTokenizer tokenizer = new StringTokenizer(text, delimiterCharacters, includeDelimiters);
+
+                        @Override
+                        public boolean hasNext() {
+                            return this.tokenizer.hasMoreTokens();
+                        }
+
+                        @Override
+                        public String next() {
+                            return this.tokenizer.nextToken();
                         }
                     };
                 }
