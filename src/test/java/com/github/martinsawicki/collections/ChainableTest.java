@@ -283,6 +283,20 @@ public class ChainableTest {
     }
 
     @Test
+    public void testReverse() {
+        // Given
+        Chainable<String> items = Chainable.from("a", "b", "c", "d");
+        String expected = "dcba";
+
+        // When
+        Chainable<String> reverse = items.reverse();
+        String actual = Chainables.join("", reverse);
+
+        // Then
+        assertEquals(expected, actual);
+    }
+
+    @Test
     public void testSize() {
         // Given
         List<Integer> items = Arrays.asList(1, 2, 3, 4, 5, 6, 7);

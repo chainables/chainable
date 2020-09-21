@@ -474,6 +474,20 @@ public final class Chainables {
         }
 
         /**
+         * Returns a chain where the items are in the opposite order to this chain.
+         * <p>
+         * This triggers a full traversal/evaluation of the items.
+         * @return items in the opposite order
+         * @sawicki.similar
+         * <table summary="Similar to:">
+         * <tr><td><i>C#:</i></td><td>{@code Enumerable.Reverse()}</td></tr>
+         * </table>
+         */
+        default Chainable<T> reverse() {
+            return Chainables.reverse(this);
+        }
+
+        /**
          * Counts the items in this chain.
          * <p>
          * This triggers a full traversal/evaluation of the items.
@@ -1469,6 +1483,37 @@ public final class Chainables {
      */
     public static final <T> Chainable<T> notWhere(Iterable<T> items, Predicate<T> condition) {
         return (condition != null) ? Chainables.whereEither(items, condition.negate()) : Chainable.from(items);
+    }
+
+    /**
+     * @param items
+     * @return
+     * @see Chainable#reverse()
+     */
+    public static <T> Chainable<T> reverse(Iterable<T> items) {
+        if (items == null) {
+            return Chainable.from(Arrays.asList());
+        } else {
+            return Chainable.from(new Iterable<T>() {
+                @Override
+                public Iterator<T> iterator() {
+                    return new Iterator<T>() {
+                        List<T> list = Chainables.toList(items);
+                        int nextIndex = list.size() - 1;
+
+                        @Override
+                        public boolean hasNext() {
+                            return (nextIndex >= 0);
+                        }
+
+                        @Override
+                        public T next() {
+                            return (this.hasNext()) ? list.get(this.nextIndex--) : null;
+                        }
+                    };
+                }
+            });
+        }
     }
 
     /**
