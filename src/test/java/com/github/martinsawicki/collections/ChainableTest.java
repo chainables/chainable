@@ -230,6 +230,22 @@ public class ChainableTest {
     }
 
     @Test
+    public void testMaxMin() {
+        // Given
+        Chainable<Integer> ints = Chainable.from(1, 3, 2, 5, 2);
+        int expectedMax = 5;
+        int expectedMin = 1;
+
+        // When
+        int max = ints.max(o -> o.doubleValue());
+        int min = ints.min(o -> o.doubleValue());
+
+        // Then
+        assertEquals(expectedMax, max);
+        assertEquals(expectedMin, min);
+    }
+
+    @Test
     public void testNotAfter() {
         // Given
         Chainable<Integer> integers = Chainable.from(1, 1, 1, 2, 3, 4);

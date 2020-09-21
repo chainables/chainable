@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -373,6 +374,40 @@ public final class Chainables {
          */
         default boolean isEmpty() {
             return Chainables.isNullOrEmpty(this);
+        }
+
+        /**
+         * Returns the item tha has the highest value extracted by the specified {@code valueExtractor} in this chain.
+         * <p>
+         * This triggers a full traversal/evaluation of the items.
+         * @param valueExtractor
+         * @return the item for which the specified {@code valueExtrator} returns the highest value
+         * @sawicki.similar
+         * <table summary="Similar to:">
+         * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#max(Comparator)}</td></tr>
+         * <tr><td><i>C#:</i></td><td>{@code Enumerable.Max()}</td></tr>
+         * </table>
+         * @see #min(Function)
+         */
+        default T max(Function<T, Double> valueExtractor) {
+            return Chainables.max(this, valueExtractor);
+        }
+
+        /**
+         * Returns the item that has the lowest value extracted by the specified {@code valueExtractor} in this chain.
+         * <p>
+         * This triggers a full traversal/evaluation of the items.
+         * @param valueExtractor
+         * @return the item for which the specified {@code valueExtrator} returns the lowest value
+         * @sawicki.similar
+         * <table summary="Similar to:">
+         * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#min(Comparator)}</td></tr>
+         * <tr><td><i>C#:</i></td><td>{@code Enumerable.Min()}</td></tr>
+         * </table>
+         * @see #max(Function)
+         */
+        default T min(Function<T, Double> valueExtractor) {
+            return Chainables.min(this, valueExtractor);
         }
 
         /**
@@ -1247,6 +1282,50 @@ public final class Chainables {
      */
     public static <T> String join(String delimiter, Iterable<T> items) {
         return join(delimiter, items.iterator());
+    }
+
+    /**
+     * @param items
+     * @param valueExtractor
+     * @return
+     * @see Chainable#max(Function)
+     */
+    public static <T> T max(Iterable<T> items, Function<T, Double> valueExtractor) {
+        Double max = null;
+        T maxItem = null;
+        if (!Chainables.isNullOrEmpty(items)) {
+            for (T item : items) {
+                Double number = valueExtractor.apply(item);
+                if (max == null || number > max) {
+                    max = number;
+                    maxItem = item;
+                }
+            }
+        }
+
+        return maxItem;
+    }
+
+    /**
+     * @param items
+     * @param valueExtractor
+     * @return
+     * @see Chainable#min(Function)
+     */
+    public static <T> T min(Iterable<T> items, Function<T, Double> valueExtractor) {
+        Double min = null;
+        T minItem = null;
+        if (!Chainables.isNullOrEmpty(items)) {
+            for (T item : items) {
+                Double number = valueExtractor.apply(item);
+                if (min == null || number < min) {
+                    min = number;
+                    minItem = item;
+                }
+            }
+        }
+
+        return minItem;
     }
 
     /**
