@@ -373,6 +373,39 @@ public final class Chainables {
         }
 
         /**
+         * Returns a chain of remaining items from this chain starting with the first item that satisfies the specified {@code condition} and followed by all the remaining items.
+         * <p>
+         * For example, if the items are { 1, 3, 5, 2, 7, 9, ...} and the {@code condition} returns {@code true} for items that are even numbers, then the resulting
+         * chain will consist of { 2, 7, 9, ... }.
+         * @param condition
+         * @return items starting with the one where the specified {@code condition} is met
+         * @sawicki.similar
+         * <table summary="Similar to:">
+         * <tr><td><i>C#:</i></td><td>{@code Enumerable.SkipWhile()}, but with a negated predicate</td></tr>
+         * </table>
+         * @see #notAfter(Predicate)
+         * @see #asLongAs(Predicate)
+         * @see #notAsLongAs(Predicate)
+         */
+        default Chainable<T> notBefore(Predicate<T> condition) {
+            return Chainables.notBefore(this, condition);
+        }
+
+        /**
+         * Returns a chain of remaining items from this chain starting with the specified {@item}.
+         * @param item
+         * @return the remaining items in this chain starting with the specified {@code item}, if any
+         * @see #notBefore(Predicate)
+         * @see #notAsLongAsValue(Object)
+         * @see #notAsLongAs(Predicate)
+         * @see #notAfter(Predicate)
+         * @see #asLongAs(Predicate)
+         */
+        default Chainable<T> notBeforeValue(T item) {
+            return Chainables.notBeforeValue(this, item);
+        }
+
+        /**
          * Returns the items from this chain that do not satisy the specified {@code condition}.
          * @param condition
          * @return items that do not meet the specified {@code condition}
@@ -1211,6 +1244,80 @@ public final class Chainables {
                 };
             }
         });
+    }
+
+    /**
+     * @param items
+     * @param condition
+     * @return
+     * @see Chainable#notBefore(Predicate)
+     */
+    //##
+    private static <T> Chainable<T> notBefore(Iterable<T> items, Predicate<T> condition) {
+        if (items == null) {
+            return null;
+        } else if (condition == null) {
+            return Chainable.from(items);
+        } else {
+            return Chainable.from(new Iterable<T>() {
+                @Override
+                public Iterator<T> iterator() {
+                    return new Iterator<T>() {
+                        final Iterator<T> iterator = items.iterator();
+                        T nextItem = null;
+                        boolean start = false;
+
+                        @Override
+                        public boolean hasNext() {
+                            if (this.nextItem != null) {
+                                return true;
+                            } else if (!this.iterator.hasNext()) {
+                                this.nextItem = null;
+                                return false;
+                            } else if (this.start) {
+                                this.nextItem = this.iterator.next();
+                                return true;
+                            } else {
+                                while (this.iterator.hasNext()) {
+                                    this.nextItem = this.iterator.next();
+                                    if (condition.test(this.nextItem)) {
+                                        this.start = true;
+                                        break;
+                                    } else {
+                                        this.nextItem = null;
+                                    }
+                                }
+
+                                return this.nextItem != null;
+                            }
+                        }
+
+                        @Override
+                        public T next() {
+                            if (!this.hasNext()) {
+                                return null;
+                            }
+
+                            T item = this.nextItem;
+                            this.nextItem = null;
+                            return item;
+                        }
+                    };
+                }
+            });
+        }
+    }
+
+    /**
+     * Returns the rest of the specified items starting with the specified item, if found.
+     * @param items items to skip over
+     * @param item item to skip until
+     * @return the rest of the items
+     * @see Chainable#notBeforeValue(Object)
+     */
+    //##
+    public static <T> Chainable<T> notBeforeValue(Iterable<T> items, T item) {
+        return notBefore(items, (Predicate<T>)(o -> o == item));
     }
 
     /**

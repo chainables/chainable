@@ -231,6 +231,20 @@ public class ChainableTest {
     }
 
     @Test
+    public void testNotBeforeValue() {
+        // Given
+        Iterable<String> testList = Arrays.asList("a", "b", "c", "d", "e");
+        String expected = "cde";
+
+        // When
+        Iterable<String> startingWithC = Chainables.notBeforeValue(testList, "c");
+        String actual = Chainables.join("", startingWithC);
+
+        // Then
+        assertEquals(expected, actual);
+    }
+
+    @Test
     public void testSize() {
         // Given
         List<Integer> items = Arrays.asList(1, 2, 3, 4, 5, 6, 7);
