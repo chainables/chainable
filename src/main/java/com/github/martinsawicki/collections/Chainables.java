@@ -194,6 +194,36 @@ public final class Chainables {
         }
 
         /**
+         * Returns a chain of initial items from this chain before the first one that satisfies the specified {@code condition}.
+         * <p>
+         * For example, if this chain consists of { 1, 3, 2, 5, 6 } and the {@code condition} returns {@code true} for even numbers, then the resulting chain
+         * will consist of { 1, 3 }.
+         * @param condition
+         * @return the initial items before and not including the one that meets the specified {@code condition}
+         * @sawicki.similar
+         * <table summary="Similar to:">
+         * <tr><td><i>C#:</i></td><td>{@code Enumerable.TakeWhile(), but with a negated predicate}</td></tr>
+         * </table>
+         * @see #notBefore(Predicate)
+         * @see #notAsLongAs(Predicate)
+         * @see #asLongAs(Predicate)
+         * @see #notAfter(Predicate)
+         */
+        default Chainable<T> before(Predicate<T> condition) {
+            return Chainables.before(this, condition);
+        }
+
+        /**
+         * Returns a chain of initial items from this chain before the specified {@code value}.
+         * @param item
+         * @return the initial items until one is encountered that is the same as the specified {@code item}
+         * @see #before(Predicate)
+         */
+        default Chainable<T> beforeValue(T item) {
+            return Chainables.beforeValue(this, item);
+        }
+
+        /**
          * Appends the specified {@code items} to this chain.
          * @param items
          * @return the chain resulting from appending the specified {@code items} to this chain
@@ -769,6 +799,74 @@ public final class Chainables {
         }
 
         return max >= 0 && !iter.hasNext();
+    }
+
+    /**
+     * Returns items before the first item satisfying the specified condition is encountered.
+     * @param items items to return from
+     * @param condition the condition that stops further items from being returned
+     * @return items before the specified condition is satisfied
+     * @see Chainable#before(Predicate)
+     */
+    public static <T> Chainable<T> before(Iterable<T> items, Predicate<T> condition) {
+        if (items == null) {
+            return null;
+        } else if (condition == null) {
+            return Chainable.from(items);
+        }
+
+        return Chainable.from(new Iterable<T>() {
+
+            @Override
+            public Iterator<T> iterator() {
+                return new Iterator<T>() {
+                    private final Iterator<T> iterator = items.iterator();
+                    private T nextItem = null;
+                    boolean stopped = false;
+
+                    @Override
+                    public boolean hasNext() {
+                        if (this.stopped) {
+                            return false;
+                        } else if (this.nextItem != null) {
+                            return true;
+                        } else if (!this.iterator.hasNext()) {
+                            return false;
+                        } else {
+                            this.nextItem = this.iterator.next();
+                            if (condition.test(this.nextItem)) {
+                                this.stopped = true;
+                                return false;
+                            } else {
+                                return true;
+                            }
+                        }
+                    }
+
+                    @Override
+                    public T next() {
+                        if (this.hasNext()) {
+                            T item = this.nextItem;
+                            this.nextItem = null;
+                            return item;
+                        } else {
+                            return null;
+                        }
+                    }
+                };
+            }
+        });
+    }
+
+    /**
+     * Returns items until the specified item is encountered.
+     * @param items items to return from
+     * @param item the item which, when encountered, will stop the rest of the items from being returned
+     * @return items before the specified item is encountered
+     * @see Chainable#beforeValue(Object)
+     */
+    public static <T> Chainable<T> beforeValue(Iterable<T> items, T item) {
+        return before(items, o -> o==item);
     }
 
     /**

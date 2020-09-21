@@ -58,6 +58,22 @@ public class ChainableTest {
     }
 
     @Test
+    public void testBeforeValue() {
+        // Given
+        Iterable<String> testList = Arrays.asList("a", "a", "c", "d", "e");
+        String expected = "aac";
+
+        // When
+        Iterable<String> until = Chainables.beforeValue(testList, "d");
+        Chainable<String> until2 = Chainables.beforeValue(testList, "a");
+        String actual = Chainables.join("", until);
+
+        // Then
+        assertEquals(expected, actual);
+        assertTrue(Chainables.isNullOrEmpty(until2));
+    }
+
+    @Test
     public void testConcatFunctional() {
         // Given
         Iterable<String> items1 = Arrays.asList("a", "b", "c");
