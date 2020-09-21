@@ -37,6 +37,38 @@ public class ChainableTest {
     }
 
     @Test
+    public void testAsLongAs() {
+        // Given
+        Chainable<Integer> integers = Chainable.from(1, 1, 1, 2, 1, 1);
+        String expectedText = "111";
+
+        // When
+        Chainable<Integer> actual = integers.asLongAs(i -> i == 1);
+        String actualText = String.join("", actual.transform(i -> i.toString()));
+
+        Chainable<Integer> actualAsLongAs0 = integers.asLongAs(i -> i == 0);
+        String actualTextAsLongAs0 = Chainables.join("", actualAsLongAs0);
+
+        // Then
+        assertEquals(expectedText, actualText);
+        assertEquals("", actualTextAsLongAs0);
+    }
+
+    @Test
+    public void testAsLongAsValue() {
+        // Given
+        Iterable<String> testList = Arrays.asList("a", "a", "c", "d", "e");
+        String expected = "aa";
+
+        // When
+        Iterable<String> whileValue = Chainables.asLongAsValue(testList, "a");
+        String actual = Chainables.join("", whileValue);
+
+        // Then
+        assertEquals(expected, actual);
+    }
+
+    @Test
     public void testAtLeastMost() {
         // Given
         Iterable<Integer> items = Arrays.asList(1, 2, 3);

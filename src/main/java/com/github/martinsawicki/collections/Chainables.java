@@ -176,6 +176,35 @@ public final class Chainables {
         }
 
         /**
+         * Returns a chain of the initial items from this chain that satisfy the specified {@code condition}, stopping before the first item that does not.
+         * <p>
+         * For example, if the chain consists of { 1, 3, 5, 6, 7, 9, ...} and the {@code condition} checks for the oddity of each number,
+         * then the returned chain will consist of only { 1, 3, 5 }
+         * @param condition
+         * @return items <i>before</i> the first one that fails the specified {@code condition}
+         * @sawicki.similar
+         * <table summary="Similar to:">
+         * <tr><td><i>C#:</i></td><td>{@code Enumerable.TakeWhile()}</td></tr>
+         * </table>
+         * @see #asLongAsValue(Object)
+         */
+        default Chainable<T> asLongAs(Predicate<T> condition) {
+            return (condition == null) ? this : this.before(condition.negate());
+        }
+
+        /**
+         * Returns a chain of the initial items from this chain that are equal to the specified {@code value}, stopping before the first item that is not.
+         * <p>
+         * For example, if the chain consists of { 1, 1, 2, 1, 1, ...} and the {@code value} is 1 then the returned chain will be { 1, 1 }.
+         * @param value value to match
+         * @return items <i>before</i> the first one that is not equal to the specified {@code value}
+         * @see #asLongAs(Predicate)
+         */
+        default Chainable<T> asLongAsValue(T value) {
+            return Chainables.asLongAsValue(this, value);
+        }
+
+        /**
          * Determines whether this chain contains at least the specified {@code min} number of items, stopping the traversal as soon as that can be determined.
          * @param min
          * @return {@code true} if there are at least the specified {@code min} number of items in this chain
@@ -755,6 +784,26 @@ public final class Chainables {
                 }
             });
         }
+    }
+
+    /**
+     * Returns items before the first one that does not satisfy the specified {@code condition}.
+     * @param items items to return from
+     * @param condition the condition for the returned items to satisfy
+     * @return items before the first one is encountered taht no longer satisfies the specified condition
+     */
+    public static <T> Chainable<T> asLongAs(Iterable<T> items, Predicate<T> condition) {
+        return (condition == null) ? Chainable.from(items) : before(items, condition.negate());
+    }
+
+    /**
+     * Returns items before the first one that is not equal to the specified item.
+     * @param items items to return from
+     * @param item the item that returned items must be equal to
+     * @return items before the first one is encountered that no longer equals the specified item
+     */
+    public static <T> Chainable<T> asLongAsValue(Iterable<T> items, T item) {
+        return asLongAs(items, o -> o == item);
     }
 
     /**
