@@ -36,6 +36,44 @@ public class ChainableTest {
     }
 
     @Test
+    public void testConcatFunctional() {
+        // Given
+        Iterable<String> items1 = Arrays.asList("a", "b", "c");
+
+        // When
+        Chainable<String> combined = Chainable.from(items1)
+                .concat(i -> (i != "b") ? Chainable.from("1", "2", "3") : Chainable.from());
+        String list = Chainables.join("", combined);
+
+        // Then
+        assertEquals("a123bc123", list);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testConcatSimple() {
+        // Given
+        Iterable<String> items1 = Arrays.asList("a", "b", "c");
+        Iterable<String> items2 = null;
+        Iterable<String> items3 = Arrays.asList("d", "e", "f");
+        Iterable<String> items4 = Arrays.asList("g", "h", "i");
+
+        // When
+        Iterable<String> combined = Chainables.concat(items1, items2);
+        combined = Chainables.concat(combined, items3);
+        combined = Chainables.concat(combined, items4);
+        String list = Chainables.join("", combined);
+
+        Chainable<String> combined2 = Chainable.from(items1).concat(items2, items3, items4); // Multi-concat
+        String list2 = Chainables.join("", combined2);
+
+        // Then
+        assertEquals(9, Chainables.count(combined));
+        assertEquals("abcdefghi", list);
+        assertEquals("abcdefghi", list2);
+    }
+
+    @Test
     public void testContains() {
         // Given
         Chainable<String> items = Chainable.from("a", "b", "c");
@@ -70,6 +108,34 @@ public class ChainableTest {
         assertTrue(items1.containsSubarray(subarray1));
         assertFalse(items1.containsSubarray(notSubarray1));
         //TODO: More tests
+    }
+
+    @Test
+    public void testDistinct() {
+        // Given
+        Chainable<String> items = Chainable.from("a", "b", "c", "a", "d", "b");
+
+        // When
+        Chainable<String> distinct = items.distinct();
+        String actual = Chainables.join("", distinct);
+        String expected = "abcd";
+
+        // Then
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testDistinctKey() {
+        // Given
+        Chainable<Integer> numbers = Chainable.from(1, 3, 4, 5, 8);
+        String expected = "14";
+
+        // When
+        Chainable<Integer> distinct = numbers.distinct(i -> i % 2);
+        String actual = Chainables.join("", distinct);
+
+        // Then
+        assertEquals(expected, actual);
     }
 
     @Test
@@ -139,6 +205,29 @@ public class ChainableTest {
 
         // Then
         assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testNotAfter() {
+        // Given
+        Chainable<Integer> integers = Chainable.from(1, 1, 1, 2, 3, 4);
+        String expectedTextNotAfter2 = "1112";
+        String expectedTextNotAfter4 = "111234";
+
+        // When
+        Chainable<Integer> actualNotAfter2 = integers.notAfter(i -> i == 2);
+        String actualTextNotAfter2 = Chainables.join("", actualNotAfter2);
+
+        Chainable<Integer> actualNotAfter4 = integers.notAfter(i -> i == 4);
+        String actualTextNotAfter4 = Chainables.join("", actualNotAfter4);
+
+        Chainable<Integer> actualNotAfter5 = integers.notAfter(i -> i == 5);
+        String actualTextNotAfter5 = String.join("", actualNotAfter5.transform(i -> i.toString()));
+
+        // Then
+        assertEquals(expectedTextNotAfter2, actualTextNotAfter2);
+        assertEquals(expectedTextNotAfter4, actualTextNotAfter4);
+        assertEquals(expectedTextNotAfter4, actualTextNotAfter5);
     }
 
     @Test
