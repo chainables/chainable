@@ -174,6 +174,24 @@ public final class Chainables {
         }
 
         /**
+         * Determines whether this chain contains at least the specified {@code min} number of items, stopping the traversal as soon as that can be determined.
+         * @param min
+         * @return {@code true} if there are at least the specified {@code min} number of items in this chain
+         */
+        default boolean atLeast(int min) {
+            return Chainables.atLeast(this, min);
+        }
+
+        /**
+         * Determines whether this chain contains no more than the specified {@code max} number of items, stopping the traversal as soon as that can be determined.
+         * @param max
+         * @return {@code true} if there are at most the specified {@code max} number of items
+         */
+        default boolean atMost(int max) {
+            return Chainables.atMost(this, max);
+        }
+
+        /**
          * Appends the specified {@code items} to this chain.
          * @param items
          * @return the chain resulting from appending the specified {@code items} to this chain
@@ -657,6 +675,50 @@ public final class Chainables {
                 }
             });
         }
+    }
+
+    /**
+     * @param items
+     * @param number
+     * @return true if there are at least the specified {@code min} number of {@code items}, stopping the traversal as soon as that can be determined
+     * @see Chainable#atLeast(int)
+     */
+    public static <T> boolean atLeast(Iterable<T> items, int min) {
+        if (min <= 0) {
+            return true;
+        } else if (items == null) {
+            return false;
+        }
+
+        Iterator<T> iter = items.iterator();
+        while (min > 0 && iter.hasNext()) {
+            iter.next();
+            min--;
+        }
+
+        return min == 0;
+    }
+
+    /**
+     * @param items
+     * @param max
+     * @return true if there are at most the specified {@code max} number of {@code items}, stopping the traversal as soon as that can be determined
+     * @see Chainable#atMost(int)
+     */
+    public static <T> boolean atMost(Iterable<T> items, int max) {
+        if (items == null && max >= 0) {
+            return true;
+        } else if (items == null) {
+            return false;
+        }
+
+        Iterator<T> iter = items.iterator();
+        while (max > 0 && iter.hasNext()) {
+            iter.next();
+            max--;
+        }
+
+        return max >= 0 && !iter.hasNext();
     }
 
     /**

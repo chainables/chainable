@@ -11,6 +11,7 @@ import com.github.martinsawicki.collections.Chainables.Chainable;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -33,6 +34,27 @@ public class ChainableTest {
 
         // Then
         assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testAtLeastMost() {
+        // Given
+        Iterable<Integer> items = Arrays.asList(1, 2, 3);
+
+        // When/Then
+        assertTrue(Chainables.atLeast(items, Chainables.count(items)));
+        assertTrue(Chainables.atLeast(items, Chainables.count(items) - 1));
+        assertTrue(Chainables.atLeast(items, 0));
+        assertFalse(Chainables.atLeast(items, Chainables.count(items) + 1));
+        assertFalse(Chainables.atLeast(Collections.emptyList(), 1));
+        assertTrue(Chainables.atLeast(Collections.emptyList(), 0));
+
+        assertTrue(Chainables.atMost(items, Chainables.count(items)));
+        assertTrue(Chainables.atMost(items, Chainables.count(items) + 1));
+        assertFalse(Chainables.atMost(items, Chainables.count(items) - 1));
+        assertFalse(Chainables.atMost(items, 0));
+        assertTrue(Chainables.atMost(Collections.emptyList(), 0));
+        assertTrue(Chainables.atMost(Collections.emptyList(), 1));
     }
 
     @Test
