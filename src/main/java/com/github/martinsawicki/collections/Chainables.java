@@ -4,6 +4,7 @@
  */
 package com.github.martinsawicki.collections;
 
+import java.text.StringCharacterIterator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -1929,6 +1930,59 @@ public final class Chainables {
                 }
             });
         }
+    }
+
+    /**
+     * Splits the specified {@code text} into a individual characters/
+     * @param text the text to split
+     * @return a chain of characters
+     */
+    public static Chainable<String> split(String text) {
+        if (text == null || text.isEmpty()) {
+            return Chainable.empty();
+        }
+
+        return Chainable.from(new Iterable<String>() {
+            @Override
+            public Iterator<String> iterator() {
+                return new Iterator<String>() {
+                    StringCharacterIterator iter = new StringCharacterIterator(text);
+                    String next = null;
+                    boolean stopped = false;
+
+                    @Override
+                    public boolean hasNext() {
+                        if (this.stopped) {
+                            return false;
+                        } else if (this.next != null) {
+                            return true;
+                        } else {
+                            char c = iter.current();
+                            iter.next();
+                            if (c == StringCharacterIterator.DONE) {
+                                this.stopped = true;
+                                this.next = null;
+                                return false;
+                            } else {
+                                this.next = String.valueOf(c);
+                                return true;
+                            }
+                        }
+                    }
+
+                    @Override
+                    public String next() {
+                        if (!this.stopped && this.hasNext()) {
+                            String temp = this.next;
+                            this.next = null;
+                            return temp;
+                        } else {
+                            return null;
+                        }
+                    }
+                };
+            }
+        });
     }
 
     /**

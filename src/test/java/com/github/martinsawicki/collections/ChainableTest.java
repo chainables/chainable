@@ -455,14 +455,22 @@ public class ChainableTest {
     public void testSplit() {
         // Given
         String text = "Hello World! This is Mr. Johnson speaking... Listen, how are you?";
-        int expected = 28;
+        int expectedTokens = 28;
+        int expectedChars = text.length();
 
         // When
         Chainable<String> tokens = Chainables.split(text, " ,'\"!?.()[]{};:-+=");
-        int actual = tokens.size();
+        int actualTokens = tokens.size();
+        Chainable<String> chars = Chainables.split(text);
+        int actualChars = chars.size();
+        String mergedTokens = tokens.join();
+        String mergedChars = chars.join();
 
         // Then
-        assertEquals(expected, actual);
+        assertEquals(expectedTokens, actualTokens);
+        assertEquals(expectedChars, actualChars);
+        assertEquals(text, mergedTokens);
+        assertEquals(text, mergedChars);
     }
 
     @Test
