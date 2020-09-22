@@ -386,6 +386,32 @@ public final class Chainables {
         }
 
         /**
+         * Determines whether this chain ends with the members of the specified {@code suffix} in the specific order they are returned.
+         * <p>
+         * This triggers a full traversal/evaluation of the chain.
+         * @param suffix items to match to the end of the chain
+         * @return {@code true} if this chain ends with the specified {@code suffix}
+         * @see #endsWithEither(Iterable...)
+         * @see #startsWith(Iterable)
+         */
+        default boolean endsWith(Iterable<T> suffix) {
+            return Chainables.endsWith(this, suffix);
+        }
+
+        /**
+         * Determines whether this chain ends with any of the specified {@code suffixes}.
+         * <p>
+         * This triggers a full traversal/evaluation of the chain.
+         * @param suffixes
+         * @return {@code true} if this ends with any one of the specified {@code suffixes} of items in its specific order
+         * @see #endsWith(Iterable)
+         */
+        @SuppressWarnings("unchecked")
+        default boolean endsWithEither(Iterable<T>...suffixes) {
+            return Chainables.endsWithEither(this, suffixes);
+        }
+
+        /**
          * Determines whether this chain consists of the same items, in the same order, as those in the specified {@code items}, triggering a full traversal/evaluation of the chain if needed.
          * @param items
          * @return {@code true} the items match exactly
@@ -1369,6 +1395,71 @@ public final class Chainables {
                 };
             }
         });
+    }
+
+    /**
+     * @param items
+     * @param suffix
+     * @return
+     * @see Chainable#endsWith(Iterable)
+     */
+    public static <T> boolean endsWith(Iterable<T> items, Iterable<T> suffix) {
+        return Chainables.endsWithEither(items, suffix);
+    }
+
+    /**
+     * @param items
+     * @param suffixes
+     * @return
+     * @see Chainable#endsWithEither(Iterable...)
+     */
+    @SafeVarargs
+    public static <T> boolean endsWithEither(Iterable<T> items, Iterable<T>...suffixes) {
+        if (Chainables.isNullOrEmpty(items)) {
+            return false;
+        } else if (suffixes == null) {
+            return false;
+        }
+
+        List<T> itemList = Chainables.toList(items);
+        for (Iterable<T> suffix : suffixes) {
+            // Check each suffix
+            List<T> suffixSequence = Chainables.toList(suffix);
+            if (suffixSequence.size() > itemList.size()) {
+                // If different size, assume non-match and check the next suffix
+                continue;
+            }
+
+            Iterator<T> suffixIter = suffixSequence.iterator();
+            int i = 0;
+            boolean matching = true;
+            for (i = itemList.size() - suffixSequence.size(); i < itemList.size(); i++) {
+                if (!suffixIter.hasNext()) {
+                    matching = false;
+                    break;
+                }
+
+                T suffixItem = suffixIter.next();
+                T item = itemList.get(i);
+                if (suffixItem == null && item == null) {
+                    // Items both null so matching so far...
+                    continue;
+                } else if (suffixItem == null || item == null) {
+                    // Items no longer matching so bail out
+                    matching = false;
+                    break;
+                } else if (!suffixItem.equals(item)) {
+                    matching = false;
+                    break;
+                }
+            }
+
+            if (matching) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

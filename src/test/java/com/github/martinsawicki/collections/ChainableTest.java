@@ -221,6 +221,23 @@ public class ChainableTest {
         assertTrue(nonEmptyChain.any());
     }
 
+    @Test
+    public void testEndsWith() {
+        // Given
+        Iterable<String> items = Arrays.asList("a", "b", "c", "d", "e");
+        Iterable<String> suffix = Arrays.asList("d", "e");
+        Iterable<String> copy = Arrays.asList("a", "b", "c", "d", "e");
+        Iterable<String> nonSuffix = Arrays.asList("a", "b");
+        Iterable<String> empty = Arrays.asList();
+
+        // When/Then
+        assertTrue(Chainables.endsWithEither(items, suffix));
+        assertTrue(Chainables.endsWithEither(items, copy));
+        assertFalse(Chainables.endsWithEither(items, nonSuffix));
+        assertTrue(Chainables.endsWithEither(items, empty));
+        assertTrue(Chainables.endsWithEither(items, nonSuffix, suffix));
+    }
+
     @SuppressWarnings("unchecked")
     @Test
     public void testEquals() {
