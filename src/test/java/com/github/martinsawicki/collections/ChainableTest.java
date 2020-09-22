@@ -10,6 +10,7 @@ import com.github.martinsawicki.collections.Chainables.Chainable;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -103,6 +104,26 @@ public class ChainableTest {
         // Then
         assertEquals(expected, actual);
         assertTrue(Chainables.isNullOrEmpty(until2));
+    }
+
+    @Test
+    public void testCollectInto() {
+        // Given
+        final Chainable<Integer> items = Chainable.from(1, 2, 3, 4, 5, 6, 7);
+        String expected = "135";
+        List<String> collection = new ArrayList<>();
+
+        // When
+        Chainable<String> oddsLessThan6 = items
+                .where(i -> i < 6 && i%2 != 0)
+                .transform(i -> i.toString())
+                .collectInto(collection)
+                .apply();
+        String actual = String.join("", collection);
+
+        // Then
+        assertEquals(expected.length(), oddsLessThan6.size());
+        assertEquals(expected, actual);
     }
 
     @Test
@@ -221,6 +242,23 @@ public class ChainableTest {
         assertTrue(nonEmptyChain.any());
     }
 
+    @Test
+    public void testEndsWith() {
+        // Given
+        Iterable<String> items = Arrays.asList("a", "b", "c", "d", "e");
+        Iterable<String> suffix = Arrays.asList("d", "e");
+        Iterable<String> copy = Arrays.asList("a", "b", "c", "d", "e");
+        Iterable<String> nonSuffix = Arrays.asList("a", "b");
+        Iterable<String> empty = Arrays.asList();
+
+        // When/Then
+        assertTrue(Chainables.endsWithEither(items, suffix));
+        assertTrue(Chainables.endsWithEither(items, copy));
+        assertFalse(Chainables.endsWithEither(items, nonSuffix));
+        assertTrue(Chainables.endsWithEither(items, empty));
+        assertTrue(Chainables.endsWithEither(items, nonSuffix, suffix));
+    }
+
     @SuppressWarnings("unchecked")
     @Test
     public void testEquals() {
@@ -317,6 +355,34 @@ public class ChainableTest {
     }
 
     @Test
+    public void testNotAsLongAs() {
+        // Given
+        Iterable<String> testList = Arrays.asList("a", "b", "c", "d", "e");
+        String expected = "cde";
+
+        // When
+        Iterable<String> startingWithC = Chainables.notAsLongAs(testList, o -> "a".equals(o) || "b".equals(o));
+        String actual = Chainables.join("", startingWithC);
+
+        // Then
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testNotAsLongAsValue() {
+        // Given
+        Iterable<String> testList = Arrays.asList("a", "b", "c", "d", "e");
+        String expected = "bcde";
+
+        // When
+        Iterable<String> startingAfterAB = Chainables.notAsLongAsValue(testList, "a");
+        String actual = Chainables.join("", startingAfterAB);
+
+        // Then
+        assertEquals(expected, actual);
+    }
+
+    @Test
     public void testNotBeforeValue() {
         // Given
         Iterable<String> testList = Arrays.asList("a", "b", "c", "d", "e");
@@ -325,6 +391,20 @@ public class ChainableTest {
         // When
         Iterable<String> startingWithC = Chainables.notBeforeValue(testList, "c");
         String actual = Chainables.join("", startingWithC);
+
+        // Then
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testReplace() {
+        // Given
+        Iterable<String> items = Arrays.asList("a", "b", "c", "d");
+        String expected = "123123123";
+
+        // When
+        Iterable<String> replaced = Chainables.replace(items, i -> (i != "b") ? Arrays.asList("1", "2", "3") : null);
+        String actual = Chainables.join("", replaced);
 
         // Then
         assertEquals(expected, actual);
@@ -379,6 +459,24 @@ public class ChainableTest {
     }
 
     @Test
+    public void testStartsWith() {
+        // Given
+        Iterable<String> items = Arrays.asList("a", "b", "c", "d");
+        Iterable<String> prefixMatching = Arrays.asList("a", "b");
+        Iterable<String> prefixEmpty = Arrays.asList();
+        Iterable<String> prefixNonMatching = Arrays.asList("b", "c");
+        Iterable<String> prefixSuperset = Arrays.asList("a", "b", "c", "d", "e");
+        Iterable<String> prefixSame = items;
+
+        // When/Then
+        assertTrue(Chainables.startsWithEither(items, prefixMatching));
+        assertTrue(Chainables.startsWithEither(items, prefixEmpty));
+        assertFalse(Chainables.startsWithEither(items, prefixNonMatching));
+        assertFalse(Chainables.startsWithEither(items, prefixSuperset));
+        assertTrue(Chainables.startsWithEither(items, prefixSame));
+    }
+
+    @Test
     public void testStreamBasics() {
         // Given
         Integer inputs[] = { 1, 2, 3, 4, 5, 6, 7, 8 };
@@ -422,6 +520,19 @@ public class ChainableTest {
                 .filter(i -> i % 2 != 0));
         String actual = Chainables.join("", chain);
         actual = Chainables.join("", chain); // Again, since streams are normally traversable only once
+
+        // Then
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testSum() {
+        // Given
+        Chainable<Integer> ints = Chainable.from(1, 2, 3, 4);
+        long expected = 1 + 2 + 3 + 4;
+
+        // When
+        long actual = ints.sum(o -> o.longValue());
 
         // Then
         assertEquals(expected, actual);
