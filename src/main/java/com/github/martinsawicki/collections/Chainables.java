@@ -591,6 +591,23 @@ public final class Chainables {
         }
 
         /**
+         * Returns a chain with each item from this chain replaced with items of the same type returned by the specified {@code replacer}.
+         * <p>
+         * Whenever the replacer returns {@code null}, the item is skipped (de-facto removed) from the resulting chain altogether.
+         * @param replacer
+         * @return replacement items
+         * @sawicki.similar
+         * <table summary="Similar to:">
+         * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#flatMap(Function)}, but with the return type the same as the input type</td></tr>
+         * <tr><td><i>C#:</i></td><td>{@code Enumerable.Select()}, but with the return type the same as the input type</td></tr>
+         * </table>
+         * @see #transformAndFlatten(Function)
+         */
+        default Chainable<T> replace(Function<T, Iterable<T>> replacer) {
+            return Chainables.replace(this, replacer);
+        }
+
+        /**
          * Returns a chain where the items are in the opposite order to this chain.
          * <p>
          * This triggers a full traversal/evaluation of the items.
@@ -1810,6 +1827,16 @@ public final class Chainables {
      */
     public static final <T> Chainable<T> notWhere(Iterable<T> items, Predicate<T> condition) {
         return (condition != null) ? Chainables.whereEither(items, condition.negate()) : Chainable.from(items);
+    }
+
+    /**
+     * @param items
+     * @param replacer
+     * @return
+     * @see Chainable#replace(Function)
+     */
+    public static <T> Chainable<T> replace(Iterable<T> items, Function<T, Iterable<T>> replacer) {
+        return transformAndFlatten(items, replacer).withoutNull();
     }
 
     /**

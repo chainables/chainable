@@ -376,6 +376,20 @@ public class ChainableTest {
     }
 
     @Test
+    public void testReplace() {
+        // Given
+        Iterable<String> items = Arrays.asList("a", "b", "c", "d");
+        String expected = "123123123";
+
+        // When
+        Iterable<String> replaced = Chainables.replace(items, i -> (i != "b") ? Arrays.asList("1", "2", "3") : null);
+        String actual = Chainables.join("", replaced);
+
+        // Then
+        assertEquals(expected, actual);
+    }
+
+    @Test
     public void testReverse() {
         // Given
         Chainable<String> items = Chainable.from("a", "b", "c", "d");
