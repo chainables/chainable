@@ -11,6 +11,7 @@ import com.github.martinsawicki.collections.Chainables.Chainable;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -33,6 +34,75 @@ public class ChainableTest {
 
         // Then
         assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testAsLongAs() {
+        // Given
+        Chainable<Integer> integers = Chainable.from(1, 1, 1, 2, 1, 1);
+        String expectedText = "111";
+
+        // When
+        Chainable<Integer> actual = integers.asLongAs(i -> i == 1);
+        String actualText = String.join("", actual.transform(i -> i.toString()));
+
+        Chainable<Integer> actualAsLongAs0 = integers.asLongAs(i -> i == 0);
+        String actualTextAsLongAs0 = Chainables.join("", actualAsLongAs0);
+
+        // Then
+        assertEquals(expectedText, actualText);
+        assertEquals("", actualTextAsLongAs0);
+    }
+
+    @Test
+    public void testAsLongAsValue() {
+        // Given
+        Iterable<String> testList = Arrays.asList("a", "a", "c", "d", "e");
+        String expected = "aa";
+
+        // When
+        Iterable<String> whileValue = Chainables.asLongAsValue(testList, "a");
+        String actual = Chainables.join("", whileValue);
+
+        // Then
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testAtLeastMost() {
+        // Given
+        Iterable<Integer> items = Arrays.asList(1, 2, 3);
+
+        // When/Then
+        assertTrue(Chainables.atLeast(items, Chainables.count(items)));
+        assertTrue(Chainables.atLeast(items, Chainables.count(items) - 1));
+        assertTrue(Chainables.atLeast(items, 0));
+        assertFalse(Chainables.atLeast(items, Chainables.count(items) + 1));
+        assertFalse(Chainables.atLeast(Collections.emptyList(), 1));
+        assertTrue(Chainables.atLeast(Collections.emptyList(), 0));
+
+        assertTrue(Chainables.atMost(items, Chainables.count(items)));
+        assertTrue(Chainables.atMost(items, Chainables.count(items) + 1));
+        assertFalse(Chainables.atMost(items, Chainables.count(items) - 1));
+        assertFalse(Chainables.atMost(items, 0));
+        assertTrue(Chainables.atMost(Collections.emptyList(), 0));
+        assertTrue(Chainables.atMost(Collections.emptyList(), 1));
+    }
+
+    @Test
+    public void testBeforeValue() {
+        // Given
+        Iterable<String> testList = Arrays.asList("a", "a", "c", "d", "e");
+        String expected = "aac";
+
+        // When
+        Iterable<String> until = Chainables.beforeValue(testList, "d");
+        Chainable<String> until2 = Chainables.beforeValue(testList, "a");
+        String actual = Chainables.join("", until);
+
+        // Then
+        assertEquals(expected, actual);
+        assertTrue(Chainables.isNullOrEmpty(until2));
     }
 
     @Test
@@ -208,6 +278,22 @@ public class ChainableTest {
     }
 
     @Test
+    public void testMaxMin() {
+        // Given
+        Chainable<Integer> ints = Chainable.from(1, 3, 2, 5, 2);
+        int expectedMax = 5;
+        int expectedMin = 1;
+
+        // When
+        int max = ints.max(o -> o.doubleValue());
+        int min = ints.min(o -> o.doubleValue());
+
+        // Then
+        assertEquals(expectedMax, max);
+        assertEquals(expectedMin, min);
+    }
+
+    @Test
     public void testNotAfter() {
         // Given
         Chainable<Integer> integers = Chainable.from(1, 1, 1, 2, 3, 4);
@@ -231,6 +317,34 @@ public class ChainableTest {
     }
 
     @Test
+    public void testNotBeforeValue() {
+        // Given
+        Iterable<String> testList = Arrays.asList("a", "b", "c", "d", "e");
+        String expected = "cde";
+
+        // When
+        Iterable<String> startingWithC = Chainables.notBeforeValue(testList, "c");
+        String actual = Chainables.join("", startingWithC);
+
+        // Then
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testReverse() {
+        // Given
+        Chainable<String> items = Chainable.from("a", "b", "c", "d");
+        String expected = "dcba";
+
+        // When
+        Chainable<String> reverse = items.reverse();
+        String actual = Chainables.join("", reverse);
+
+        // Then
+        assertEquals(expected, actual);
+    }
+
+    @Test
     public void testSize() {
         // Given
         List<Integer> items = Arrays.asList(1, 2, 3, 4, 5, 6, 7);
@@ -248,6 +362,20 @@ public class ChainableTest {
         assertEquals(expectedItemsSize, actualItemsChainSize);
         assertEquals(0, actualEmptyChainSize);
         assertEquals(expectedItemsSize, actualTransformedChainSize);
+    }
+
+    @Test
+    public void testSplit() {
+        // Given
+        String text = "Hello World! This is Mr. Johnson speaking... Listen, how are you?";
+        int expected = 28;
+
+        // When
+        Chainable<String> tokens = Chainables.split(text, " ,'\"!?.()[]{};:-+=");
+        int actual = tokens.size();
+
+        // Then
+        assertEquals(expected, actual);
     }
 
     @Test

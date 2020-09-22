@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -15,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -171,6 +173,83 @@ public final class Chainables {
          */
         default Chainable<T> applyAsYouGo(Consumer<T> action) {
             return Chainables.applyAsYouGo(this, action); // TODO: shouldn't this call applyAsYouGo?
+        }
+
+        /**
+         * Returns a chain of the initial items from this chain that satisfy the specified {@code condition}, stopping before the first item that does not.
+         * <p>
+         * For example, if the chain consists of { 1, 3, 5, 6, 7, 9, ...} and the {@code condition} checks for the oddity of each number,
+         * then the returned chain will consist of only { 1, 3, 5 }
+         * @param condition
+         * @return items <i>before</i> the first one that fails the specified {@code condition}
+         * @sawicki.similar
+         * <table summary="Similar to:">
+         * <tr><td><i>C#:</i></td><td>{@code Enumerable.TakeWhile()}</td></tr>
+         * </table>
+         * @see #asLongAsValue(Object)
+         */
+        default Chainable<T> asLongAs(Predicate<T> condition) {
+            return (condition == null) ? this : this.before(condition.negate());
+        }
+
+        /**
+         * Returns a chain of the initial items from this chain that are equal to the specified {@code value}, stopping before the first item that is not.
+         * <p>
+         * For example, if the chain consists of { 1, 1, 2, 1, 1, ...} and the {@code value} is 1 then the returned chain will be { 1, 1 }.
+         * @param value value to match
+         * @return items <i>before</i> the first one that is not equal to the specified {@code value}
+         * @see #asLongAs(Predicate)
+         */
+        default Chainable<T> asLongAsValue(T value) {
+            return Chainables.asLongAsValue(this, value);
+        }
+
+        /**
+         * Determines whether this chain contains at least the specified {@code min} number of items, stopping the traversal as soon as that can be determined.
+         * @param min
+         * @return {@code true} if there are at least the specified {@code min} number of items in this chain
+         */
+        default boolean atLeast(int min) {
+            return Chainables.atLeast(this, min);
+        }
+
+        /**
+         * Determines whether this chain contains no more than the specified {@code max} number of items, stopping the traversal as soon as that can be determined.
+         * @param max
+         * @return {@code true} if there are at most the specified {@code max} number of items
+         */
+        default boolean atMost(int max) {
+            return Chainables.atMost(this, max);
+        }
+
+        /**
+         * Returns a chain of initial items from this chain before the first one that satisfies the specified {@code condition}.
+         * <p>
+         * For example, if this chain consists of { 1, 3, 2, 5, 6 } and the {@code condition} returns {@code true} for even numbers, then the resulting chain
+         * will consist of { 1, 3 }.
+         * @param condition
+         * @return the initial items before and not including the one that meets the specified {@code condition}
+         * @sawicki.similar
+         * <table summary="Similar to:">
+         * <tr><td><i>C#:</i></td><td>{@code Enumerable.TakeWhile(), but with a negated predicate}</td></tr>
+         * </table>
+         * @see #notBefore(Predicate)
+         * @see #notAsLongAs(Predicate)
+         * @see #asLongAs(Predicate)
+         * @see #notAfter(Predicate)
+         */
+        default Chainable<T> before(Predicate<T> condition) {
+            return Chainables.before(this, condition);
+        }
+
+        /**
+         * Returns a chain of initial items from this chain before the specified {@code value}.
+         * @param item
+         * @return the initial items until one is encountered that is the same as the specified {@code item}
+         * @see #before(Predicate)
+         */
+        default Chainable<T> beforeValue(T item) {
+            return Chainables.beforeValue(this, item);
         }
 
         /**
@@ -358,6 +437,40 @@ public final class Chainables {
         }
 
         /**
+         * Returns the item tha has the highest value extracted by the specified {@code valueExtractor} in this chain.
+         * <p>
+         * This triggers a full traversal/evaluation of the items.
+         * @param valueExtractor
+         * @return the item for which the specified {@code valueExtrator} returns the highest value
+         * @sawicki.similar
+         * <table summary="Similar to:">
+         * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#max(Comparator)}</td></tr>
+         * <tr><td><i>C#:</i></td><td>{@code Enumerable.Max()}</td></tr>
+         * </table>
+         * @see #min(Function)
+         */
+        default T max(Function<T, Double> valueExtractor) {
+            return Chainables.max(this, valueExtractor);
+        }
+
+        /**
+         * Returns the item that has the lowest value extracted by the specified {@code valueExtractor} in this chain.
+         * <p>
+         * This triggers a full traversal/evaluation of the items.
+         * @param valueExtractor
+         * @return the item for which the specified {@code valueExtrator} returns the lowest value
+         * @sawicki.similar
+         * <table summary="Similar to:">
+         * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#min(Comparator)}</td></tr>
+         * <tr><td><i>C#:</i></td><td>{@code Enumerable.Min()}</td></tr>
+         * </table>
+         * @see #max(Function)
+         */
+        default T min(Function<T, Double> valueExtractor) {
+            return Chainables.min(this, valueExtractor);
+        }
+
+        /**
          * Returns a chain of initial items from this chain upto and including the fist item that satisfies the specified {@code condition}, and none after it.
          * <p>
          * For example, if the items are { 1, 3, 5, 2, 7, 9, ...} and the {@code condition} is true when the item is an even number, then the resulting chain
@@ -373,6 +486,39 @@ public final class Chainables {
         }
 
         /**
+         * Returns a chain of remaining items from this chain starting with the first item that satisfies the specified {@code condition} and followed by all the remaining items.
+         * <p>
+         * For example, if the items are { 1, 3, 5, 2, 7, 9, ...} and the {@code condition} returns {@code true} for items that are even numbers, then the resulting
+         * chain will consist of { 2, 7, 9, ... }.
+         * @param condition
+         * @return items starting with the one where the specified {@code condition} is met
+         * @sawicki.similar
+         * <table summary="Similar to:">
+         * <tr><td><i>C#:</i></td><td>{@code Enumerable.SkipWhile()}, but with a negated predicate</td></tr>
+         * </table>
+         * @see #notAfter(Predicate)
+         * @see #asLongAs(Predicate)
+         * @see #notAsLongAs(Predicate)
+         */
+        default Chainable<T> notBefore(Predicate<T> condition) {
+            return Chainables.notBefore(this, condition);
+        }
+
+        /**
+         * Returns a chain of remaining items from this chain starting with the specified {@item}.
+         * @param item
+         * @return the remaining items in this chain starting with the specified {@code item}, if any
+         * @see #notBefore(Predicate)
+         * @see #notAsLongAsValue(Object)
+         * @see #notAsLongAs(Predicate)
+         * @see #notAfter(Predicate)
+         * @see #asLongAs(Predicate)
+         */
+        default Chainable<T> notBeforeValue(T item) {
+            return Chainables.notBeforeValue(this, item);
+        }
+
+        /**
          * Returns the items from this chain that do not satisy the specified {@code condition}.
          * @param condition
          * @return items that do not meet the specified {@code condition}
@@ -385,6 +531,20 @@ public final class Chainables {
          */
         default Chainable<T> notWhere(Predicate<T> condition) {
             return Chainables.notWhere(this, condition);
+        }
+
+        /**
+         * Returns a chain where the items are in the opposite order to this chain.
+         * <p>
+         * This triggers a full traversal/evaluation of the items.
+         * @return items in the opposite order
+         * @sawicki.similar
+         * <table summary="Similar to:">
+         * <tr><td><i>C#:</i></td><td>{@code Enumerable.Reverse()}</td></tr>
+         * </table>
+         */
+        default Chainable<T> reverse() {
+            return Chainables.reverse(this);
         }
 
         /**
@@ -624,6 +784,138 @@ public final class Chainables {
                 }
             });
         }
+    }
+
+    /**
+     * Returns items before the first one that does not satisfy the specified {@code condition}.
+     * @param items items to return from
+     * @param condition the condition for the returned items to satisfy
+     * @return items before the first one is encountered taht no longer satisfies the specified condition
+     */
+    public static <T> Chainable<T> asLongAs(Iterable<T> items, Predicate<T> condition) {
+        return (condition == null) ? Chainable.from(items) : before(items, condition.negate());
+    }
+
+    /**
+     * Returns items before the first one that is not equal to the specified item.
+     * @param items items to return from
+     * @param item the item that returned items must be equal to
+     * @return items before the first one is encountered that no longer equals the specified item
+     */
+    public static <T> Chainable<T> asLongAsValue(Iterable<T> items, T item) {
+        return asLongAs(items, o -> o == item);
+    }
+
+    /**
+     * @param items
+     * @param number
+     * @return true if there are at least the specified {@code min} number of {@code items}, stopping the traversal as soon as that can be determined
+     * @see Chainable#atLeast(int)
+     */
+    public static <T> boolean atLeast(Iterable<T> items, int min) {
+        if (min <= 0) {
+            return true;
+        } else if (items == null) {
+            return false;
+        }
+
+        Iterator<T> iter = items.iterator();
+        while (min > 0 && iter.hasNext()) {
+            iter.next();
+            min--;
+        }
+
+        return min == 0;
+    }
+
+    /**
+     * @param items
+     * @param max
+     * @return true if there are at most the specified {@code max} number of {@code items}, stopping the traversal as soon as that can be determined
+     * @see Chainable#atMost(int)
+     */
+    public static <T> boolean atMost(Iterable<T> items, int max) {
+        if (items == null && max >= 0) {
+            return true;
+        } else if (items == null) {
+            return false;
+        }
+
+        Iterator<T> iter = items.iterator();
+        while (max > 0 && iter.hasNext()) {
+            iter.next();
+            max--;
+        }
+
+        return max >= 0 && !iter.hasNext();
+    }
+
+    /**
+     * Returns items before the first item satisfying the specified condition is encountered.
+     * @param items items to return from
+     * @param condition the condition that stops further items from being returned
+     * @return items before the specified condition is satisfied
+     * @see Chainable#before(Predicate)
+     */
+    public static <T> Chainable<T> before(Iterable<T> items, Predicate<T> condition) {
+        if (items == null) {
+            return null;
+        } else if (condition == null) {
+            return Chainable.from(items);
+        }
+
+        return Chainable.from(new Iterable<T>() {
+
+            @Override
+            public Iterator<T> iterator() {
+                return new Iterator<T>() {
+                    private final Iterator<T> iterator = items.iterator();
+                    private T nextItem = null;
+                    boolean stopped = false;
+
+                    @Override
+                    public boolean hasNext() {
+                        if (this.stopped) {
+                            return false;
+                        } else if (this.nextItem != null) {
+                            return true;
+                        } else if (!this.iterator.hasNext()) {
+                            return false;
+                        } else {
+                            this.nextItem = this.iterator.next();
+                            if (condition.test(this.nextItem)) {
+                                this.stopped = true;
+                                return false;
+                            } else {
+                                return true;
+                            }
+                        }
+                    }
+
+                    @Override
+                    public T next() {
+                        if (this.hasNext()) {
+                            T item = this.nextItem;
+                            this.nextItem = null;
+                            return item;
+                        } else {
+                            return null;
+                        }
+                    }
+                };
+            }
+        });
+    }
+
+    /**
+     * Returns items until the specified item is encountered.
+     * @param items items to return from
+     * @param item the item which, when encountered, will stop the rest of the items from being returned
+     * @return items before the specified item is encountered
+     * @see Chainable#beforeValue(Object)
+     */
+    public static <T> Chainable<T> beforeValue(Iterable<T> items, T item) {
+        return before(items, o -> o==item);
     }
 
     /**
@@ -1155,6 +1447,50 @@ public final class Chainables {
     }
 
     /**
+     * @param items
+     * @param valueExtractor
+     * @return
+     * @see Chainable#max(Function)
+     */
+    public static <T> T max(Iterable<T> items, Function<T, Double> valueExtractor) {
+        Double max = null;
+        T maxItem = null;
+        if (!Chainables.isNullOrEmpty(items)) {
+            for (T item : items) {
+                Double number = valueExtractor.apply(item);
+                if (max == null || number > max) {
+                    max = number;
+                    maxItem = item;
+                }
+            }
+        }
+
+        return maxItem;
+    }
+
+    /**
+     * @param items
+     * @param valueExtractor
+     * @return
+     * @see Chainable#min(Function)
+     */
+    public static <T> T min(Iterable<T> items, Function<T, Double> valueExtractor) {
+        Double min = null;
+        T minItem = null;
+        if (!Chainables.isNullOrEmpty(items)) {
+            for (T item : items) {
+                Double number = valueExtractor.apply(item);
+                if (min == null || number < min) {
+                    min = number;
+                    minItem = item;
+                }
+            }
+        }
+
+        return minItem;
+    }
+
+    /**
      * Returns items until and including the first item satisfying the specified condition, and no items after that
      * @param items items to return from
      * @param condition the condition that the last item needs to meet
@@ -1217,10 +1553,157 @@ public final class Chainables {
      * @param items
      * @param condition
      * @return
+     * @see Chainable#notBefore(Predicate)
+     */
+    //##
+    private static <T> Chainable<T> notBefore(Iterable<T> items, Predicate<T> condition) {
+        if (items == null) {
+            return null;
+        } else if (condition == null) {
+            return Chainable.from(items);
+        } else {
+            return Chainable.from(new Iterable<T>() {
+                @Override
+                public Iterator<T> iterator() {
+                    return new Iterator<T>() {
+                        final Iterator<T> iterator = items.iterator();
+                        T nextItem = null;
+                        boolean start = false;
+
+                        @Override
+                        public boolean hasNext() {
+                            if (this.nextItem != null) {
+                                return true;
+                            } else if (!this.iterator.hasNext()) {
+                                this.nextItem = null;
+                                return false;
+                            } else if (this.start) {
+                                this.nextItem = this.iterator.next();
+                                return true;
+                            } else {
+                                while (this.iterator.hasNext()) {
+                                    this.nextItem = this.iterator.next();
+                                    if (condition.test(this.nextItem)) {
+                                        this.start = true;
+                                        break;
+                                    } else {
+                                        this.nextItem = null;
+                                    }
+                                }
+
+                                return this.nextItem != null;
+                            }
+                        }
+
+                        @Override
+                        public T next() {
+                            if (!this.hasNext()) {
+                                return null;
+                            }
+
+                            T item = this.nextItem;
+                            this.nextItem = null;
+                            return item;
+                        }
+                    };
+                }
+            });
+        }
+    }
+
+    /**
+     * Returns the rest of the specified items starting with the specified item, if found.
+     * @param items items to skip over
+     * @param item item to skip until
+     * @return the rest of the items
+     * @see Chainable#notBeforeValue(Object)
+     */
+    //##
+    public static <T> Chainable<T> notBeforeValue(Iterable<T> items, T item) {
+        return notBefore(items, (Predicate<T>)(o -> o == item));
+    }
+
+    /**
+     * @param items
+     * @param condition
+     * @return
      * @see Chainable#notWhere(Predicate)
      */
     public static final <T> Chainable<T> notWhere(Iterable<T> items, Predicate<T> condition) {
         return (condition != null) ? Chainables.whereEither(items, condition.negate()) : Chainable.from(items);
+    }
+
+    /**
+     * @param items
+     * @return
+     * @see Chainable#reverse()
+     */
+    public static <T> Chainable<T> reverse(Iterable<T> items) {
+        if (items == null) {
+            return Chainable.from(Arrays.asList());
+        } else {
+            return Chainable.from(new Iterable<T>() {
+                @Override
+                public Iterator<T> iterator() {
+                    return new Iterator<T>() {
+                        List<T> list = Chainables.toList(items);
+                        int nextIndex = list.size() - 1;
+
+                        @Override
+                        public boolean hasNext() {
+                            return (nextIndex >= 0);
+                        }
+
+                        @Override
+                        public T next() {
+                            return (this.hasNext()) ? list.get(this.nextIndex--) : null;
+                        }
+                    };
+                }
+            });
+        }
+    }
+
+    /**
+     * Splits the specified {@code text} using the specified {@code delimiterChars}.
+     * @param text
+     * @param delimiterCharacters
+     * @return the split strings, including the delimiters
+     */
+    public static Chainable<String> split(String text, String delimiterCharacters) {
+        return split(text, delimiterCharacters, true);
+    }
+
+    /**
+     * Splits the specified {@code text} using the specified {@code delimiterChars}.
+     * @param text
+     * @param delimiterCharacters
+     * @param includeDelimiters if true, the delimiter chars are included in the returned results
+     * @return the split strings
+     */
+    public static Chainable<String> split(String text, String delimiterCharacters, boolean includeDelimiters) {
+        if (text == null || delimiterCharacters == null) {
+            return null;
+        } else {
+            return Chainable.from(new Iterable<String>() {
+                @Override
+                public Iterator<String> iterator() {
+                    return new Iterator<String>() {
+                        StringTokenizer tokenizer = new StringTokenizer(text, delimiterCharacters, includeDelimiters);
+
+                        @Override
+                        public boolean hasNext() {
+                            return this.tokenizer.hasMoreTokens();
+                        }
+
+                        @Override
+                        public String next() {
+                            return this.tokenizer.nextToken();
+                        }
+                    };
+                }
+            });
+        }
     }
 
     /**
