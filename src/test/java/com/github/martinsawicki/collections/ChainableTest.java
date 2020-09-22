@@ -407,6 +407,24 @@ public class ChainableTest {
     }
 
     @Test
+    public void testStartsWith() {
+        // Given
+        Iterable<String> items = Arrays.asList("a", "b", "c", "d");
+        Iterable<String> prefixMatching = Arrays.asList("a", "b");
+        Iterable<String> prefixEmpty = Arrays.asList();
+        Iterable<String> prefixNonMatching = Arrays.asList("b", "c");
+        Iterable<String> prefixSuperset = Arrays.asList("a", "b", "c", "d", "e");
+        Iterable<String> prefixSame = items;
+
+        // When/Then
+        assertTrue(Chainables.startsWithEither(items, prefixMatching));
+        assertTrue(Chainables.startsWithEither(items, prefixEmpty));
+        assertFalse(Chainables.startsWithEither(items, prefixNonMatching));
+        assertFalse(Chainables.startsWithEither(items, prefixSuperset));
+        assertTrue(Chainables.startsWithEither(items, prefixSame));
+    }
+
+    @Test
     public void testStreamBasics() {
         // Given
         Integer inputs[] = { 1, 2, 3, 4, 5, 6, 7, 8 };

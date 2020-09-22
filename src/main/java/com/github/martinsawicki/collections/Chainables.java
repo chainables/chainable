@@ -594,6 +594,28 @@ public final class Chainables {
         }
 
         /**
+         * Determines whether the initial items in this chain are the same and in the same order as in the specified {@code prefix}.
+         * @param prefix
+         * @return {@code true} if this starts with the exact sequence of items in the {@code prefix}
+         * @see #endsWith(Iterable)
+         * @see #startsWithEither(Iterable...)
+         */
+        default boolean startsWith(Iterable<T> prefix) {
+            return Chainables.startsWithEither(this, prefix);
+        }
+
+        /**
+         * Determines whether the initial items in this chain are the same and in the same order any of the specified {@code prefixes}.
+         * @param prefixes
+         * @return true if this starts with any of the specified {@code prefixes} of items
+         * @see #startsWith(Iterable)
+         */
+        @SuppressWarnings("unchecked")
+        default boolean startsWithEither(Iterable<T>... prefixes) {
+            return Chainables.startsWithEither(this, prefixes);
+        }
+
+        /**
          * Creates a stream from this chain.
          * @return a stream representing this chain.
          */
@@ -1754,6 +1776,46 @@ public final class Chainables {
                 }
             });
         }
+    }
+
+    /**
+     * @param items
+     * @param prefixes
+     * @return
+     * @see Chainable#startsWithEither(Iterable...)
+     */
+    @SafeVarargs
+    public static <T> boolean startsWithEither(Iterable<T> items, Iterable<T>... prefixes) {
+        if (Chainables.isNullOrEmpty(items)) {
+            return false;
+        } else if (prefixes == null) {
+            return false;
+        }
+
+        for (Iterable<T> prefix : prefixes) {
+            Iterator<T> prefixIterator = prefix.iterator();
+            for (T item : items) {
+                if (!prefixIterator.hasNext()) {
+                    return true;
+                }
+
+                T prefixItem = prefixIterator.next();
+                if (prefixItem == item) {
+                    continue;
+                } else if (prefixItem == null) {
+                    break;
+                } else if (!prefixItem.equals(item)) {
+                    break;
+                }
+            }
+
+            // Nothing left in prefix to match so it's a match
+            if (!prefixIterator.hasNext()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
