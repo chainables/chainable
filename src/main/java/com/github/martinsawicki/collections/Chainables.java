@@ -486,6 +486,37 @@ public final class Chainables {
         }
 
         /**
+         * Returns the remaining items from this chain starting with the first one that does NOT meet the specified {@code condition}.
+         * <p>
+         * For example, if the chain consists of { 1, 3, 5, 2, 7, 9, ... } and the {@code condition} returns {@code true} for odd numbers,
+         * then the resulting chain will be { 2, 7, 9, ... }.
+         * @param condition
+         * @return items starting with the first one where the specified {@code condition} is no longer met
+         * @sawicki.similar
+         * <table summary="Similar to:">
+         * <tr><td><i>C#:</i></td><td>{@code Enumerable.SkipWhile()}</td></tr>
+         * </table>
+         * @see #notAfter(Predicate)
+         * @see #notBefore(Predicate)
+         * @see #asLongAs(Predicate)
+         * @see #before(Predicate)
+         */
+        default Chainable<T> notAsLongAs(Predicate<T> condition) {
+            return Chainables.notAsLongAs(this, condition);
+        }
+
+        /**
+         * Returns the remaining items from this chain starting with the first one that is NOT the specified {@code item}.
+         * @param item
+         * @return items starting with the first one that is not the specified {@code item}
+         * (i.e. skipping the initial items that are)
+         * @see #notAsLongAs(Predicate)
+         */
+        default Chainable<T> notAsLongAsValue(T item) {
+            return Chainables.notAsLongAsValue(this, item);
+        }
+
+        /**
          * Returns a chain of remaining items from this chain starting with the first item that satisfies the specified {@code condition} and followed by all the remaining items.
          * <p>
          * For example, if the items are { 1, 3, 5, 2, 7, 9, ...} and the {@code condition} returns {@code true} for items that are even numbers, then the resulting
@@ -1553,6 +1584,26 @@ public final class Chainables {
      * @param items
      * @param condition
      * @return
+     * @see Chainable#notAsLongAs(Predicate)
+     */
+    public static <T> Chainable<T> notAsLongAs(Iterable<T> items, Predicate<T> condition) {
+        return (items != null) ? Chainable.from(items).notBefore(condition.negate()) : null;
+    }
+
+    /**
+     * @param items
+     * @param value
+     * @return
+     * @see Chainable#notAsLongAsValue(Object)
+     */
+    public static <T> Chainable<T> notAsLongAsValue(Iterable<T> items, T value) {
+        return notBefore(items, o -> o!=value);
+    }
+
+    /**
+     * @param items
+     * @param condition
+     * @return
      * @see Chainable#notBefore(Predicate)
      */
     //##
@@ -1618,7 +1669,6 @@ public final class Chainables {
      * @return the rest of the items
      * @see Chainable#notBeforeValue(Object)
      */
-    //##
     public static <T> Chainable<T> notBeforeValue(Iterable<T> items, T item) {
         return notBefore(items, (Predicate<T>)(o -> o == item));
     }

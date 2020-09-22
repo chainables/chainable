@@ -317,6 +317,34 @@ public class ChainableTest {
     }
 
     @Test
+    public void testNotAsLongAs() {
+        // Given
+        Iterable<String> testList = Arrays.asList("a", "b", "c", "d", "e");
+        String expected = "cde";
+
+        // When
+        Iterable<String> startingWithC = Chainables.notAsLongAs(testList, o -> "a".equals(o) || "b".equals(o));
+        String actual = Chainables.join("", startingWithC);
+
+        // Then
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testNotAsLongAsValue() {
+        // Given
+        Iterable<String> testList = Arrays.asList("a", "b", "c", "d", "e");
+        String expected = "bcde";
+
+        // When
+        Iterable<String> startingAfterAB = Chainables.notAsLongAsValue(testList, "a");
+        String actual = Chainables.join("", startingAfterAB);
+
+        // Then
+        assertEquals(expected, actual);
+    }
+
+    @Test
     public void testNotBeforeValue() {
         // Given
         Iterable<String> testList = Arrays.asList("a", "b", "c", "d", "e");
