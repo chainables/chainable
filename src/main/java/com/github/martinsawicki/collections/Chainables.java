@@ -502,6 +502,14 @@ public final class Chainables {
         }
 
         /**
+         * Joins all the members of the chain into a string with no delimiters, calling each member's {@code toString()} method.
+         * @return the merged string
+         */
+        default String join() {
+            return Chainables.join("", this);
+        }
+
+        /**
          * Returns the item tha has the highest value extracted by the specified {@code valueExtractor} in this chain.
          * <p>
          * This triggers a full traversal/evaluation of the items.
@@ -847,7 +855,7 @@ public final class Chainables {
 
         @Override
         public String toString() {
-            return this.iterable.toString();
+            return Chainables.join("", this);
         }
     }
 
