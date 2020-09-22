@@ -33,6 +33,31 @@ public final class Chainables {
         throw new AssertionError("Not instantiable, just stick to the static methods.");
     }
 
+    /**
+     * {@link Chainable} is a fluent interface-style sub type of {@link java.lang.Iterable} with additional methods facilitating the use of the
+     * iterator pattern, functional programming and lazy evaluation, intended for achieving code that is more succinct, readable, simpler to implement
+     * and sometimes faster than its non-lazy/non-functional equivalent.
+     * <p>
+     * {@link Chainable} is somewhat analogous to and inspired by C#'s {@code Enumerable<T>} (LINQ), and conceived of before but ultimately also
+     * somewhat overlapping with Java 8's {@link java.util.stream.Stream}.
+     * <p>
+     * One of the key differences from {@link java.util.stream.Stream} is that {@link Chainable} fully preserves the functional and
+     * re-entrancy semantics of {@link java.lang.Iterable}, i.e. it can be traversed multiple times, with multiple iterator instantiations,
+     * whereas {@link java.util.stream.Stream} cannot be.
+     * <p>
+     * Also, the {@link Chainable} API surface contains various unique convenience methods, as {@link Chainable} is intended primarily for sequential
+     * access and not so much the parallelism that has been a key guiding design principle behind Java's {@link Stream}.
+     * <p>
+     * Having said that, a basic level of interoperability between {@link java.util.stream.Stream} and {@link Chainable} is possible: a chain can
+     * be created from a stream (see {@link Chainable#from(Stream)}) and a stream can be created from a chain (see {@link Chainable#stream()}).
+     * <p>
+     * (A note on the vocabulary: {@link Chainable} is the interface, whereas the word "chain" is used throughout the documentation to refer to a
+     * specific instance of a {@link Chainable}).
+     *
+     * @author Martin Sawicki
+     *
+     * @param <T>
+     */
     public interface Chainable<T> extends Iterable<T> {
         /**
          * Returns an empty chain.
