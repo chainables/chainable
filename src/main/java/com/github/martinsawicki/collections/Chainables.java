@@ -253,6 +253,20 @@ public final class Chainables {
         }
 
         /**
+         * Collects all the items into the specified collection.
+         * @param targetCollection
+         * @return self
+         * @sawicki.similar
+         * <table summary="Similar to:">
+         * <tr><td><i>Java:</i></td><td>Note this is NOT like {@link java.util.stream.Stream#collect(java.util.stream.Collector)}</td></tr>
+         * <tr><td><i>C#:</i></td><td>{@code Enumerable.ToList()} and the like</td></tr>
+         * </table>
+         */
+        default Chainable<T> collectInto(Collection<T> targetCollection) {
+            return Chainables.collectInto(this, targetCollection);
+        }
+
+        /**
          * Appends the specified {@code items} to this chain.
          * @param items
          * @return the chain resulting from appending the specified {@code items} to this chain
@@ -1028,6 +1042,20 @@ public final class Chainables {
      */
     public static <T> Chainable<T> beforeValue(Iterable<T> items, T item) {
         return before(items, o -> o==item);
+    }
+
+    /**
+     * @param items
+     * @param targetCollection
+     * @return
+     * @see Chainable#collectInto(Collection)
+     */
+    public static <T> Chainable<T> collectInto(Iterable<T> items, Collection<T> targetCollection) {
+        if (items == null || targetCollection == null) {
+            return Chainable.from(items);
+        } else {
+            return Chainables.applyAsYouGo(items, o -> targetCollection.add(o));
+        }
     }
 
     /**

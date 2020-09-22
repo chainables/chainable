@@ -10,6 +10,7 @@ import com.github.martinsawicki.collections.Chainables.Chainable;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -103,6 +104,26 @@ public class ChainableTest {
         // Then
         assertEquals(expected, actual);
         assertTrue(Chainables.isNullOrEmpty(until2));
+    }
+
+    @Test
+    public void testCollectInto() {
+        // Given
+        final Chainable<Integer> items = Chainable.from(1, 2, 3, 4, 5, 6, 7);
+        String expected = "135";
+        List<String> collection = new ArrayList<>();
+
+        // When
+        Chainable<String> oddsLessThan6 = items
+                .where(i -> i < 6 && i%2 != 0)
+                .transform(i -> i.toString())
+                .collectInto(collection)
+                .apply();
+        String actual = String.join("", collection);
+
+        // Then
+        assertEquals(expected.length(), oddsLessThan6.size());
+        assertEquals(expected, actual);
     }
 
     @Test
