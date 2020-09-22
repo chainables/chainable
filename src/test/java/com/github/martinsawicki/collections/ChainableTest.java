@@ -491,6 +491,19 @@ public class ChainableTest {
     }
 
     @Test
+    public void testSum() {
+        // Given
+        Chainable<Integer> ints = Chainable.from(1, 2, 3, 4);
+        long expected = 1 + 2 + 3 + 4;
+
+        // When
+        long actual = ints.sum(o -> o.longValue());
+
+        // Then
+        assertEquals(expected, actual);
+    }
+
+    @Test
     public void testToList() {
         // Given
         Chainable<String> chain = Chainable.from("a", "b", "c");
