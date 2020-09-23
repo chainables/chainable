@@ -20,6 +20,28 @@ import java.util.stream.Stream;
  * Unit tests
  */
 public class ChainableTest {
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testExample() {
+        // Given / When
+        Chainable<String> chain = Chainable
+                .from(0, 0, 0, 2, 3, 7, 0, 1, 8, 3, 13, 14, 0, 2) // Integers
+                .notAsLongAs(i -> i == 0) // Ignore leading sub chain of 0s
+                .notAfter(i -> i == 13) // Stop after finding 13
+                .whereEither( // Choose only those that...
+                        i -> i % 2 == 0, // ...are even
+                        i -> i > 6) // ...or greater than 6
+                .transform(i -> Character.toString((char) (i + 65))); // Transform into letters
+
+        String text = chain.join(); // Merge into a string
+        String textBackwards = chain.reverse().join(); // Reverse and merge into a string
+
+        // Then
+        assertEquals("CHAIN", text);
+        assertEquals("NIAHC", textBackwards);
+    }
+
     @Test
     public void testApply() {
         // Given
@@ -27,11 +49,11 @@ public class ChainableTest {
         String expected = "axbxcx";
 
         // When
-        Iterable<String> transformed = Chainables
+        String actual = Chainables
                 .transform(items, s -> new StringBuilder(s))
                 .apply(sb -> sb.append("x"))
-                .transform(sb -> sb.toString());
-        String actual = Chainables.join("", transformed);
+                .transform(sb -> sb.toString())
+                .join();
 
         // Then
         assertEquals(expected, actual);
@@ -44,11 +66,8 @@ public class ChainableTest {
         String expectedText = "111";
 
         // When
-        Chainable<Integer> actual = integers.asLongAs(i -> i == 1);
-        String actualText = String.join("", actual.transform(i -> i.toString()));
-
-        Chainable<Integer> actualAsLongAs0 = integers.asLongAs(i -> i == 0);
-        String actualTextAsLongAs0 = Chainables.join("", actualAsLongAs0);
+        String actualText  = integers.asLongAs(i -> i == 1).join();
+        String actualTextAsLongAs0 = integers.asLongAs(i -> i == 0).join();
 
         // Then
         assertEquals(expectedText, actualText);
@@ -62,8 +81,7 @@ public class ChainableTest {
         String expected = "aa";
 
         // When
-        Iterable<String> whileValue = Chainables.asLongAsValue(testList, "a");
-        String actual = Chainables.join("", whileValue);
+        String actual = Chainables.asLongAsValue(testList, "a").join();
 
         // Then
         assertEquals(expected, actual);
@@ -97,9 +115,8 @@ public class ChainableTest {
         String expected = "aac";
 
         // When
-        Iterable<String> until = Chainables.beforeValue(testList, "d");
+        String actual = Chainables.beforeValue(testList, "d").join();
         Chainable<String> until2 = Chainables.beforeValue(testList, "a");
-        String actual = Chainables.join("", until);
 
         // Then
         assertEquals(expected, actual);
@@ -132,12 +149,13 @@ public class ChainableTest {
         Iterable<String> items1 = Arrays.asList("a", "b", "c");
 
         // When
-        Chainable<String> combined = Chainable.from(items1)
-                .concat(i -> (i != "b") ? Chainable.from("1", "2", "3") : Chainable.from());
-        String list = Chainables.join("", combined);
+        String actual = Chainable
+                .from(items1)
+                .concat(i -> (i != "b") ? Chainable.from("1", "2", "3") : Chainable.from())
+                .join();
 
         // Then
-        assertEquals("a123bc123", list);
+        assertEquals("a123bc123", actual);
     }
 
     @SuppressWarnings("unchecked")
@@ -150,13 +168,16 @@ public class ChainableTest {
         Iterable<String> items4 = Arrays.asList("g", "h", "i");
 
         // When
-        Iterable<String> combined = Chainables.concat(items1, items2);
-        combined = Chainables.concat(combined, items3);
-        combined = Chainables.concat(combined, items4);
-        String list = Chainables.join("", combined);
+        Chainable<String> combined = Chainables
+                .concat(items1, items2)
+                .concat(items3)
+                .concat(items4);
 
-        Chainable<String> combined2 = Chainable.from(items1).concat(items2, items3, items4); // Multi-concat
-        String list2 = Chainables.join("", combined2);
+        String list = combined.join();
+        String list2 = Chainable
+                .from(items1)
+                .concat(items2, items3, items4)
+                .join();
 
         // Then
         assertEquals(9, Chainables.count(combined));
@@ -205,11 +226,10 @@ public class ChainableTest {
     public void testDistinct() {
         // Given
         Chainable<String> items = Chainable.from("a", "b", "c", "a", "d", "b");
+        String expected = "abcd";
 
         // When
-        Chainable<String> distinct = items.distinct();
-        String actual = Chainables.join("", distinct);
-        String expected = "abcd";
+        String actual = items.distinct().join();
 
         // Then
         assertEquals(expected, actual);
@@ -222,8 +242,7 @@ public class ChainableTest {
         String expected = "14";
 
         // When
-        Chainable<Integer> distinct = numbers.distinct(i -> i % 2);
-        String actual = Chainables.join("", distinct);
+        String actual = numbers.distinct(i -> i % 2).join();
 
         // Then
         assertEquals(expected, actual);
@@ -291,10 +310,8 @@ public class ChainableTest {
 
         // When
         Chainable<String> items = Chainable.from("A", "B", "C", "D");
-        String actual = Chainables.join("", items);
-
-        Chainable<String> itemsTransformed = items.transform(s -> s.toLowerCase());
-        String actualTransformed = Chainables.join("", itemsTransformed);
+        String actual = items.join();
+        String actualTransformed = items.transform(s -> s.toLowerCase()).join();
 
         // Then
         assertEquals(expected, actual);
@@ -306,10 +323,10 @@ public class ChainableTest {
         // Given
         List<String> items = Arrays.asList("a", "b", "c", "d");
         Chainable<String> chain = Chainable.from(items);
-        String expected = String.join(", ", items);
+        String expected = String.join("", items);
 
         // When
-        String actual = Chainables.join(", ", chain);
+        String actual = chain.join();
 
         // Then
         assertEquals(expected, actual);
@@ -339,14 +356,9 @@ public class ChainableTest {
         String expectedTextNotAfter4 = "111234";
 
         // When
-        Chainable<Integer> actualNotAfter2 = integers.notAfter(i -> i == 2);
-        String actualTextNotAfter2 = Chainables.join("", actualNotAfter2);
-
-        Chainable<Integer> actualNotAfter4 = integers.notAfter(i -> i == 4);
-        String actualTextNotAfter4 = Chainables.join("", actualNotAfter4);
-
-        Chainable<Integer> actualNotAfter5 = integers.notAfter(i -> i == 5);
-        String actualTextNotAfter5 = String.join("", actualNotAfter5.transform(i -> i.toString()));
+        String actualTextNotAfter2 = integers.notAfter(i -> i == 2).join();
+        String actualTextNotAfter4 = integers.notAfter(i -> i == 4).join();
+        String actualTextNotAfter5 = integers.notAfter(i -> i == 5).join();
 
         // Then
         assertEquals(expectedTextNotAfter2, actualTextNotAfter2);
@@ -361,8 +373,7 @@ public class ChainableTest {
         String expected = "cde";
 
         // When
-        Iterable<String> startingWithC = Chainables.notAsLongAs(testList, o -> "a".equals(o) || "b".equals(o));
-        String actual = Chainables.join("", startingWithC);
+        String actual = Chainables.notAsLongAs(testList, o -> "a".equals(o) || "b".equals(o)).join();
 
         // Then
         assertEquals(expected, actual);
@@ -375,8 +386,7 @@ public class ChainableTest {
         String expected = "bcde";
 
         // When
-        Iterable<String> startingAfterAB = Chainables.notAsLongAsValue(testList, "a");
-        String actual = Chainables.join("", startingAfterAB);
+        String actual = Chainables.notAsLongAsValue(testList, "a").join();
 
         // Then
         assertEquals(expected, actual);
@@ -389,8 +399,7 @@ public class ChainableTest {
         String expected = "cde";
 
         // When
-        Iterable<String> startingWithC = Chainables.notBeforeValue(testList, "c");
-        String actual = Chainables.join("", startingWithC);
+        String actual = Chainables.notBeforeValue(testList, "c").join();
 
         // Then
         assertEquals(expected, actual);
@@ -403,8 +412,7 @@ public class ChainableTest {
         String expected = "123123123";
 
         // When
-        Iterable<String> replaced = Chainables.replace(items, i -> (i != "b") ? Arrays.asList("1", "2", "3") : null);
-        String actual = Chainables.join("", replaced);
+        String actual  = Chainables.replace(items, i -> (i != "b") ? Arrays.asList("1", "2", "3") : null).join();
 
         // Then
         assertEquals(expected, actual);
@@ -417,8 +425,7 @@ public class ChainableTest {
         String expected = "dcba";
 
         // When
-        Chainable<String> reverse = items.reverse();
-        String actual = Chainables.join("", reverse);
+        String actual = items.reverse().join();
 
         // Then
         assertEquals(expected, actual);
@@ -448,14 +455,22 @@ public class ChainableTest {
     public void testSplit() {
         // Given
         String text = "Hello World! This is Mr. Johnson speaking... Listen, how are you?";
-        int expected = 28;
+        int expectedTokens = 28;
+        int expectedChars = text.length();
 
         // When
         Chainable<String> tokens = Chainables.split(text, " ,'\"!?.()[]{};:-+=");
-        int actual = tokens.size();
+        int actualTokens = tokens.size();
+        Chainable<String> chars = Chainables.split(text);
+        int actualChars = chars.size();
+        String mergedTokens = tokens.join();
+        String mergedChars = chars.join();
 
         // Then
-        assertEquals(expected, actual);
+        assertEquals(expectedTokens, actualTokens);
+        assertEquals(expectedChars, actualChars);
+        assertEquals(text, mergedTokens);
+        assertEquals(text, mergedChars);
     }
 
     @Test
@@ -480,13 +495,13 @@ public class ChainableTest {
     public void testStreamBasics() {
         // Given
         Integer inputs[] = { 1, 2, 3, 4, 5, 6, 7, 8 };
-        String expected = Chainables.join("", Chainable.from(inputs).where(i -> i % 2 != 0));
+        String expected = Chainable.from(inputs).where(i -> i % 2 != 0).join();
 
         // When
-        Chainable<Integer> chain = Chainable.from(Stream
+        String actual = Chainable.from(Stream
                 .of(inputs)
-                .filter(i -> i % 2 != 0));
-        String actual = Chainables.join("", chain);
+                .filter(i -> i % 2 != 0))
+                .join();
 
         // Then
         assertEquals(expected, actual);
@@ -512,7 +527,7 @@ public class ChainableTest {
     public void testStreamReEntry() {
         // Given
         Integer inputs[] = { 1, 2, 3, 4, 5, 6, 7, 8 };
-        String expected = Chainables.join("", Chainable.from(inputs).where(i -> i % 2 != 0));
+        String expected = Chainable.from(inputs).where(i -> i % 2 != 0).join();
 
         // When
         Chainable<Integer> chain = Chainable.from(Stream
@@ -576,8 +591,7 @@ public class ChainableTest {
         String expected = "abcdef";
 
         // When
-        Iterable<String> transformed = Chainables.transformAndFlatten(list, o -> (o != null) ? Arrays.asList(o) : null);
-        String actual = Chainables.join("", transformed);
+        String actual = Chainables.transformAndFlatten(list, o -> (o != null) ? Arrays.asList(o) : null).join();
 
         // Then
         assertEquals(expected, actual);
@@ -592,10 +606,10 @@ public class ChainableTest {
         // When
         Iterable<Integer> greaterThan4 = Chainables.whereEither(testList, o -> o > 4);
 
-        Chainable<String> where = Chainable
+        String actual = Chainable
                 .from("a", "b", "c", "ab", "ac", "bc")
-                .where(s -> s.startsWith("a"));
-        String actual = Chainables.join("", where);
+                .where(s -> s.startsWith("a"))
+                .join();
 
         // Then
         assertEquals(5, Chainables.count(greaterThan4));
@@ -609,8 +623,7 @@ public class ChainableTest {
         String expected = "ab";
 
         // When
-        Chainable<String> withoutNull = Chainables.withoutNull(items);
-        String actual = Chainables.join("", withoutNull);
+        String actual  = Chainables.withoutNull(items).join();
 
         // Then
         assertEquals(expected, actual);
