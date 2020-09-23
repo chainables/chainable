@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 /**
@@ -124,6 +125,56 @@ public class ChainableTest {
     }
 
     @Test
+    public void testBreadthFirst() {
+        // Given
+        final int depth = 4;
+        Chainable<String> initial = Chainable.from("1");
+        Function<String, Iterable<String>> childExtractor = (s) -> (s.length() < (depth - 1)  * 2) ? Chainable.from(s + ".1", s + ".2") : null;
+        String expectedBreadthFirst = "1, 1.1, 1.2, 1.1.1, 1.1.2, 1.2.1, 1.2.2, 1.1.1.1, 1.1.1.2, 1.1.2.1, 1.1.2.2, 1.2.1.1, 1.2.1.2, 1.2.2.1, 1.2.2.2";
+
+        // When
+        String actualBreadthFirst = initial.breadthFirst(childExtractor).join(", ");
+
+        // Then
+        assertEquals(expectedBreadthFirst, actualBreadthFirst);
+    }
+
+    @Test
+    public void testBreadthFirstUntil() {
+        // Given
+        Chainable<String> roots = Chainable.from("a", "b", "c");
+        String expected = Chainable
+                .from("a", "b", "c", "aa", "ab", "ac", "ba", "bb", "bc", "ca", "cb", "cc")
+                .join(",");
+
+        // When
+        String actual = roots.breadthFirstUntil(
+                s -> roots.transform(o -> s + o),
+                s -> s.length() == 2)
+                .join(",");
+
+        // Then
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testBreadthFirstWhile() {
+        // Given
+        Chainable<String> roots = Chainable.from("a", "b", "c");
+        Chainable<String> expectedResults = Chainable.from("a", "b", "c", "aa", "ab", "ac", "ba", "bb", "bc", "ca", "cb", "cc");
+        String expected = String.join(",", expectedResults);
+
+        // When
+        Chainable<String> results = roots.breadthFirstWhile(
+                s -> roots.transform(o -> s + o),
+                s -> s.length() < 3);
+        String actual = String.join(",", results);
+
+        // Then
+        assertEquals(expected, actual);
+    }
+
+    @Test
     public void testCollectInto() {
         // Given
         final Chainable<Integer> items = Chainable.from(1, 2, 3, 4, 5, 6, 7);
@@ -220,6 +271,21 @@ public class ChainableTest {
         assertTrue(items1.containsSubarray(subarray1));
         assertFalse(items1.containsSubarray(notSubarray1));
         //TODO: More tests
+    }
+
+    @Test
+    public void testDepthFirst() {
+        // Given
+        final int depth = 4;
+        Chainable<String> initial = Chainable.from("1");
+        Function<String, Iterable<String>> childExtractor = (s) -> (s.length() < (depth - 1)  * 2) ? Chainable.from(s + ".1", s + ".2") : null;
+        String expectedDepthFirst = "1, 1.1, 1.1.1, 1.1.1.1, 1.1.1.2, 1.1.2, 1.1.2.1, 1.1.2.2, 1.2, 1.2.1, 1.2.1.1, 1.2.1.2, 1.2.2, 1.2.2.1, 1.2.2.2";
+
+        // When
+        String actualDepthFirst = initial.depthFirst(childExtractor).join(", ");
+
+        // Then
+        assertEquals(expectedDepthFirst, actualDepthFirst);
     }
 
     @Test
