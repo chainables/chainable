@@ -10,12 +10,12 @@ simpler to implement, and sometimes faster than its non-lazy/non-functional equi
 
 ```java
         Chainable<String> chain = Chainable
-                .from(0, 0, 0, 2, 3, 7, 0, 1, 8, 3, 13, 14, 0, 2) // Integers
-                .notAsLongAs(i -> i == 0) // Ignore leading sub chain of 0s
-                .notAfter(i -> i == 13) // Stop after finding 13
-                .whereEither( // Choose only those that...
-                        i -> i % 2 == 0, // ...are even
-                        i -> i > 6) // ...or greater than 6
+                .from(0, 0, 0, 2, 3, 7, 0, 1, 8, 3, 13, 14, 0, 2)     // Integers
+                .notAsLongAs(i -> i == 0)                             // Ignore leading sub chain of 0s
+                .notAfter(i -> i == 13)                               // Stop after finding 13
+                .whereEither(                                         // Choose only those that...
+                        i -> i % 2 == 0,                              // ...are even
+                        i -> i > 6)                                   // ...or greater than 6
                 .transform(i -> Character.toString((char) (i + 65))); // Transform into letters
 
         String text = chain.join(); // Merge into a string
