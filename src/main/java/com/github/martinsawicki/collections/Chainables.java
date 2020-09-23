@@ -10,9 +10,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -279,6 +281,51 @@ public final class Chainables {
         }
 
         /**
+         * The same as {@link #queue(Function)}.
+         * @param childTraverser
+         * @return resulting chain
+         * @see #queue(Function)
+         * @see #queueUntil(Function, Function)
+         * @see #breadthFirstUntil(Function, Function)
+         * @see #breadthFirstWhile(Function, Function)
+         * @see #depthFirst(Function)
+         */
+        default Chainable<T> breadthFirst(Function<T, Iterable<T>> childTraverser) {
+            return Chainables.breadthFirst(this, childTraverser);
+        }
+
+        /**
+         * The same as {@link #queueUntil(Function, Function)}.
+         * @param childTraverser
+         * @param condition
+         * @return resulting {@link Chainable}
+         * @see #queueUntil(Function, Function)
+         * @see #queue(Function)
+         * @see #breadthFirstWhile(Function, Function)
+         * @see #breadthFirst(Function)
+         * @see #depthFirst(Function)
+         */
+        default Chainable<T> breadthFirstUntil(Function<T, Iterable<T>> childTraverser, Function<T, Boolean> condition) {
+            return Chainables.queueUntil(this, childTraverser, condition);
+        }
+
+        /**
+         * Traverses the items in this chain in a breadth-first order as if it's a tree, where for each item, those of its children returned by the specified
+         * {@code childTraverser} are appended to the end of the chain that satisfy the specified {@code condition}.
+         * @param childTraverser
+         * @param condition
+         * @return resulting {@link Chainable}
+         * @see #queueUntil(Function, Function)
+         * @see #queue(Function)
+         * @see #breadthFirstUntil(Function, Function)
+         * @see #breadthFirst(Function)
+         * @see #depthFirst(Function)
+         */
+        default Chainable<T> breadthFirstWhile(Function<T, Iterable<T>> childTraverser, Function<T, Boolean> condition) {
+            return Chainables.breadthFirstWhile(this, childTraverser, condition);
+        }
+
+        /**
          * Collects all the items into the specified collection.
          * @param targetCollection
          * @return self
@@ -398,6 +445,19 @@ public final class Chainables {
         }
 
         /**
+         * Traverses the items in a depth-first manner, by visiting the children of each item in the chain, as returned by the
+         * specified {@code childExtractor} before visting its siblings, in a de-facto recursive manner.
+         * <p>
+         * For items that do not have children, the {@code childExtractor} can return {@null}.
+         * @param childExtractor
+         * @return resulting chain
+         * @see #breadthFirst(Function)
+         */
+        default Chainable<T> depthFirst(Function<T, Iterable<T>> childExtractor) {
+            return Chainables.depthFirst(this, childExtractor);
+        }
+
+        /**
          * Returns a chain of items from this chain that are not duplicated.
          * @return items that are unique (no duplicates)
          * @sawicki.similar
@@ -505,9 +565,20 @@ public final class Chainables {
         /**
          * Joins all the members of the chain into a string with no delimiters, calling each member's {@code toString()} method.
          * @return the merged string
+         * @see #join(String)
          */
         default String join() {
             return Chainables.join("", this);
+        }
+
+        /**
+         * Joins all the members of the chain into a string with the specified {@code delimiter}, calling each member's {@code toString()) method.
+         * @param delimiter the delimiter to insert between the members
+         * @return the resulting string
+         * @see #join()
+         */
+        default String join(String delimiter) {
+            return Chainables.join(delimiter, this);
         }
 
         /**
@@ -636,6 +707,42 @@ public final class Chainables {
          */
         default Chainable<T> notWhere(Predicate<T> condition) {
             return Chainables.notWhere(this, condition);
+        }
+
+        /**
+         * For each item in this chain, the items output by the specified {@code queuer} applied to it are appended at the end of the chain,
+         * effectively resulting in a breadth-first traversal of a hypothetical tree where the {@code queuer} is the source of the children of each tree node.
+         * @param queuer
+         * @return resulting {@link Chainable}
+         * @see #queueUntil(Function, Function)
+         * @see #breadthFirst(Function)
+         * @see #breadthFirstUntil(Function, Function)
+         * @see #breadthFirstWhile(Function, Function)
+         * @see #depthFirst(Function)
+         */
+        default Chainable<T> queue(Function<T, Iterable<T>> queuer) {
+            return Chainables.queue(this, queuer);
+        }
+
+        /**
+         * For each item in this chain, the items output by the specified {@code queuer} applied to it are appended at the end of the chain,
+         * effectively resulting in a breadth-first traversal of a hypothetical tree where the {@code queuer} is the source of the children of
+         * each tree node, <i>up to and including</i> the item that satisfies the specified {@code condition}, but not its descendants that would
+         * be otherwise returned by the {@code queuer}.
+         * <p>
+         * It can be thought of trimming the breadth-first traversal right below the level of the item satisfying
+         * the {@code condition}, but continuing with other items in the chain.
+         * @param queuer
+         * @param condition
+         * @return resulting {@link Chainable}
+         * @see #queue(Function)
+         * @see #breadthFirst(Function)
+         * @see #breadthFirstUntil(Function, Function)
+         * @see #breadthFirstWhile(Function, Function)
+         * @see #depthFirst(Function)
+         */
+        default Chainable<T> queueUntil(Function<T, Iterable<T>> queuer, Function<T, Boolean> condition) {
+            return Chainables.queueUntil(this, queuer, condition);
         }
 
         /**
@@ -1080,6 +1187,46 @@ public final class Chainables {
 
     /**
      * @param items
+     * @param childTraverser
+     * @return
+     * @see Chainable#breadthFirst(Function)
+     */
+    public static <T> Chainable<T> breadthFirst(Iterable<T> items, Function<T, Iterable<T>> childTraverser) {
+        return queue(items, childTraverser);
+    }
+
+    /**
+     * @param items
+     * @param childTraverser
+     * @param condition
+     * @return
+     * @see Chainable#breadthFirstUntil(Function, Function)
+     */
+    public static <T> Chainable<T> breadthFirstUntil(
+            Iterable<T> items,
+            Function<T, Iterable<T>> childTraverser,
+            Function<T, Boolean> condition) {
+        final Function<T, Boolean> appliedCondition = (condition != null) ? condition : (o -> false);
+        return queue(items, o -> Boolean.FALSE.equals(appliedCondition.apply(o)) ? childTraverser.apply(o) : Chainable.empty());
+    }
+
+    /**
+     * @param items
+     * @param childTraverser
+     * @param condition
+     * @return
+     * @see Chainable#breadthFirstWhile(Function, Function)
+     */
+    public static <T> Chainable<T> breadthFirstWhile(
+            Iterable<T> items,
+            Function<T, Iterable<T>> childTraverser,
+            Function<T, Boolean> condition) {
+        final Function<T, Boolean> appliedCondition = (condition != null) ? condition : (o -> true);
+        return breadthFirst(items, o -> Chainables.whereEither(childTraverser.apply(o), c -> Boolean.TRUE.equals(appliedCondition.apply(c))));
+    }
+
+    /**
+     * @param items
      * @param targetCollection
      * @return
      * @see Chainable#collectInto(Collection)
@@ -1390,6 +1537,16 @@ public final class Chainables {
         }
 
         return size;
+    }
+
+    /**
+     * @param items
+     * @param childTraverser
+     * @return
+     * @see Chainable#depthFirst(Function)
+     */
+    public static <T> Chainable<T> depthFirst(Iterable<T> items, Function<T, Iterable<T>> childTraverser) {
+        return traverse(items, childTraverser, false);
     }
 
     /**
@@ -1893,6 +2050,31 @@ public final class Chainables {
 
     /**
      * @param items
+     * @param queuer
+     * @return
+     * @see Chainable#queue(Function)
+     */
+    public static <T> Chainable<T> queue(Iterable<T> items, Function<T, Iterable<T>> queuer) {
+        return traverse(items, queuer, true);
+    }
+
+    /**
+     * @param items
+     * @param queuer
+     * @param condition
+     * @return
+     * @see Chainable#queueUntil(Function, Function)
+     */
+    public static <T> Chainable<T> queueUntil(
+            Iterable<T> items,
+            Function<T, Iterable<T>> queuer,
+            Function<T, Boolean> condition) {
+        final Function<T, Boolean> appliedCondition = (condition != null) ? condition : (o -> false);
+        return queue(items, o -> Boolean.FALSE.equals(appliedCondition.apply(o)) ? queuer.apply(o) : Chainable.empty());
+    }
+
+    /**
+     * @param items
      * @param replacer
      * @return
      * @see Chainable#replace(Function)
@@ -2215,6 +2397,72 @@ public final class Chainables {
                     @Override
                     public O next() {
                         return this.hasNext() ? this.iterOut.next() : null;
+                    }
+                };
+            }
+        });
+    }
+
+    private static <T> Chainable<T> traverse(
+            Iterable<T> initials,
+            Function<T, Iterable<T>> childTraverser,
+            boolean breadthFirst) {
+        if (initials == null || childTraverser == null) {
+            return Chainable.from(Collections.emptyList());
+        }
+
+        return Chainable.from(new Iterable<T> () {
+            @Override
+            public Iterator<T> iterator() {
+                return new Iterator<T>() {
+                    Deque<Iterator<T>> iterators = new LinkedList<>(Arrays.asList(initials.iterator()));
+                    T nextItem = null;
+                    Set<T> seenValues = new HashSet<>();
+
+                    @Override
+                    public boolean hasNext() {
+                        // TODO Trips up on NULL values "by design" - should it?
+                        while (this.nextItem == null && !iterators.isEmpty()) {
+                            Iterator<T> currentIterator = iterators.peekFirst();
+                            if (Chainables.isNullOrEmpty(currentIterator)) {
+                                iterators.pollFirst();
+                                continue;
+                            }
+
+                            do {
+                                this.nextItem = currentIterator.next();
+                                if (this.seenValues.contains(this.nextItem)) {
+                                    this.nextItem = null; // Protect against infinite loops
+                                }
+                            } while (this.nextItem == null && currentIterator.hasNext());
+
+                            if (this.nextItem != null) {
+                                // Protect against cycles based on inner
+                                this.seenValues.add(this.nextItem);
+                            }
+                        }
+
+                        return null != this.nextItem;
+                    }
+
+                    @Override
+                    public T next() {
+                        if (!this.hasNext()) {
+                            return null;
+                        }
+
+                        Iterable<T> nextChildren = childTraverser.apply(this.nextItem);
+                        if (!Chainables.isNullOrEmpty(nextChildren)) {
+                            if (breadthFirst) {
+                                this.iterators.addLast(nextChildren.iterator());
+                            } else {
+                                this.iterators.addFirst(nextChildren.iterator());
+                            }
+                        }
+
+                        T returnValue = this.nextItem;
+                        this.nextItem = null;
+                        return returnValue;
                     }
                 };
             }
