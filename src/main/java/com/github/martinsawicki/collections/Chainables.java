@@ -343,6 +343,31 @@ public final class Chainables {
         }
 
         /**
+         * Appends to the chain the result of the specified {@code nextItemExtractor} applied to the last item, unless the last item is null.
+         * @param nextItemExtractor
+         * @return resulting {@link Chainable}
+         * @sawicki.similar
+         * <table summary="Similar to:">
+         * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#iterate(Object, java.util.function.UnaryOperator))}, except that the "seed" is just the last item of the underlying {@link Chainable}</td></tr>
+         * </table>
+         */
+        default Chainable<T> chain(Function<T, T> nextItemExtractor) {
+            return Chainables.chain(this, nextItemExtractor);
+        }
+
+        /**
+         * If the last of this chain satisfies the specified {@code condition}, then the result of the specified {@code nextItemExtractor}
+         * applied to that last item is appended to the chain.
+         * @param condition
+         * @param nextItemExtractor
+         * @return resulting {@link Chainable}
+         * @see #chain(Function)
+         */
+        default Chainable<T> chainIf(Predicate<T> condition, Function<T, T> nextItemExtractor) {
+            return Chainables.chainIf(this, condition, nextItemExtractor);
+        }
+
+        /**
          * Collects all the items into the specified collection.
          * @param targetCollection
          * @return self
@@ -1336,6 +1361,83 @@ public final class Chainables {
             Function<T, Boolean> condition) {
         final Function<T, Boolean> appliedCondition = (condition != null) ? condition : (o -> true);
         return breadthFirst(items, o -> Chainables.whereEither(childTraverser.apply(o), c -> Boolean.TRUE.equals(appliedCondition.apply(c))));
+    }
+
+    /**
+     * @param item
+     * @param nextItemExtractor
+     * @return
+     * @see Chainable#chain(Function)
+     */
+    public static <T> Chainable<T> chain(T item, Function<T, T> nextItemExtractor) {
+        return chain(Chainable.from(item), nextItemExtractor);
+    }
+
+    /**
+     * @param items
+     * @param nextItemExtractor
+     * @return
+     * @see Chainable#chain(Function)
+     */
+    public static <T> Chainable<T> chain(Iterable<T> items, Function<T, T> nextItemExtractor) {
+        return chainIf(items, null, nextItemExtractor);
+    }
+
+    /**
+     * @param items
+     * @param condition
+     * @param nextItemExtractor
+     * @return {@link Chainable#chainIf(Predicate, Function)}
+     */
+    public static <T> Chainable<T> chainIf(Iterable<T> items, Predicate<T> condition, Function<T, T> nextItemExtractor) {
+        if (items == null || nextItemExtractor == null) {
+            return Chainable.from(items);
+        } else {
+            return Chainable.from(new Iterable<T>() {
+                @Override
+                public Iterator<T> iterator() {
+                    return new Iterator<T>() {
+                        final Iterator<T> iter = items.iterator();
+                        private T next = null;
+                        private boolean nextReady = false;
+
+                        @Override
+                        public boolean hasNext() {
+                            if (this.nextReady) {
+                                return this.nextReady;
+                            } else if (this.iter.hasNext()) {
+                                this.next = this.iter.next();
+                                this.nextReady = true;
+                                return this.nextReady;
+                            } else if (condition == null) {
+                                // At end of current iterator but no condition specified
+                                this.next = nextItemExtractor.apply(this.next);
+                                this.nextReady = this.next != null;
+                                return this.nextReady;
+                            } else if (condition.test(this.next)) {
+                                // At end of current iterator and condition for the chaining is met
+                                this.next = nextItemExtractor.apply(this.next);
+                                this.nextReady = true;
+                                return this.nextReady;
+                            } else {
+                                // At end of current iterator and condition for chaining is not met
+                                return this.nextReady = false;
+                            }
+                        }
+
+                        @Override
+                        public T next() {
+                            if (this.hasNext()) {
+                                this.nextReady = false;
+                                return this.next;
+                            } else {
+                                return null;
+                            }
+                        }
+                    };
+                }
+            });
+        }
     }
 
     /**

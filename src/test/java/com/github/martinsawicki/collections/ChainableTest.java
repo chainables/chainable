@@ -13,6 +13,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -173,6 +174,74 @@ public class ChainableTest {
 
         // Then
         assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testChain() {
+        // Given
+        Iterable<String> items = Arrays.asList("a", "b", "c", "d");
+        final Iterator<String> iter1 = items.iterator();
+        String expected = Chainables.join("", items);
+
+        Chainable<String> initial = Chainable.from("1", "2", "3");
+        final Iterator<String> iter2 = items.iterator();
+        String expected2 = String.join("", Chainables.concat(initial, items));
+
+        // When
+        Chainable<String> chain = Chainables.chain(iter1.next(), s -> (iter1.hasNext()) ? iter1.next() : null);
+        String actual = String.join("", chain);
+
+        Chainable<String> chain2 = initial.chain(i -> (iter2.hasNext()) ? iter2.next() : null);
+        String actual2 = String.join("", chain2);
+
+        // Then
+        assertEquals(expected, actual);
+        assertEquals(expected2, actual2);
+    }
+
+    @Test
+    public void testChainIf() {
+        // Given/When
+        Chainable<String> items = Chainable.from("a", "b", "c");
+        String expectedText = "abcd";
+        String expectedText2 = "d";
+
+        Chainable<String> itemsEmpty = Chainable.from(new ArrayList<String>());
+
+        Chainable<Boolean> bools = Chainable
+                .from(false, false, false, true, false, false)
+                .transform(b -> Boolean.TRUE.equals(b) ? true : null)
+                .notAfter(b -> Boolean.TRUE.equals(b))
+                .chainIf(b -> b == null, b -> false);
+
+        Chainable<Boolean> bools2 = Chainable.from(false, false, true)
+                .transform(b -> Boolean.TRUE.equals(b) ? true : null)
+                .notAfter(b -> Boolean.TRUE.equals(b))
+                .chainIf(b -> b == null, b -> false);
+
+        Chainable<Boolean> bools3 = Chainable.from(false, false, false)
+                .transform(b -> Boolean.TRUE.equals(b) ? true : null)
+                .notAfter(b -> Boolean.TRUE.equals(b))
+                .chainIf(b -> b == null, b -> false);
+
+        Chainable<Boolean> bools4 = Chainable.from(new ArrayList<Boolean>())
+                .transform(b -> Boolean.TRUE.equals(b) ? true : null)
+                .notAfter(b -> Boolean.TRUE.equals(b))
+                .chainIf(b -> b == null, b -> false);
+
+        Chainable<String> actual = items.chainIf(null, i -> "c".equals(i) ? "d" : null);
+        String actualText = String.join("", actual);
+
+        Chainable<String> actual2 = itemsEmpty.chainIf(null, i -> "d".equals(i) ? null : "d");
+        String actualText2 = String.join("", actual2);
+
+        // Then
+        assertTrue(Boolean.TRUE.equals(bools.last()));
+        assertTrue(Boolean.TRUE.equals(bools2.last()));
+        assertTrue(Boolean.FALSE.equals(bools3.last()));
+        assertTrue(Boolean.FALSE.equals(bools4.last()));
+        assertEquals(expectedText, actualText);
+        assertEquals(expectedText2, actualText2);
     }
 
     @Test
