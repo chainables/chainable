@@ -369,6 +369,24 @@ public class ChainableTest {
     }
 
     @Test
+    public void testFirst() {
+        // Given
+        Iterable<String> items = Arrays.asList("a", "b", "c");
+        Iterable<String> itemsEmpty = new ArrayList<>();
+
+        // When
+        String first = Chainables.first(items);
+
+        // Then
+        assertNotNull(first);
+        assertEquals("a", first);
+        assertNull(Chainables.first(itemsEmpty));
+        assertNull(Chainables.first(null));
+        assertNotNull(Chainables.firstWhereEither(items, i -> i.equals("b")));
+        assertNull(Chainables.firstWhereEither(items, i -> i.equals("d")));
+    }
+
+    @Test
     public void testFirstNumber() {
         // Given
         final Chainable<String> items = Chainable.from("a", "b", "c", "d", "e", "f", "g", "h", "i");

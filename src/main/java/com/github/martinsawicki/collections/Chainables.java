@@ -595,6 +595,32 @@ public final class Chainables {
         }
 
         /**
+         * Finds the first item satisfying the specified {@code condition}.
+         * @param condition
+         * @return the first item satisfying the specified {@code condition}
+         * @sawicki.similar
+         * <table summary="Similar to:">
+         * <tr><td><i>Java:</i></td><td>a combination of {@link java.util.stream.Stream#filter(Predicate)} and {@link java.util.stream.Stream#findFirst()}</td></tr>
+         * <tr><td><i>C#:</i></td><td>{@code Enumerable.FirstOrDefault()}</td></tr>
+         * </table>
+         * @see #firstWhereEither(Predicate...)
+         */
+        default T firstWhere(Predicate<T> condition) {
+            return Chainables.firstWhereEither(this, condition);
+        }
+
+        /**
+         * Finds the first item satisying any of the specified {@code conditions}
+         * @param conditions
+         * @return the first item satisfying any of the specified {@code conditions}
+         * @see #firstWhere(Predicate)
+         */
+        @SuppressWarnings("unchecked")
+        default T firstWhereEither(Predicate<T>... conditions) {
+            return Chainables.firstWhereEither(this, conditions);
+        }
+
+        /**
          * Determines whether this chain contains any items.
          * @return {@code true} if empty, else {@code false}
          * @sawicki.similar
@@ -1858,6 +1884,32 @@ public final class Chainables {
                     };
                 }});
         }
+    }
+
+    /**
+     * Finds the first item satisfying the specified condition.
+     * @param items
+     * @param predicate
+     * @return
+     * @see Chainable#firstWhereEither(Predicate...)
+     */
+    @SafeVarargs
+    public static <V> V firstWhereEither(Iterable<V> items, Predicate<V>... conditions) {
+        if (items == null) {
+            return null;
+        } else if (conditions == null) {
+            return Chainables.first(items);
+        } else {
+            for (V item : items) {
+                for (Predicate<V> condition : conditions) {
+                    if (condition.test(item)) {
+                        return item;
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 
     /**
