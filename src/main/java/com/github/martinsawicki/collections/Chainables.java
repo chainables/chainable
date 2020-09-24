@@ -109,7 +109,7 @@ public final class Chainables {
 
         /**
          * Creates a new chain from the specified {@code stream}, which supports multiple traversals, just like a standard {@link java.lang.Iterable},
-         * even though the underlying {@link java.lang.stream.Stream} does not.
+         * even though the underlying {@link java.util.stream.Stream} does not.
          * <p>
          * Note that upon subsequent traversals of the chain, the original stream is not recomputed, but rather its values as obtained during its
          * first traversal are cached internally and used for any subsequent traversals.
@@ -357,7 +357,7 @@ public final class Chainables {
 
         /**
          * Appends the items from the specified {@code iterables} to this chain, in the order they are provided.
-         * @param itemSequences
+         * @param iterables
          * @return the current items with the specified {@code itemSequences} added to the end
          * @see #concat(Iterable)
          */
@@ -385,7 +385,6 @@ public final class Chainables {
          * @param lister
          * @return the resulting chain
          * @see #concat(Iterable)
-         * @see #chain(Function)
          */
         default Chainable<T> concat(Function<T, Iterable<T>> lister) {
             return Chainables.concat(this, lister);
@@ -396,7 +395,7 @@ public final class Chainables {
          * @param item the item to look for
          * @return {@code true} if this contains the specified {@code item}
          * @sawicki.similar
-         * <table summary="Similar to:">\
+         * <table summary="Similar to:">
          * <tr><td><i>C#:</i></td><td>{@code Enumerable.Contains()}</td></tr>
          * </table>
          * @see #containsAll(Object...)
@@ -448,7 +447,7 @@ public final class Chainables {
          * Traverses the items in a depth-first manner, by visiting the children of each item in the chain, as returned by the
          * specified {@code childExtractor} before visting its siblings, in a de-facto recursive manner.
          * <p>
-         * For items that do not have children, the {@code childExtractor} can return {@null}.
+         * For items that do not have children, the {@code childExtractor} can return {@code null}.
          * @param childExtractor
          * @return resulting chain
          * @see #breadthFirst(Function)
@@ -572,7 +571,7 @@ public final class Chainables {
         }
 
         /**
-         * Joins all the members of the chain into a string with the specified {@code delimiter}, calling each member's {@code toString()) method.
+         * Joins all the members of the chain into a string with the specified {@code delimiter}, calling each member's {@code toString()} method.
          * @param delimiter the delimiter to insert between the members
          * @return the resulting string
          * @see #join()
@@ -681,7 +680,7 @@ public final class Chainables {
         }
 
         /**
-         * Returns a chain of remaining items from this chain starting with the specified {@item}.
+         * Returns a chain of remaining items from this chain starting with the specified {@code item}.
          * @param item
          * @return the remaining items in this chain starting with the specified {@code item}, if any
          * @see #notBefore(Predicate)
@@ -829,7 +828,7 @@ public final class Chainables {
          * @return sum of all the values returned by the specified {@code valueExtractor} applied to each item
          * @sawicki.similar
          * <table summary="Similar to:">
-         * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#reduce(java.util.function.BinaryOperator))} or {@link java.util.stream.Stream#collect(java.util.stream.Collector))}, but specifically for summation</td></tr>
+         * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#reduce(java.util.function.BinaryOperator)} or {@link java.util.stream.Stream#collect(java.util.stream.Collector)}, but specifically for summation</td></tr>
          * <tr><td><i>C#:</i></td><td>{@code Enumerable.Aggregate()}, but specifically for summation</td></tr>
          * </table>
          */
@@ -1791,7 +1790,7 @@ public final class Chainables {
     }
 
     /**
-     * Joins the items produced by the specified {@code iterator} into a single string, invoking {@code toString()) on each item,
+     * Joins the items produced by the specified {@code iterator} into a single string, invoking {@code toString()} on each item,
      * separating each string with the specified {@code delimiter}, skipping {@code null} values.
      * @param delimiter the text to insert between items
      * @param iterator the iterator to traverse
@@ -1822,7 +1821,7 @@ public final class Chainables {
 
     /**
      * Joins the items in specified {@code stream} into a single string, applying a {@code toString()} to each item and separating them with the specified
-     * {@code delimiter, skipping {@code null} values..
+     * {@code delimiter}, skipping {@code null} values..
      * @param delimiter the text to insert between consecutive strings
      * @param stream the stream whose items are to be joined
      * @return the joined string
