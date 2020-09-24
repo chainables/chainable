@@ -23,6 +23,7 @@ import java.util.StringTokenizer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -351,7 +352,7 @@ public final class Chainables {
          * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#iterate(Object, java.util.function.UnaryOperator))}, except that the "seed" is just the last item of the underlying {@link Chainable}</td></tr>
          * </table>
          */
-        default Chainable<T> chain(Function<T, T> nextItemExtractor) {
+        default Chainable<T> chain(UnaryOperator<T> nextItemExtractor) {
             return Chainables.chain(this, nextItemExtractor);
         }
 
@@ -363,7 +364,7 @@ public final class Chainables {
          * @return resulting {@link Chainable}
          * @see #chain(Function)
          */
-        default Chainable<T> chainIf(Predicate<T> condition, Function<T, T> nextItemExtractor) {
+        default Chainable<T> chainIf(Predicate<T> condition, UnaryOperator<T> nextItemExtractor) {
             return Chainables.chainIf(this, condition, nextItemExtractor);
         }
 
@@ -1369,7 +1370,7 @@ public final class Chainables {
      * @return
      * @see Chainable#chain(Function)
      */
-    public static <T> Chainable<T> chain(T item, Function<T, T> nextItemExtractor) {
+    public static <T> Chainable<T> chain(T item, UnaryOperator<T> nextItemExtractor) {
         return chain(Chainable.from(item), nextItemExtractor);
     }
 
@@ -1379,8 +1380,50 @@ public final class Chainables {
      * @return
      * @see Chainable#chain(Function)
      */
-    public static <T> Chainable<T> chain(Iterable<T> items, Function<T, T> nextItemExtractor) {
-        return chainIf(items, null, nextItemExtractor);
+    public static <T> Chainable<T> chain(Iterable<T> items, UnaryOperator<T> nextItemExtractor) {
+        if (items == null || nextItemExtractor == null) {
+            return Chainable.from(items);
+        } else {
+            return Chainable.from(new Iterable<T>() {
+                @Override
+                public Iterator<T> iterator() {
+                    return new Iterator<T>() {
+                        Iterator<T> iter = items.iterator();
+                        T next = null;
+                        boolean isStopped = false;
+
+                        @Override
+                        public boolean hasNext() {
+                            if (isStopped) {
+                                return false;
+                            } else if (this.next != null) {
+                                return true;
+                            } else if (Chainables.isNullOrEmpty(this.iter)) {
+                                // Seed iterator already finished so start the chaining
+                                this.iter = null;
+                                this.next = nextItemExtractor.apply(this.next);
+                                if (this.next == null) {
+                                    isStopped = true;
+                                    return false;
+                                } else {
+                                    return true;
+                                }
+                            } else {
+                                this.next = iter.next();
+                                return true;
+                            }
+                        }
+
+                        @Override
+                        public T next() {
+                            T temp = this.next;
+                            this.next = null;
+                            return temp;
+                        }
+                    };
+                }
+            });
+        }
     }
 
     /**
@@ -1389,7 +1432,7 @@ public final class Chainables {
      * @param nextItemExtractor
      * @return {@link Chainable#chainIf(Predicate, Function)}
      */
-    public static <T> Chainable<T> chainIf(Iterable<T> items, Predicate<T> condition, Function<T, T> nextItemExtractor) {
+    public static <T> Chainable<T> chainIf(Iterable<T> items, Predicate<T> condition, UnaryOperator<T> nextItemExtractor) {
         if (items == null || nextItemExtractor == null) {
             return Chainable.from(items);
         } else {
@@ -2005,12 +2048,8 @@ public final class Chainables {
 
                         @Override
                         public T next() {
-                            if (this.iter.hasNext()) {
-                                this.returnedCount++;
-                                return this.iter.next();
-                            } else {
-                                return null;
-                            }
+                            this.returnedCount++;
+                            return this.iter.next();
                         }
                     };
                 }});
