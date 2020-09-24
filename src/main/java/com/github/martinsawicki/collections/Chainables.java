@@ -281,8 +281,13 @@ public final class Chainables {
         }
 
         /**
-         * The same as {@link #queue(Function)}.
-         * @param childTraverser
+         * Traverses the items in this chain in a breadth-first order as if it were a tree, where for each item, the items output by the specified
+         * {@code childExtractor} applied to it are appended at the end of the chain.
+         * <p>
+         * To indicate the absence of children for an item, the child extractor may output {@code null}.
+         * <p>
+         * The traversal protects against potential cycles by not visiting items that satisfy the equality ({@code equals()}) check against an item already seen before.
+         * @param childExtractor
          * @return resulting chain
          * @see #queue(Function)
          * @see #queueUntil(Function, Function)
@@ -290,13 +295,22 @@ public final class Chainables {
          * @see #breadthFirstWhile(Function, Function)
          * @see #depthFirst(Function)
          */
-        default Chainable<T> breadthFirst(Function<T, Iterable<T>> childTraverser) {
-            return Chainables.breadthFirst(this, childTraverser);
+        default Chainable<T> breadthFirst(Function<T, Iterable<T>> childExtractor) {
+            return Chainables.breadthFirst(this, childExtractor);
         }
 
         /**
-         * The same as {@link #queueUntil(Function, Function)}.
-         * @param childTraverser
+         * Traverses the items in this chain in a breadth-first order as if it were a tree, where for each item, the items output by the specified
+         * {@code childExtractor} applied to it are appended at the end of the chain, <i>up to and including</i> the parent item that satisfies the specified
+         * {@code condition}, but not its descendants that would be otherwise returned by the {@code childExtractor}.
+         * <p>
+         * It can be thought of trimming the breadth-first traversal of a hypothetical tree right below the level of the item satisfying
+         * the {@code condition}, but continuing with other items in the chain.
+         * <p>
+         * To indicate the absence of children for an item, the child extractor may output {@code null}.
+         * <p>
+         * The traversal protects against potential cycles by not visiting items that satisfy the equality ({@code equals()}) check against an item already seen before.
+         * @param childExtractor
          * @param condition
          * @return resulting {@link Chainable}
          * @see #queueUntil(Function, Function)
@@ -305,14 +319,17 @@ public final class Chainables {
          * @see #breadthFirst(Function)
          * @see #depthFirst(Function)
          */
-        default Chainable<T> breadthFirstUntil(Function<T, Iterable<T>> childTraverser, Function<T, Boolean> condition) {
-            return Chainables.queueUntil(this, childTraverser, condition);
+        default Chainable<T> breadthFirstUntil(Function<T, Iterable<T>> childExtractor, Function<T, Boolean> condition) {
+            return Chainables.queueUntil(this, childExtractor, condition);
         }
 
         /**
          * Traverses the items in this chain in a breadth-first order as if it's a tree, where for each item, those of its children returned by the specified
          * {@code childTraverser} are appended to the end of the chain that satisfy the specified {@code condition}.
-         * @param childTraverser
+         * <p>
+         * It can be thought of trimming the breadth-first traversal of a hypothetical tree right above the level of each item satisfying
+         * the {@code condition}, but continuing with other items in the chain.
+         * @param childExtractor
          * @param condition
          * @return resulting {@link Chainable}
          * @see #queueUntil(Function, Function)
@@ -321,8 +338,8 @@ public final class Chainables {
          * @see #breadthFirst(Function)
          * @see #depthFirst(Function)
          */
-        default Chainable<T> breadthFirstWhile(Function<T, Iterable<T>> childTraverser, Function<T, Boolean> condition) {
-            return Chainables.breadthFirstWhile(this, childTraverser, condition);
+        default Chainable<T> breadthFirstWhile(Function<T, Iterable<T>> childExtractor, Function<T, Boolean> condition) {
+            return Chainables.breadthFirstWhile(this, childExtractor, condition);
         }
 
         /**
@@ -447,7 +464,9 @@ public final class Chainables {
          * Traverses the items in a depth-first manner, by visiting the children of each item in the chain, as returned by the
          * specified {@code childExtractor} before visting its siblings, in a de-facto recursive manner.
          * <p>
-         * For items that do not have children, the {@code childExtractor} can return {@code null}.
+         * For items that do not have children, the {@code childExtractor} may return {@code null}.
+         * <p>
+         * Note that the traversal protects against potential cycles by not visiting items that satisfy the equality ({@code equals()}) check against an item already seen before.
          * @param childExtractor
          * @return resulting chain
          * @see #breadthFirst(Function)
