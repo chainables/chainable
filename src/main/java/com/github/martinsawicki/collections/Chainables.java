@@ -849,6 +849,19 @@ public final class Chainables {
         }
 
         /**
+         * Puts the items from this chain into a map indexed by the specified {@code keyExtractor} applied to each item.
+         * @param keyExtractor
+         * @return a map of the items indexed by the key produced by the specified {@code keyExtractor}
+         * @sawicki.similar
+         * <table summary="Similar to:">
+         * <tr><td><i>C#:</i></td><td>{@code Enumerable.ToDictionary()}</td></tr>
+         * </table>
+         */
+        default <K> Map<K, T> toMap(Function<T, K> keyExtractor) {
+            return Chainables.toMap(this, keyExtractor);
+        }
+
+        /**
          * Transforms each item into another item, of a possibly different type, by applying the specified {@code transformer}
          * @param transformer
          * @return the resulting items from the transformation
@@ -2307,6 +2320,22 @@ public final class Chainables {
 
             return list;
         }
+    }
+
+    /**
+     * @param items
+     * @param keyExtractor
+     * @return
+     * @see Chainable#toMap(Function)
+     */
+    public static <K, V> Map<K, V> toMap(Iterable<V> items, Function<V, K> keyExtractor) {
+        if (items == null || keyExtractor == null) {
+            return Collections.emptyMap();
+        }
+
+        final Map<K, V> map = new HashMap<>();
+        apply(items, i -> map.put(keyExtractor.apply(i), i));
+        return map;
     }
 
     /**

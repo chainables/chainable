@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -396,6 +397,22 @@ public class ChainableTest {
 
         // Then
         assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testMap() {
+        // Given
+        final Chainable<String> items = Chainable.from("a", "b", "c", "d", "e");
+
+        // When
+        Map<String, String> map = items.toMap(i -> i);
+
+        // Then
+        assertEquals(items.size(), map.size());
+        for (String item : items) {
+            String mappedItem = map.get(item);
+            assertNotNull(mappedItem);
+        }
     }
 
     @Test
