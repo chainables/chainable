@@ -260,7 +260,7 @@ public class ChainableTest {
         String actual = String.join("", collection);
 
         // Then
-        assertEquals(expected.length(), oddsLessThan6.size());
+        assertEquals(expected.length(), oddsLessThan6.count());
         assertEquals(expected, actual);
     }
 
@@ -537,7 +537,7 @@ public class ChainableTest {
         Map<String, String> map = items.toMap(i -> i);
 
         // Then
-        assertEquals(items.size(), map.size());
+        assertEquals(items.count(), map.size());
         for (String item : items) {
             String mappedItem = map.get(item);
             assertNotNull(mappedItem);
@@ -653,9 +653,9 @@ public class ChainableTest {
         Chainable<String> transformedChain = itemsChain.transform(o -> o.toString());
 
         // When
-        int actualItemsChainSize = itemsChain.size();
-        int actualEmptyChainSize = emptyChain.size();
-        int actualTransformedChainSize = transformedChain.size();
+        long actualItemsChainSize = itemsChain.count();
+        long actualEmptyChainSize = emptyChain.count();
+        long actualTransformedChainSize = transformedChain.count();
 
         // Then
         assertEquals(expectedItemsSize, actualItemsChainSize);
@@ -672,9 +672,9 @@ public class ChainableTest {
 
         // When
         Chainable<String> tokens = Chainables.split(text, " ,'\"!?.()[]{};:-+=");
-        int actualTokens = tokens.size();
+        long actualTokens = tokens.count();
         Chainable<String> chars = Chainables.split(text);
-        int actualChars = chars.size();
+        long actualChars = chars.count();
         String mergedTokens = tokens.join();
         String mergedChars = chars.join();
 

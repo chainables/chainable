@@ -345,6 +345,8 @@ public final class Chainables {
 
         /**
          * Appends to the chain the result of the specified {@code nextItemExtractor} applied to the last item, unless the last item is null.
+         * <p>
+         * If the {@code nextItemExtractor} returns {@code null}, that is considered as the end of the chain and is not included in the resulting chain.
          * @param nextItemExtractor
          * @return resulting {@link Chainable}
          * @sawicki.similar
@@ -913,7 +915,7 @@ public final class Chainables {
          * <tr><td><i>C#:</i></td><td>{@code Enumerable.Count()}</td></tr>
          * </table>
          */
-        default int size() {
+        default long count() {
             return Chainables.count(this);
         }
 
@@ -1218,7 +1220,7 @@ public final class Chainables {
      * @return true if there are at least the specified {@code min} number of {@code items}, stopping the traversal as soon as that can be determined
      * @see Chainable#atLeast(int)
      */
-    public static <T> boolean atLeast(Iterable<T> items, int min) {
+    public static <T> boolean atLeast(Iterable<T> items, long min) {
         if (min <= 0) {
             return true;
         } else if (items == null) {
@@ -1240,7 +1242,7 @@ public final class Chainables {
      * @return true if there are at most the specified {@code max} number of {@code items}, stopping the traversal as soon as that can be determined
      * @see Chainable#atMost(int)
      */
-    public static <T> boolean atMost(Iterable<T> items, int max) {
+    public static <T> boolean atMost(Iterable<T> items, long max) {
         if (items == null && max >= 0) {
             return true;
         } else if (items == null) {
@@ -1776,9 +1778,9 @@ public final class Chainables {
      *
      * @param items an items to count
      * @return the number of items
-     * @see Chainable#size()
+     * @see Chainable#count()
      */
-    public static <T> int count(Iterable<T> items) {
+    public static <T> long count(Iterable<T> items) {
         if (items == null) {
             return 0;
         }
@@ -1788,7 +1790,7 @@ public final class Chainables {
         }
 
         Iterator<T> iter = items.iterator();
-        int size = 0;
+        long size = 0;
         while (iter.hasNext()) {
             iter.next();
             size++;
@@ -2200,7 +2202,7 @@ public final class Chainables {
      * @return
      * @see Chainable#last(int)
      */
-    public static <T> Chainable<T> last(Iterable<T> items, int count) {
+    public static <T> Chainable<T> last(Iterable<T> items, long count) {
         if (items == null) {
             return null;
         }
@@ -2211,7 +2213,7 @@ public final class Chainables {
                 return new Iterator<T>() {
                     final List<T> list = Chainables.toList(items);
                     final int size = this.list.size();
-                    int next = this.size - count;
+                    long next = this.size - count;
 
                     @Override
                     public boolean hasNext() {
@@ -2220,7 +2222,7 @@ public final class Chainables {
 
                     @Override
                     public T next() {
-                        return this.list.get(this.next++);
+                        return this.list.get((int) this.next++);
                     }
                 };
             }
@@ -2670,14 +2672,14 @@ public final class Chainables {
      * @return
      */
     public static String[] toArray(Iterable<String> items) {
-        int len;
+        long len;
         if (items == null) {
             len = 0;
         } else {
             len = count(items);
         }
 
-        String[] array = new String[len];
+        String[] array = new String[(int) len];
         int i = 0;
         for (String item : items) {
             array[i++] = item;
