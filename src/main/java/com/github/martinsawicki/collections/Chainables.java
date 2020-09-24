@@ -653,6 +653,35 @@ public final class Chainables {
         }
 
         /**
+         * Returns the last item in this chain.
+         * <p>
+         * This triggers a full traversal/evaluation of all the items.
+         * @return the last item
+         * @sawicki.similar
+         * <table summary="Similar to:">
+         * <tr><td><i>C#:</i></td><td>{@code Enumerable.LastOrDefault()}</td></tr>
+         * </table>
+         */
+        default T last() {
+            return Chainables.last(this);
+        }
+
+        /**
+         * Returns the last {@code count} items from the end of this chain.
+         * <p>
+         * This triggers a full tarversal/evaluation of all the items.
+         * @param count number of items to return from the end
+         * @return up to the specified {@code count} of items from the end (or fewer if the chain is shorter than that)
+         * @sawicki.similar
+         * <table summary="Similar to:">
+         * <tr><td><i>C#:</i></td><td>{@code Enumerable.TakeLast()}</td></tr>
+         * </table>
+         */
+        default Chainable<T> last(int count) {
+            return Chainables.last(this, count);
+        }
+
+        /**
          * Returns the item tha has the highest value extracted by the specified {@code valueExtractor} in this chain.
          * <p>
          * This triggers a full traversal/evaluation of the items.
@@ -1998,6 +2027,63 @@ public final class Chainables {
      */
     public static <T> String join(String delimiter, Stream<T> stream) {
         return (stream != null) ? Chainables.join(delimiter, stream.iterator()) : null;
+    }
+
+    /**
+     * @param items
+     * @return
+     * @see Chainable#last()
+     */
+    public static <T> T last(Iterable<T> items) {
+        T last = null;
+        if (Chainables.isNullOrEmpty(items)) {
+            // Skip
+        } else if (items instanceof List<?>) {
+            // If list, then faster lookup
+            List<T> list = (List<T>)items;
+            last = list.get(list.size() - 1);
+        } else {
+            // Else, slow lookup
+            Iterator<T> iter = items.iterator();
+            while (iter.hasNext()) {
+                last = iter.next();
+            }
+        }
+
+        return last;
+    }
+
+    /**
+     * @param items
+     * @param count
+     * @return
+     * @see Chainable#last(int)
+     */
+    public static <T> Chainable<T> last(Iterable<T> items, int count) {
+        if (items == null) {
+            return null;
+        }
+
+        return Chainable.from(new Iterable<T>() {
+            @Override
+            public Iterator<T> iterator() {
+                return new Iterator<T>() {
+                    final List<T> list = Chainables.toList(items);
+                    final int size = this.list.size();
+                    int next = this.size - count;
+
+                    @Override
+                    public boolean hasNext() {
+                        return (this.list != null) ? this.next >= 0 && this.next < this.size : false;
+                    }
+
+                    @Override
+                    public T next() {
+                        return this.list.get(this.next++);
+                    }
+                };
+            }
+        });
     }
 
     /**

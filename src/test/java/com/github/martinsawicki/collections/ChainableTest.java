@@ -166,10 +166,10 @@ public class ChainableTest {
         String expected = String.join(",", expectedResults);
 
         // When
-        Chainable<String> results = roots.breadthFirstWhile(
+        String actual = roots.breadthFirstWhile(
                 s -> roots.transform(o -> s + o),
-                s -> s.length() < 3);
-        String actual = String.join(",", results);
+                s -> s.length() < 3)
+                .join(",");
 
         // Then
         assertEquals(expected, actual);
@@ -392,16 +392,13 @@ public class ChainableTest {
         final Chainable<String> items = Chainable.from("a", "b", "c", "d", "e", "f", "g", "h", "i");
 
         // When
-        Chainable<String> first5 = items.first(5);
-        Chainable<String> first11 = items.first(11);
+        String actualFirst5 = items.first(5).join();
+        String actualFirst11 = items.first(11).join();
         Chainable<String> first0 = items.first(0);
 
-        String first5Text = String.join("", first5);
-        String first11Text = String.join("", first11);
-
         // Then
-        assertEquals("abcde", first5Text);
-        assertEquals("abcdefghi", first11Text);
+        assertEquals("abcde", actualFirst5);
+        assertEquals("abcdefghi", actualFirst11);
         assertTrue(first0.isEmpty());
     }
 
@@ -434,6 +431,32 @@ public class ChainableTest {
 
         // Then
         assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testLast() {
+        // Given
+        Iterable<String> items = Arrays.asList("a", "b", "c");
+        Iterable<String> itemsEmpty = new ArrayList<>();
+
+        // When
+        String last = Chainables.last(items);
+        String actualLastOneNonEmpty = Chainables.last(items, 1).join();
+        String actualLastOneEmpty = Chainables.last(itemsEmpty, 1).join();
+        String actualTooMany = Chainables.last(items, 4).join();
+        String actualAll = Chainables.last(items, Chainables.count(items)).join();
+        String actualLastTwo = Chainables.last(items, 2).join();
+
+        // Then
+        assertNotNull(last);
+        assertEquals("c", last);
+        assertNull(Chainables.last(null));
+        assertNull(Chainables.last(itemsEmpty));
+        assertEquals("c", actualLastOneNonEmpty);
+        assertTrue(actualLastOneEmpty.isEmpty());
+        assertTrue(actualTooMany.isEmpty());
+        assertEquals("abc", actualAll);
+        assertEquals("bc", actualLastTwo);
     }
 
     @Test
