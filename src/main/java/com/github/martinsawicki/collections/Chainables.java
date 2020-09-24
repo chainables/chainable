@@ -568,6 +568,33 @@ public final class Chainables {
         }
 
         /**
+         * Returns the first item in the chain.
+         * @return the first item or {@code null} if none
+         * @sawicki.similar
+         * <table summary="Similar to:">
+         * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#findFirst()}</td></tr>
+         * <tr><td><i>C#:</i></td><td>{@code Enumerable.FirstOrDefault()}</td></tr>
+         * </table>
+         */
+        default T first() {
+            return Chainables.first(this);
+        }
+
+        /**
+         * Returns the first {@code count} of items in this chain.
+         * @param number
+         * @return the specified {@code count} of items from the beginning
+         * @sawicki.similar
+         * <table summary="Similar to:">
+         * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#limit(long)}</td></tr>
+         * <tr><td><i>C#:</i></td><td>{@code Enumerable.Take()}</td></tr>
+         * </table>
+         */
+        default Chainable<T> first(int count) {
+            return Chainables.first(this, count);
+        }
+
+        /**
          * Determines whether this chain contains any items.
          * @return {@code true} if empty, else {@code false}
          * @sawicki.similar
@@ -1771,6 +1798,65 @@ public final class Chainables {
             } else {
                 return true;
             }
+        }
+    }
+
+    /**
+     * Returns the first item from the specified items or {@code null} if no items.
+     * @param items items to return the first item from
+     * @return the first item
+     * @see Chainable#first()
+     */
+    public static <T> T first(Iterable<T> items) {
+        if (items == null) {
+            return null;
+        } else {
+            Iterator<T> iter = items.iterator();
+            if (!iter.hasNext()) {
+                return null;
+            } else {
+                return iter.next();
+            }
+        }
+    }
+
+    /**
+     * @param items
+     * @param number
+     * @return the first number of items
+     * @see Chainable#first(int)
+     */
+    public static <T> Chainable<T> first(Iterable<T> items, int number) {
+        if (items == null) {
+            return null;
+        } else {
+            return Chainable.from(new Iterable<T>() {
+                @Override
+                public Iterator<T> iterator() {
+                    return new Iterator<T>() {
+                        Iterator<T> iter = items.iterator();
+                        int returnedCount = 0;
+
+                        @Override
+                        public boolean hasNext() {
+                            if (returnedCount >= number) {
+                                return false;
+                            } else {
+                                return this.iter.hasNext();
+                            }
+                        }
+
+                        @Override
+                        public T next() {
+                            if (this.iter.hasNext()) {
+                                this.returnedCount++;
+                                return this.iter.next();
+                            } else {
+                                return null;
+                            }
+                        }
+                    };
+                }});
         }
     }
 

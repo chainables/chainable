@@ -369,6 +369,25 @@ public class ChainableTest {
     }
 
     @Test
+    public void testFirstNumber() {
+        // Given
+        final Chainable<String> items = Chainable.from("a", "b", "c", "d", "e", "f", "g", "h", "i");
+
+        // When
+        Chainable<String> first5 = items.first(5);
+        Chainable<String> first11 = items.first(11);
+        Chainable<String> first0 = items.first(0);
+
+        String first5Text = String.join("", first5);
+        String first11Text = String.join("", first11);
+
+        // Then
+        assertEquals("abcde", first5Text);
+        assertEquals("abcdefghi", first11Text);
+        assertTrue(first0.isEmpty());
+    }
+
+    @Test
     public void testFrom() {
         // Given
         String inputs[] = { "A", "B", "C", "D" };
