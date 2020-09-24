@@ -281,8 +281,13 @@ public final class Chainables {
         }
 
         /**
-         * The same as {@link #queue(Function)}.
-         * @param childTraverser
+         * Traverses the items in this chain in a breadth-first order as if it were a tree, where for each item, the items output by the specified
+         * {@code childExtractor} applied to it are appended at the end of the chain.
+         * <p>
+         * To indicate the absence of children for an item, the child extractor may output {@code null}.
+         * <p>
+         * The traversal protects against potential cycles by not visiting items that satisfy the equality ({@code equals()}) check against an item already seen before.
+         * @param childExtractor
          * @return resulting chain
          * @see #queue(Function)
          * @see #queueUntil(Function, Function)
@@ -290,13 +295,22 @@ public final class Chainables {
          * @see #breadthFirstWhile(Function, Function)
          * @see #depthFirst(Function)
          */
-        default Chainable<T> breadthFirst(Function<T, Iterable<T>> childTraverser) {
-            return Chainables.breadthFirst(this, childTraverser);
+        default Chainable<T> breadthFirst(Function<T, Iterable<T>> childExtractor) {
+            return Chainables.breadthFirst(this, childExtractor);
         }
 
         /**
-         * The same as {@link #queueUntil(Function, Function)}.
-         * @param childTraverser
+         * Traverses the items in this chain in a breadth-first order as if it were a tree, where for each item, the items output by the specified
+         * {@code childExtractor} applied to it are appended at the end of the chain, <i>up to and including</i> the parent item that satisfies the specified
+         * {@code condition}, but not its descendants that would be otherwise returned by the {@code childExtractor}.
+         * <p>
+         * It can be thought of trimming the breadth-first traversal of a hypothetical tree right below the level of the item satisfying
+         * the {@code condition}, but continuing with other items in the chain.
+         * <p>
+         * To indicate the absence of children for an item, the child extractor may output {@code null}.
+         * <p>
+         * The traversal protects against potential cycles by not visiting items that satisfy the equality ({@code equals()}) check against an item already seen before.
+         * @param childExtractor
          * @param condition
          * @return resulting {@link Chainable}
          * @see #queueUntil(Function, Function)
@@ -305,14 +319,17 @@ public final class Chainables {
          * @see #breadthFirst(Function)
          * @see #depthFirst(Function)
          */
-        default Chainable<T> breadthFirstUntil(Function<T, Iterable<T>> childTraverser, Function<T, Boolean> condition) {
-            return Chainables.queueUntil(this, childTraverser, condition);
+        default Chainable<T> breadthFirstUntil(Function<T, Iterable<T>> childExtractor, Function<T, Boolean> condition) {
+            return Chainables.queueUntil(this, childExtractor, condition);
         }
 
         /**
          * Traverses the items in this chain in a breadth-first order as if it's a tree, where for each item, those of its children returned by the specified
          * {@code childTraverser} are appended to the end of the chain that satisfy the specified {@code condition}.
-         * @param childTraverser
+         * <p>
+         * It can be thought of trimming the breadth-first traversal of a hypothetical tree right above the level of each item satisfying
+         * the {@code condition}, but continuing with other items in the chain.
+         * @param childExtractor
          * @param condition
          * @return resulting {@link Chainable}
          * @see #queueUntil(Function, Function)
@@ -321,8 +338,8 @@ public final class Chainables {
          * @see #breadthFirst(Function)
          * @see #depthFirst(Function)
          */
-        default Chainable<T> breadthFirstWhile(Function<T, Iterable<T>> childTraverser, Function<T, Boolean> condition) {
-            return Chainables.breadthFirstWhile(this, childTraverser, condition);
+        default Chainable<T> breadthFirstWhile(Function<T, Iterable<T>> childExtractor, Function<T, Boolean> condition) {
+            return Chainables.breadthFirstWhile(this, childExtractor, condition);
         }
 
         /**
@@ -447,7 +464,9 @@ public final class Chainables {
          * Traverses the items in a depth-first manner, by visiting the children of each item in the chain, as returned by the
          * specified {@code childExtractor} before visting its siblings, in a de-facto recursive manner.
          * <p>
-         * For items that do not have children, the {@code childExtractor} can return {@code null}.
+         * For items that do not have children, the {@code childExtractor} may return {@code null}.
+         * <p>
+         * Note that the traversal protects against potential cycles by not visiting items that satisfy the equality ({@code equals()}) check against an item already seen before.
          * @param childExtractor
          * @return resulting chain
          * @see #breadthFirst(Function)
@@ -549,6 +568,59 @@ public final class Chainables {
         }
 
         /**
+         * Returns the first item in the chain.
+         * @return the first item or {@code null} if none
+         * @sawicki.similar
+         * <table summary="Similar to:">
+         * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#findFirst()}</td></tr>
+         * <tr><td><i>C#:</i></td><td>{@code Enumerable.FirstOrDefault()}</td></tr>
+         * </table>
+         */
+        default T first() {
+            return Chainables.first(this);
+        }
+
+        /**
+         * Returns the first {@code count} of items in this chain.
+         * @param number
+         * @return the specified {@code count} of items from the beginning
+         * @sawicki.similar
+         * <table summary="Similar to:">
+         * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#limit(long)}</td></tr>
+         * <tr><td><i>C#:</i></td><td>{@code Enumerable.Take()}</td></tr>
+         * </table>
+         */
+        default Chainable<T> first(int count) {
+            return Chainables.first(this, count);
+        }
+
+        /**
+         * Finds the first item satisfying the specified {@code condition}.
+         * @param condition
+         * @return the first item satisfying the specified {@code condition}
+         * @sawicki.similar
+         * <table summary="Similar to:">
+         * <tr><td><i>Java:</i></td><td>a combination of {@link java.util.stream.Stream#filter(Predicate)} and {@link java.util.stream.Stream#findFirst()}</td></tr>
+         * <tr><td><i>C#:</i></td><td>{@code Enumerable.FirstOrDefault()}</td></tr>
+         * </table>
+         * @see #firstWhereEither(Predicate...)
+         */
+        default T firstWhere(Predicate<T> condition) {
+            return Chainables.firstWhereEither(this, condition);
+        }
+
+        /**
+         * Finds the first item satisying any of the specified {@code conditions}
+         * @param conditions
+         * @return the first item satisfying any of the specified {@code conditions}
+         * @see #firstWhere(Predicate)
+         */
+        @SuppressWarnings("unchecked")
+        default T firstWhereEither(Predicate<T>... conditions) {
+            return Chainables.firstWhereEither(this, conditions);
+        }
+
+        /**
          * Determines whether this chain contains any items.
          * @return {@code true} if empty, else {@code false}
          * @sawicki.similar
@@ -578,6 +650,35 @@ public final class Chainables {
          */
         default String join(String delimiter) {
             return Chainables.join(delimiter, this);
+        }
+
+        /**
+         * Returns the last item in this chain.
+         * <p>
+         * This triggers a full traversal/evaluation of all the items.
+         * @return the last item
+         * @sawicki.similar
+         * <table summary="Similar to:">
+         * <tr><td><i>C#:</i></td><td>{@code Enumerable.LastOrDefault()}</td></tr>
+         * </table>
+         */
+        default T last() {
+            return Chainables.last(this);
+        }
+
+        /**
+         * Returns the last {@code count} items from the end of this chain.
+         * <p>
+         * This triggers a full tarversal/evaluation of all the items.
+         * @param count number of items to return from the end
+         * @return up to the specified {@code count} of items from the end (or fewer if the chain is shorter than that)
+         * @sawicki.similar
+         * <table summary="Similar to:">
+         * <tr><td><i>C#:</i></td><td>{@code Enumerable.TakeLast()}</td></tr>
+         * </table>
+         */
+        default Chainable<T> last(int count) {
+            return Chainables.last(this, count);
         }
 
         /**
@@ -846,6 +947,19 @@ public final class Chainables {
          */
         default List<T> toList() {
             return Chainables.toList(this);
+        }
+
+        /**
+         * Puts the items from this chain into a map indexed by the specified {@code keyExtractor} applied to each item.
+         * @param keyExtractor
+         * @return a map of the items indexed by the key produced by the specified {@code keyExtractor}
+         * @sawicki.similar
+         * <table summary="Similar to:">
+         * <tr><td><i>C#:</i></td><td>{@code Enumerable.ToDictionary()}</td></tr>
+         * </table>
+         */
+        default <K> Map<K, T> toMap(Function<T, K> keyExtractor) {
+            return Chainables.toMap(this, keyExtractor);
         }
 
         /**
@@ -1743,6 +1857,91 @@ public final class Chainables {
     }
 
     /**
+     * Returns the first item from the specified items or {@code null} if no items.
+     * @param items items to return the first item from
+     * @return the first item
+     * @see Chainable#first()
+     */
+    public static <T> T first(Iterable<T> items) {
+        if (items == null) {
+            return null;
+        } else {
+            Iterator<T> iter = items.iterator();
+            if (!iter.hasNext()) {
+                return null;
+            } else {
+                return iter.next();
+            }
+        }
+    }
+
+    /**
+     * @param items
+     * @param number
+     * @return the first number of items
+     * @see Chainable#first(int)
+     */
+    public static <T> Chainable<T> first(Iterable<T> items, int number) {
+        if (items == null) {
+            return null;
+        } else {
+            return Chainable.from(new Iterable<T>() {
+                @Override
+                public Iterator<T> iterator() {
+                    return new Iterator<T>() {
+                        Iterator<T> iter = items.iterator();
+                        int returnedCount = 0;
+
+                        @Override
+                        public boolean hasNext() {
+                            if (returnedCount >= number) {
+                                return false;
+                            } else {
+                                return this.iter.hasNext();
+                            }
+                        }
+
+                        @Override
+                        public T next() {
+                            if (this.iter.hasNext()) {
+                                this.returnedCount++;
+                                return this.iter.next();
+                            } else {
+                                return null;
+                            }
+                        }
+                    };
+                }});
+        }
+    }
+
+    /**
+     * Finds the first item satisfying the specified condition.
+     * @param items
+     * @param predicate
+     * @return
+     * @see Chainable#firstWhereEither(Predicate...)
+     */
+    @SafeVarargs
+    public static <V> V firstWhereEither(Iterable<V> items, Predicate<V>... conditions) {
+        if (items == null) {
+            return null;
+        } else if (conditions == null) {
+            return Chainables.first(items);
+        } else {
+            for (V item : items) {
+                for (Predicate<V> condition : conditions) {
+                    if (condition.test(item)) {
+                        return item;
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Determines whether the specified array is empty or null.
      * @param array the array to check
      * @return {@code true} if the specified array is null or empty, else {@code false}
@@ -1828,6 +2027,63 @@ public final class Chainables {
      */
     public static <T> String join(String delimiter, Stream<T> stream) {
         return (stream != null) ? Chainables.join(delimiter, stream.iterator()) : null;
+    }
+
+    /**
+     * @param items
+     * @return
+     * @see Chainable#last()
+     */
+    public static <T> T last(Iterable<T> items) {
+        T last = null;
+        if (Chainables.isNullOrEmpty(items)) {
+            // Skip
+        } else if (items instanceof List<?>) {
+            // If list, then faster lookup
+            List<T> list = (List<T>)items;
+            last = list.get(list.size() - 1);
+        } else {
+            // Else, slow lookup
+            Iterator<T> iter = items.iterator();
+            while (iter.hasNext()) {
+                last = iter.next();
+            }
+        }
+
+        return last;
+    }
+
+    /**
+     * @param items
+     * @param count
+     * @return
+     * @see Chainable#last(int)
+     */
+    public static <T> Chainable<T> last(Iterable<T> items, int count) {
+        if (items == null) {
+            return null;
+        }
+
+        return Chainable.from(new Iterable<T>() {
+            @Override
+            public Iterator<T> iterator() {
+                return new Iterator<T>() {
+                    final List<T> list = Chainables.toList(items);
+                    final int size = this.list.size();
+                    int next = this.size - count;
+
+                    @Override
+                    public boolean hasNext() {
+                        return (this.list != null) ? this.next >= 0 && this.next < this.size : false;
+                    }
+
+                    @Override
+                    public T next() {
+                        return this.list.get(this.next++);
+                    }
+                };
+            }
+        });
     }
 
     /**
@@ -2307,6 +2563,22 @@ public final class Chainables {
 
             return list;
         }
+    }
+
+    /**
+     * @param items
+     * @param keyExtractor
+     * @return
+     * @see Chainable#toMap(Function)
+     */
+    public static <K, V> Map<K, V> toMap(Iterable<V> items, Function<V, K> keyExtractor) {
+        if (items == null || keyExtractor == null) {
+            return Collections.emptyMap();
+        }
+
+        final Map<K, V> map = new HashMap<>();
+        apply(items, i -> map.put(keyExtractor.apply(i), i));
+        return map;
     }
 
     /**

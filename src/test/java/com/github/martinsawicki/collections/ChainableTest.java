@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -165,10 +166,10 @@ public class ChainableTest {
         String expected = String.join(",", expectedResults);
 
         // When
-        Chainable<String> results = roots.breadthFirstWhile(
+        String actual = roots.breadthFirstWhile(
                 s -> roots.transform(o -> s + o),
-                s -> s.length() < 3);
-        String actual = String.join(",", results);
+                s -> s.length() < 3)
+                .join(",");
 
         // Then
         assertEquals(expected, actual);
@@ -368,6 +369,40 @@ public class ChainableTest {
     }
 
     @Test
+    public void testFirst() {
+        // Given
+        Iterable<String> items = Arrays.asList("a", "b", "c");
+        Iterable<String> itemsEmpty = new ArrayList<>();
+
+        // When
+        String first = Chainables.first(items);
+
+        // Then
+        assertNotNull(first);
+        assertEquals("a", first);
+        assertNull(Chainables.first(itemsEmpty));
+        assertNull(Chainables.first(null));
+        assertNotNull(Chainables.firstWhereEither(items, i -> i.equals("b")));
+        assertNull(Chainables.firstWhereEither(items, i -> i.equals("d")));
+    }
+
+    @Test
+    public void testFirstNumber() {
+        // Given
+        final Chainable<String> items = Chainable.from("a", "b", "c", "d", "e", "f", "g", "h", "i");
+
+        // When
+        String actualFirst5 = items.first(5).join();
+        String actualFirst11 = items.first(11).join();
+        Chainable<String> first0 = items.first(0);
+
+        // Then
+        assertEquals("abcde", actualFirst5);
+        assertEquals("abcdefghi", actualFirst11);
+        assertTrue(first0.isEmpty());
+    }
+
+    @Test
     public void testFrom() {
         // Given
         String inputs[] = { "A", "B", "C", "D" };
@@ -396,6 +431,48 @@ public class ChainableTest {
 
         // Then
         assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testLast() {
+        // Given
+        Iterable<String> items = Arrays.asList("a", "b", "c");
+        Iterable<String> itemsEmpty = new ArrayList<>();
+
+        // When
+        String last = Chainables.last(items);
+        String actualLastOneNonEmpty = Chainables.last(items, 1).join();
+        String actualLastOneEmpty = Chainables.last(itemsEmpty, 1).join();
+        String actualTooMany = Chainables.last(items, 4).join();
+        String actualAll = Chainables.last(items, Chainables.count(items)).join();
+        String actualLastTwo = Chainables.last(items, 2).join();
+
+        // Then
+        assertNotNull(last);
+        assertEquals("c", last);
+        assertNull(Chainables.last(null));
+        assertNull(Chainables.last(itemsEmpty));
+        assertEquals("c", actualLastOneNonEmpty);
+        assertTrue(actualLastOneEmpty.isEmpty());
+        assertTrue(actualTooMany.isEmpty());
+        assertEquals("abc", actualAll);
+        assertEquals("bc", actualLastTwo);
+    }
+
+    @Test
+    public void testMap() {
+        // Given
+        final Chainable<String> items = Chainable.from("a", "b", "c", "d", "e");
+
+        // When
+        Map<String, String> map = items.toMap(i -> i);
+
+        // Then
+        assertEquals(items.size(), map.size());
+        for (String item : items) {
+            String mappedItem = map.get(item);
+            assertNotNull(mappedItem);
+        }
     }
 
     @Test
