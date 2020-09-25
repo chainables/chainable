@@ -649,6 +649,22 @@ public final class Chainables {
         }
 
         /**
+         * Interleaves the items of the specified {@code iterables}.
+         * <p><b>Example:</b>
+         * <table summary="Example:">
+         * <tr><td>{@code items1}:</td><td>1, 3, 5</td></tr>
+         * <tr><td>{@code items2}:</td><td>2, 4, 6</td></tr>
+         * <tr><td><i>result:</i></td><td>1, 2, 3, 4, 5, 6</td></tr>
+         * </table>
+         * @param iterables to merge by interleaving
+         * @return items from the interleaved merger of the specified {@code iterables}
+         */
+        @SuppressWarnings("unchecked")
+        default Chainable<T> interleave(Iterable<T>...iterables) {
+            return Chainables.interleave(this, iterables);
+        }
+
+        /**
          * Determines whether this chain contains any items.
          * @return {@code true} if empty, else {@code false}
          * @sawicki.similar
@@ -2085,6 +2101,52 @@ public final class Chainables {
     }
 
     /**
+     * @param items1
+     * @param items2
+     * @return
+     * @see Chainable#interleave(Iterable...)
+     */
+    @SafeVarargs
+    public static <T> Chainable<T> interleave(Iterable<T> items1, Iterable<T>...items2) {
+        if (items1 == null || items2 == null) {
+            return Chainable.empty();
+        }
+
+        return Chainable.from(new Iterable<T>() {
+            @Override
+            public Iterator<T> iterator() {
+                return new Iterator<T>() {
+                    Deque<Iterator<T>> iters = new LinkedList<Iterator<T>>(
+                            Chainable
+                                .from(items1.iterator())
+                                .concat(Chainable.from(items2).transform(i -> i.iterator()))
+                                .toList());
+
+                    @Override
+                    public boolean hasNext() {
+                        while (!this.iters.isEmpty() && !this.iters.peek().hasNext()) {
+                            this.iters.removeFirst();
+                        }
+
+                        return !this.iters.isEmpty();
+                    }
+
+                    @Override
+                    public T next() {
+                        Iterator<T> iter = this.iters.removeFirst();
+                        if (iter != null) {
+                            this.iters.addLast(iter);
+                            return iter.next();
+                        } else {
+                            return null;
+                        }
+                    }
+                };
+            }
+        });
+    }
+
+    /**
      * Determines whether the specified array is empty or null.
      * @param array the array to check
      * @return {@code true} if the specified array is null or empty, else {@code false}
@@ -2755,13 +2817,17 @@ public final class Chainables {
 
                     @Override
                     public boolean hasNext() {
-                        return this.iterator.hasNext();
+                        if (Chainables.isNullOrEmpty(this.iterator)) {
+                            this.iterator = null;
+                            return false;
+                        } else {
+                            return this.iterator.hasNext();
+                        }
                     }
 
                     @Override
                     public O next() {
-                        return (this.iterator.hasNext()) ?
-                                transformer.apply(this.iterator.next()) : null;
+                        return transformer.apply(this.iterator.next());
                     }
                 };
             }

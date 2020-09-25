@@ -488,6 +488,25 @@ public class ChainableTest {
         assertEquals(expectedTransformed, actualTransformed);
     }
 
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testInterleave() {
+        // Given
+        final Chainable<Integer> odds = Chainable.from(1, 3, 5, 7);
+        final Chainable<Integer> evens = Chainable.from(2, 4, 6, 8, 10, 12);
+        final Chainable<Integer> zeros = Chainable.from(0, 0, 0);
+        String expected = "123456781012";
+        String expected2 = "102304506781012";
+
+        // When
+        String actual = odds.interleave(evens).join();
+        String actual2 = Chainables.interleave(odds, zeros, evens).join();
+
+        // Then
+        assertEquals(expected, actual);
+        assertEquals(expected2, actual2);
+    }
+
     @Test
     public void testJoin() {
         // Given
