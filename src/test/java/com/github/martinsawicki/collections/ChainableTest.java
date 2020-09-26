@@ -683,6 +683,30 @@ public class ChainableTest {
     }
 
     @Test
+    public void testSorting() {
+        // Given
+        Chainable<String> textChain = Chainable.from(Arrays.asList("c", "b", "a", "d"));
+        Chainable<Long> numericalChain = Chainable.from(Arrays.asList(3l, 2l, 1l, 4l));
+        Chainable<Double> decimalChain = Chainable.from(1.0, 3.0, 2.0, 5.0, 4.0);
+
+        // When
+        String actualTextAlphaAsc = textChain.ascending().join();
+        String actualTextAlphaDesc = textChain.descending().join();
+        String actualNumbersAsc = numericalChain.ascending().join();
+        String actualNumbersDesc = numericalChain.descending().join();
+        String actualDecAsc = decimalChain.ascending().join(",");
+        String actualDecDesc = decimalChain.descending().join(",");
+
+        // Then
+        assertEquals("abcd", actualTextAlphaAsc);
+        assertEquals("dcba", actualTextAlphaDesc);
+        assertEquals("1234", actualNumbersAsc);
+        assertEquals("4321", actualNumbersDesc);
+        assertEquals("1.0,2.0,3.0,4.0,5.0", actualDecAsc);
+        assertEquals("5.0,4.0,3.0,2.0,1.0", actualDecDesc);
+    }
+
+    @Test
     public void testSplit() {
         // Given
         String text = "Hello World! This is Mr. Johnson speaking... Listen, how are you?";
