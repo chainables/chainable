@@ -691,13 +691,19 @@ public class ChainableTest {
 
         // When
         String actualTextAlphaAsc = textChain.ascending().join();
+        String actualTextAlphaDesc = textChain.descending().join();
         String actualNumbersAsc = numericalChain.ascending().join();
+        String actualNumbersDesc = numericalChain.descending().join();
         String actualDecAsc = decimalChain.ascending().join(",");
+        String actualDecDesc = decimalChain.descending().join(",");
 
         // Then
         assertEquals("abcd", actualTextAlphaAsc);
+        assertEquals("dcba", actualTextAlphaDesc);
         assertEquals("1234", actualNumbersAsc);
+        assertEquals("4321", actualNumbersDesc);
         assertEquals("1.0,2.0,3.0,4.0,5.0", actualDecAsc);
+        assertEquals("5.0,4.0,3.0,2.0,1.0", actualDecDesc);
     }
 
     @Test

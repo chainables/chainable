@@ -204,6 +204,8 @@ public final class Chainables {
          * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#peek(Consumer)}</td></tr>
          * <tr><td><i>C#:</i></td><td>{@code Enumerable.Select()}</td></tr>
          * </table>
+         * @see #apply()
+         * @see #apply(Consumer)
          */
         default Chainable<T> applyAsYouGo(Consumer<T> action) {
             return Chainables.applyAsYouGo(this, action); // TODO: shouldn't this call applyAsYouGo?
@@ -217,6 +219,7 @@ public final class Chainables {
          * <P>
          * Note this triggers a full traversal/evaluation of the chain.
          * @return sorted items
+         * @see #descending()
          */
         default Chainable<T> ascending() {
             return Chainables.ascending(this);
@@ -234,6 +237,7 @@ public final class Chainables {
          * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#sorted(Comparator)}, but specific to {@link String} outputs</td></tr>
          * <tr><td><i>C#:</i></td><td>{@code Enumerable.ThenBy()}</td></tr>
          * </table>
+         * @see #descending(ToStringFunction)
          */
         default Chainable<T> ascending(ToStringFunction<T> keyExtractor) {
             return Chainables.ascending(this, keyExtractor);
@@ -251,6 +255,7 @@ public final class Chainables {
          * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#sorted(Comparator)}, but specific to {@link Long} outputs</td></tr>
          * <tr><td><i>C#:</i></td><td>{@code Enumerable.ThenBy()}</td></tr>
          * </table>
+         * @see #descending(ToLongFunction)
          */
         default Chainable<T> ascending(ToLongFunction<T> keyExtractor) {
             return Chainables.ascending(this, keyExtractor);
@@ -268,6 +273,7 @@ public final class Chainables {
          * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#sorted(Comparator)}, but specific to {@link Double} outputs</td></tr>
          * <tr><td><i>C#:</i></td><td>{@code Enumerable.ThenBy()}</td></tr>
          * </table>
+         * @see #descending(ToDoubleFunction)
          */
         default Chainable<T> ascending(ToDoubleFunction<T> keyExtractor) {
             return Chainables.ascending(this, keyExtractor);
@@ -585,6 +591,74 @@ public final class Chainables {
          */
         default Chainable<T> depthFirst(Function<T, Iterable<T>> childExtractor) {
             return Chainables.depthFirst(this, childExtractor);
+        }
+
+        /**
+         * Sorts in the descending order by an automatically detected key based on the first item in the chain.
+         * <P>
+         * If the item type in the chain is {@link String}, or {@link Double}, or {@link Long}, then the value is used as the key.
+         * For other types, the return value of {@code toString()} is used as the key.
+         * <P>
+         * Note this triggers a full traversal/evaluation of the chain.
+         * @return sorted items
+         * @see #ascending()
+         */
+        default Chainable<T> descending() {
+            return Chainables.descending(this);
+        }
+
+        /**
+         * Sorts the items in this chain in the descending order based on the {@link Long}
+         * keys returned by the specified {@code keyExtractor} applied to each item.
+         * <P>
+         * Note this triggers a full traversal/evaluation of the chain.
+         * @param keyExtractor
+         * @return sorted items
+         * @sawicki.similar
+         * <table summary="Similar to:">
+         * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#sorted(Comparator)}, but specific to {@link Long} outputs</td></tr>
+         * <tr><td><i>C#:</i></td><td>{@code Enumerable.ThenByDescending()}</td></tr>
+         * </table>
+         * @see #ascending(ToLongFunction)
+         */
+        default Chainable<T> descending(ToLongFunction<T> keyExtractor) {
+            return Chainables.descending(this, keyExtractor);
+        }
+
+        /**
+         * Sorts the items in this chain in the descending order based on the {@link Double}
+         * keys returned by the specified {@code keyExtractor} applied to each item.
+         * <P>
+         * Note this triggers a full traversal/evaluation of the chain.
+         * @param keyExtractor
+         * @return sorted items
+         * @sawicki.similar
+         * <table summary="Similar to:">
+         * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#sorted(Comparator)}, but specific to {@link Double} outputs</td></tr>
+         * <tr><td><i>C#:</i></td><td>{@code Enumerable.ThenByDescending()}</td></tr>
+         * </table>
+         * @see #ascending(ToDoubleFunction)
+         */
+        default Chainable<T> descending(ToDoubleFunction<T> keyExtractor) {
+            return Chainables.descending(this, keyExtractor);
+        }
+
+        /**
+         * Sorts the items in this chain in the descending order based on the {@link String}
+         * keys returned by the specified {@code keyExtractor} applied to each item.
+         * <P>
+         * Note this triggers a full traversal/evaluation of the chain.
+         * @param keyExtractor
+         * @return sorted items
+         * @sawicki.similar
+         * <table summary="Similar to:">
+         * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#sorted(Comparator)}, but specific to {@link String} outputs</td></tr>
+         * <tr><td><i>C#:</i></td><td>{@code Enumerable.ThenByDescending()}</td></tr>
+         * </table>
+         * @see #ascending(ToStringFunction)
+         */
+        default Chainable<T> descending(ToStringFunction<T> keyExtractor) {
+            return Chainables.descending(this, keyExtractor);
         }
 
         /**
@@ -1931,6 +2005,45 @@ public final class Chainables {
      */
     public static <T> Chainable<T> depthFirst(Iterable<T> items, Function<T, Iterable<T>> childTraverser) {
         return traverse(items, childTraverser, false);
+    }
+
+    /**
+     * @param items items to sort
+     * @return sorted items
+     * @see Chainable#descending()
+     */
+    public static <T> Chainable<T> descending(Iterable<T> items) {
+        return sorted(items, false);
+    }
+
+    /**
+     * @param items
+     * @param keyExtractor
+     * @return
+     * @see Chainable#descending(ToStringFunction)
+     */
+    public static <T> Chainable<T> descending(Iterable<T> items, ToStringFunction<T> keyExtractor) {
+        return sortedBy(items, keyExtractor, false);
+    }
+
+    /**
+     * @param items
+     * @param keyExtractor
+     * @return
+     * @see Chainable#descending(ToLongFunction)
+     */
+    public static <T> Chainable<T> descending(Iterable<T> items, ToLongFunction<T> keyExtractor) {
+        return sortedBy(items, keyExtractor, false);
+    }
+
+    /**
+     * @param items
+     * @param comparable
+     * @return
+     * @see Chainable#descending(ToDoubleFunction)
+     */
+    public static <T> Chainable<T> descending(Iterable<T> items, ToDoubleFunction<T> comparable) {
+        return sortedBy(items, comparable, false);
     }
 
     /**
