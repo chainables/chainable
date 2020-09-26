@@ -489,6 +489,21 @@ public final class Chainables {
         }
 
         /**
+         * Counts the items in this chain.
+         * <p>
+         * This triggers a full traversal/evaluation of the items.
+         * @return total number of items
+         * @sawicki.similar
+         * <table summary="Similar to:">
+         * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#count()}</td></tr>
+         * <tr><td><i>C#:</i></td><td>{@code Enumerable.Count()}</td></tr>
+         * </table>
+         */
+        default long count() {
+            return Chainables.count(this);
+        }
+
+        /**
          * Traverses the items in a depth-first manner, by visiting the children of each item in the chain, as returned by the
          * specified {@code childExtractor} before visting its siblings, in a de-facto recursive manner.
          * <p>
@@ -918,21 +933,6 @@ public final class Chainables {
          */
         default Chainable<T> reverse() {
             return Chainables.reverse(this);
-        }
-
-        /**
-         * Counts the items in this chain.
-         * <p>
-         * This triggers a full traversal/evaluation of the items.
-         * @return total number of items
-         * @sawicki.similar
-         * <table summary="Similar to:">
-         * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#count()}</td></tr>
-         * <tr><td><i>C#:</i></td><td>{@code Enumerable.Count()}</td></tr>
-         * </table>
-         */
-        default long count() {
-            return Chainables.count(this);
         }
 
         /**
