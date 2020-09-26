@@ -419,6 +419,20 @@ public final class Chainables {
         }
 
         /**
+         * Casts the items in this chain to the specified class.
+         * @param clazz
+         * @return items as cast to the type indicated by the specified {@code clazz}
+         * @sawicki.similar
+         * <table summary="Similar to:">
+         * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#map(Function)}, where the specified function casts each item to the specified type</td></tr>
+         * <tr><td><i>C#:</i></td><td>{@code Enumerable.Cast()}</td></tr>
+         * </table>
+         */
+        default <T2> Chainable<T2> cast(Class<T2> clazz) {
+            return Chainables.cast(this, clazz);
+        }
+
+        /**
          * Appends to the chain the result of the specified {@code nextItemExtractor} applied to the last item, unless the last item is null.
          * <p>
          * If the {@code nextItemExtractor} returns {@code null}, that is considered as the end of the chain and is not included in the resulting chain.
@@ -1562,6 +1576,16 @@ public final class Chainables {
             Function<T, Boolean> condition) {
         final Function<T, Boolean> appliedCondition = (condition != null) ? condition : (o -> true);
         return breadthFirst(items, o -> Chainables.whereEither(childTraverser.apply(o), c -> Boolean.TRUE.equals(appliedCondition.apply(c))));
+    }
+
+    /**
+     * @param items
+     * @param clazz
+     * @return
+     * @see Chainable#cast(Class)
+     */
+    public static <T1, T2> Chainable<T2> cast(Iterable<T1> items, Class<T2> clazz) {
+        return (items == null || clazz == null) ? Chainable.from() : transform(items, o -> clazz.cast(o));
     }
 
     /**
