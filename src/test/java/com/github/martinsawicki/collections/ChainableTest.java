@@ -46,6 +46,28 @@ public class ChainableTest {
     }
 
     @Test
+    public void testAllWhereEither() {
+        // Given
+        final Chainable<Integer> odds = Chainable.from(1, 3, 5, 7);
+        final Chainable<Integer> evens = Chainable.from(2, 4, 6, 8);
+        final Chainable<Integer> mixed = Chainable.from(1, 2, 3, 4);
+
+        // When + Then
+        assertTrue(Chainables.allWhereEither(odds,
+                o -> o % 2 != 0,
+                o -> o > 0));
+        assertTrue(Chainables.allWhereEither(evens,
+                o -> o % 2 != 0,
+                o -> o > 0));
+        assertFalse(Chainables.allWhereEither(mixed,
+                o -> o % 2 != 0,
+                o -> o < 0));
+        assertFalse(Chainables.allWhereEither(odds,
+                o -> o % 2 == 0,
+                o -> o < 0));
+    }
+
+    @Test
     public void testAny() {
         // Given
         Iterable<String> items = Arrays.asList("a", "b", "c");

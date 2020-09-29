@@ -161,6 +161,31 @@ public final class Chainables {
         }
 
         /**
+         * Determines whether all the items in this chain satisfy the specified {@code condition}.
+         * @param condition
+         * @return {@code true} if all items satisfy the specified {@code condition}, otherwise {@code false}
+         * @sawicki.similar
+         * <table summary="Similar to:">
+         * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#allMatch(Predicate)))}</td></tr>
+         * <tr><td><i>C#:</i></td><td>{@code Enumerable.All()}</td></tr>
+         * </table>
+         */
+        default boolean allWhere(Predicate<T> condition) {
+            return Chainables.allWhere(this, condition);
+        }
+
+        /**
+         * Determines whether all the items in this chain satisfy any of the specified {@code conditions}
+         * @param conditions
+         * @return {@code true} if all items satisfy at least one of the {@code conditions}, otherwise {@code false}
+         * @see #allWhere(Predicate)
+         */
+        @SuppressWarnings("unchecked")
+        default boolean allWhereEither(Predicate<T>...conditions) {
+            return Chainables.allWhereEither(this, conditions);
+        }
+
+        /**
          * Determines whether this chain contains any items.
          * @return {@code true} if not empty (i.e. the opposite of {@link #isEmpty()})
          * @sawicki.similar
@@ -1346,6 +1371,32 @@ public final class Chainables {
         public String toString() {
             return Chainables.join("", this);
         }
+    }
+
+    /**
+     * @param items
+     * @param conditions
+     * @return
+     * @see Chainable#allWhereEither(Predicate...)
+     */
+    @SafeVarargs
+    public static <T> boolean allWhereEither(Iterable<T> items, Predicate<T>... conditions) {
+        if (items == null) {
+            return false;
+        } else {
+            Chainable<Predicate<T>> conds = Chainable.from(conditions);
+            return Chainables.noneWhere(items, i -> !conds.anyWhere(c -> c.test(i)));
+        }
+    }
+
+    /**
+     * @param items
+     * @param condition
+     * @return
+     * @see Chainable#allWhere(Predicate)
+     */
+    public static <T> boolean allWhere(Iterable<T> items, Predicate<T> condition) {
+        return allWhereEither(items, condition);
     }
 
     /**
