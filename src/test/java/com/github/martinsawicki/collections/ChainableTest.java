@@ -46,6 +46,16 @@ public class ChainableTest {
     }
 
     @Test
+    public void testAny() {
+        // Given
+        Iterable<String> items = Arrays.asList("a", "b", "c");
+
+        // When/Then
+        assertTrue(Chainables.anyWhereEither(items, o -> o.equals("b")));
+        assertFalse(Chainables.anyWhereEither(items, o -> o.equals("d")));
+    }
+
+    @Test
     public void testApply() {
         // Given
         Iterable<String> items = Arrays.asList("a", "b", "c");

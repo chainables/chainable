@@ -173,6 +173,31 @@ public final class Chainables {
         }
 
         /**
+         * Determines whether any of the items in this chain satisfy the specified {@code condition}.
+         * @param condition
+         * @return {@code true} if there are any items that satisfy the specified {@code condition}
+         * @sawicki.similar
+         * <table summary="Similar to:">
+         * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#anyMatch(Predicate)}</td></tr>
+         * <tr><td><i>C#:</i></td><td>{@code Enumerable.Any(Func)}</td></tr>
+         * </table>
+         */
+        default boolean anyWhere(Predicate<T> condition) {
+            return Chainables.anyWhere(this, condition);
+        }
+
+        /**
+         * Determines whether any of the items in this chain satisfy any of the specified {@code conditions}.
+         * @param conditions
+         * @return true if there are any items that satisfy any of the specified {@code conditions}
+         * @see #anyWhere(Predicate)
+         */
+        @SuppressWarnings("unchecked")
+        default boolean anyWhereEither(Predicate<T>... conditions) {
+            return Chainables.anyWhereEither(this, conditions);
+        }
+
+        /**
          * Ensures all items are traversed, forcing any of the predecessors in the chain to be fully evaluated.
          * <p>This is somewhat similar to {@link #toList()}, except that what is returned is still a {@link Chainable}.
          * @return self
@@ -1306,6 +1331,37 @@ public final class Chainables {
      */
     public static <V> boolean any(Iterable<V> iterable) {
         return !isNullOrEmpty(iterable);
+    }
+
+    /**
+     * @param items
+     * @param condition
+     * @return
+     * @see Chainable#anyWhere(Predicate)
+     */
+    public static <T> boolean anyWhere(Iterable<T> items, Predicate<T> condition) {
+        return Chainables.anyWhereEither(items, condition);
+    }
+
+    /**
+     * @param items
+     * @param conditions
+     * @return
+     * @see Chainable#anyWhereEither(Predicate...)
+     */
+    @SafeVarargs
+    public static <T> boolean anyWhereEither(Iterable<T> items, Predicate<T>...conditions) {
+        if (conditions == null) {
+            return true;
+        } else {
+            for (Predicate<T> condition : conditions) {
+                if (Chainables.firstWhereEither(items, condition) != null) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
     }
 
     /**
