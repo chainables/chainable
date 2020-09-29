@@ -174,6 +174,20 @@ public final class Chainables {
         }
 
         /**
+         * Returns a chain after skipping the first specified number of items.
+         * @param number the number of initial items to skip
+         * @return the remaining chain
+         * @sawicki.similar
+         * <table summary="Similar to:">
+         * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#skip(long))}</td></tr>
+         * <tr><td><i>C#:</i></td><td>{@code Enumerable.Skip()}</td></tr>
+         * </table>
+         */
+        default Chainable<T> afterFirst(long number) {
+            return Chainables.afterFirst(this, number);
+        }
+
+        /**
          * Determines whether all the items in this chain satisfy the specified {@code condition}.
          * @param condition
          * @return {@code true} if all items satisfy the specified {@code condition}, otherwise {@code false}
@@ -1392,8 +1406,17 @@ public final class Chainables {
      * @see Chainable#afterFirst()
      */
     public static <V> Chainable<V> afterFirst(Iterable<V> items) {
+        return afterFirst(items, 1);
+    }
+
+    /**
+     * @param items
+     * @param number
+     * @return
+     */
+    public static <V> Chainable<V> afterFirst(Iterable<V> items, long number) {
         if (items == null) {
-            return Chainable.from(new LinkedList<>());
+            return Chainable.empty();
         }
 
         return Chainable.from(new Iterable<V>() {
@@ -1401,23 +1424,27 @@ public final class Chainables {
             public Iterator<V> iterator() {
                 return new Iterator<V>() {
                     final Iterator<V> iter = items.iterator();
-                    boolean skippedFirst = false;
+                    long skippedNum = 0;
 
                     @Override
                     public boolean hasNext() {
                         if (!this.iter.hasNext()) {
                             return false;
-                        } else if (!this.skippedFirst) {
-                            this.iter.next();
-                            this.skippedFirst = true;
-                        }
+                        } else if (this.skippedNum >= number) {
+                            return this.iter.hasNext();
+                        } else {
+                            while (skippedNum < number && this.iter.hasNext()) {
+                                this.iter.next(); // Skip the next item
+                                this.skippedNum++;
+                            }
 
-                        return this.iter.hasNext();
+                            return this.skippedNum >= number && this.iter.hasNext();
+                        }
                     }
 
                     @Override
                     public V next() {
-                        return this.hasNext() ? this.iter.next() : null;
+                        return this.iter.next();
                     }
                 };
             }

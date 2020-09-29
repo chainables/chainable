@@ -54,13 +54,14 @@ public class ChainableTest {
 
         // When
         Chainable<String> afterFirst = items.afterFirst();
-        Chainable<String> afterSecond = afterFirst.afterFirst();
         String actualAfterFirst = Chainables.join("", afterFirst);
-        String actualAfterSecond = Chainables.join("", afterSecond);
+        String actualAfterSecond = afterFirst.afterFirst().join();
+        String actualAfterSecondNum = items.afterFirst(2).join();
 
         // Then
         assertEquals(expectedAfterFirst, actualAfterFirst);
         assertEquals(expectedAfterSecond, actualAfterSecond);
+        assertEquals(expectedAfterSecond, actualAfterSecondNum);
     }
 
     @Test
