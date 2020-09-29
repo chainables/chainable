@@ -177,6 +177,26 @@ public class ChainableTest {
     }
 
     @Test
+    public void testCached() {
+        // Given
+        Chainable<Long> randomInts = Chainable
+                .from((Long)null)
+                .chain(o -> Math.round(Math.random() * 100.0))
+                .withoutNull()
+                .first(10)
+                .cached();
+
+        // When
+        String partialTraversal = Chainables.join(", ", randomInts.first(5));
+        String fullTraversal = Chainables.join(", ", randomInts);
+        String secondTraversal = Chainables.join(", ", randomInts);
+
+        // Then
+        assertFalse(fullTraversal.startsWith(partialTraversal));
+        assertEquals(fullTraversal, secondTraversal);
+    }
+
+    @Test
     public void testChain() {
         // Given
         Iterable<String> items = Arrays.asList("a", "b", "c", "d");

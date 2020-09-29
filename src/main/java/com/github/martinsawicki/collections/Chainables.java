@@ -419,6 +419,22 @@ public final class Chainables {
         }
 
         /**
+         * Creates a chain that caches its evaluated items, once a full traversal is completed, so that subsequent traversals no longer
+         * re-evaluate each item but fetch them directly from the cache populated by the first traversal.
+         * <p>
+         * Note that if the first traversal is only partial (i.e. it does not reach the end) the cache is not yet activated, so the next traversal will still
+         * re-evaluate each item from the beginning, as if run for the first time.
+         * <p>
+         * If there are multiple iterators used from the chain, the first iterator to complete the traversal wins as far as cache population goes.
+         * The remaining iterators will continue unaffected, but their results, if different from the results of the first finished
+         * iterator, will be ignored for caching purposes.
+         * @return a chain that, upon the completion of the first full traversal, behaves like a fixed value list
+         */
+        default Chainable<T> cached() {
+            return Chainables.cached(this);
+        }
+
+        /**
          * Casts the items in this chain to the specified class.
          * @param clazz
          * @return items as cast to the type indicated by the specified {@code clazz}
@@ -1576,6 +1592,56 @@ public final class Chainables {
             Function<T, Boolean> condition) {
         final Function<T, Boolean> appliedCondition = (condition != null) ? condition : (o -> true);
         return breadthFirst(items, o -> Chainables.whereEither(childTraverser.apply(o), c -> Boolean.TRUE.equals(appliedCondition.apply(c))));
+    }
+
+    /**
+     * @param items
+     * @return
+     * @see Chainable#cached()
+     */
+    public static <T> Chainable<T> cached(Iterable<T> items) {
+        if (items == null) {
+            return Chainable.empty();
+        }
+
+        return Chainable.from(new Iterable<T>() {
+
+            List<T> cache = null;
+
+            @Override
+            public Iterator<T> iterator() {
+                if (cache != null) {
+                    // Cache already filled so return from it
+                    return this.cache.iterator();
+                } else {
+                    return new Iterator<T>() {
+                        Iterator<T> iter = items.iterator();
+                        List<T> tempCache = new ArrayList<>();
+
+                        @Override
+                        public boolean hasNext() {
+                            if (iter.hasNext()) {
+                                return true;
+                            } else {
+                                if (cache == null) {
+                                    // The first iterator to fill the cache wins
+                                    cache = tempCache;
+                                }
+
+                                return false;
+                            }
+                        }
+
+                        @Override
+                        public T next() {
+                            T next = iter.next();
+                            tempCache.add(next);
+                            return next;
+                        }
+                    };
+                }
+            }
+        });
     }
 
     /**
