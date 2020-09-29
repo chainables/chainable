@@ -47,6 +47,8 @@ so that subsequent chain can apply to their outputs in a quasi-parallel (or sequ
 
 - **breadth-first/depth-first traversal** - enabling tree-like traversals of a chain of items, where children of an item are dynamically added by the caller-specified child extractor and traversed either breadth-first (queue-like, `Chainable#breadthFirst()`) or depth-first (stack-like, `Chainable#depthFirst()`), both in a lazy fashion.
 
+- **single pass caching** - by default, each re-iteration over a given chain re-evaluates the lambdas, just like in a typical `Iterable`. But it is possible to create a chain that is lazy-evaluated only on the first pass, i.e. when it is iterated all the way to the end (see `Chainable#cached()`). From then on, subsequent iterations over the same chain would only navigate through the internally cached outputs of that initial pass, no longer evaluating the provided lambdas. That means the cached chain, upon subsequent traversals, starts behaving like an immutable collection. 
+
 - **disjunctive filtering** - you can specify one or more filter predicates at the same time (see `Chainable#whereEither`), with disjuctive (logical-OR) semantics. This means you can define specific filtering predicates for specific purposes and then just supply them all as parameters, rather than having to create yet another predicate that's an *OR* of the others.
 
 - predicate-based **skipping** of the leading sub-chain of items under various scenarios, e.g.:

@@ -46,6 +46,57 @@ public class ChainableTest {
     }
 
     @Test
+    public void testAfterFirst() {
+        // Given
+        Chainable<String> items = Chainable.from("a", "b", "c", "d", "e");
+        String expectedAfterFirst = "bcde";
+        String expectedAfterSecond = "cde";
+
+        // When
+        Chainable<String> afterFirst = items.afterFirst();
+        String actualAfterFirst = Chainables.join("", afterFirst);
+        String actualAfterSecond = afterFirst.afterFirst().join();
+        String actualAfterSecondNum = items.afterFirst(2).join();
+
+        // Then
+        assertEquals(expectedAfterFirst, actualAfterFirst);
+        assertEquals(expectedAfterSecond, actualAfterSecond);
+        assertEquals(expectedAfterSecond, actualAfterSecondNum);
+    }
+
+    @Test
+    public void testAllWhereEither() {
+        // Given
+        final Chainable<Integer> odds = Chainable.from(1, 3, 5, 7);
+        final Chainable<Integer> evens = Chainable.from(2, 4, 6, 8);
+        final Chainable<Integer> mixed = Chainable.from(1, 2, 3, 4);
+
+        // When + Then
+        assertTrue(Chainables.allWhereEither(odds,
+                o -> o % 2 != 0,
+                o -> o > 0));
+        assertTrue(Chainables.allWhereEither(evens,
+                o -> o % 2 != 0,
+                o -> o > 0));
+        assertFalse(Chainables.allWhereEither(mixed,
+                o -> o % 2 != 0,
+                o -> o < 0));
+        assertFalse(Chainables.allWhereEither(odds,
+                o -> o % 2 == 0,
+                o -> o < 0));
+    }
+
+    @Test
+    public void testAny() {
+        // Given
+        Iterable<String> items = Arrays.asList("a", "b", "c");
+
+        // When/Then
+        assertTrue(Chainables.anyWhereEither(items, o -> o.equals("b")));
+        assertFalse(Chainables.anyWhereEither(items, o -> o.equals("d")));
+    }
+
+    @Test
     public void testApply() {
         // Given
         Iterable<String> items = Arrays.asList("a", "b", "c");
@@ -174,6 +225,26 @@ public class ChainableTest {
 
         // Then
         assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testCached() {
+        // Given
+        Chainable<Long> randomInts = Chainable
+                .from((Long)null)
+                .chain(o -> Math.round(Math.random() * 100.0))
+                .withoutNull()
+                .first(10)
+                .cached();
+
+        // When
+        String partialTraversal = Chainables.join(", ", randomInts.first(5));
+        String fullTraversal = Chainables.join(", ", randomInts);
+        String secondTraversal = Chainables.join(", ", randomInts);
+
+        // Then
+        assertFalse(fullTraversal.startsWith(partialTraversal));
+        assertEquals(fullTraversal, secondTraversal);
     }
 
     @Test

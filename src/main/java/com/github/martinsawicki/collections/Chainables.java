@@ -161,6 +161,58 @@ public final class Chainables {
         }
 
         /**
+         * Returns a chain of items after the first one in this chain.
+         * @return items following the first one
+         * @sawicki.similar
+         * <table summary="Similar to:">
+         * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#skip(long))} with 1 as the number to skip</td></tr>
+         * <tr><td><i>C#:</i></td><td>{@code Enumerable.Skip()}</td></tr>
+         * </table>
+         */
+        default Chainable<T> afterFirst() {
+            return Chainables.afterFirst(this);
+        }
+
+        /**
+         * Returns a chain after skipping the first specified number of items.
+         * @param number the number of initial items to skip
+         * @return the remaining chain
+         * @sawicki.similar
+         * <table summary="Similar to:">
+         * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#skip(long))}</td></tr>
+         * <tr><td><i>C#:</i></td><td>{@code Enumerable.Skip()}</td></tr>
+         * </table>
+         */
+        default Chainable<T> afterFirst(long number) {
+            return Chainables.afterFirst(this, number);
+        }
+
+        /**
+         * Determines whether all the items in this chain satisfy the specified {@code condition}.
+         * @param condition
+         * @return {@code true} if all items satisfy the specified {@code condition}, otherwise {@code false}
+         * @sawicki.similar
+         * <table summary="Similar to:">
+         * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#allMatch(Predicate)))}</td></tr>
+         * <tr><td><i>C#:</i></td><td>{@code Enumerable.All()}</td></tr>
+         * </table>
+         */
+        default boolean allWhere(Predicate<T> condition) {
+            return Chainables.allWhere(this, condition);
+        }
+
+        /**
+         * Determines whether all the items in this chain satisfy any of the specified {@code conditions}
+         * @param conditions
+         * @return {@code true} if all items satisfy at least one of the {@code conditions}, otherwise {@code false}
+         * @see #allWhere(Predicate)
+         */
+        @SuppressWarnings("unchecked")
+        default boolean allWhereEither(Predicate<T>...conditions) {
+            return Chainables.allWhereEither(this, conditions);
+        }
+
+        /**
          * Determines whether this chain contains any items.
          * @return {@code true} if not empty (i.e. the opposite of {@link #isEmpty()})
          * @sawicki.similar
@@ -170,6 +222,31 @@ public final class Chainables {
          */
         default boolean any() {
             return !Chainables.isNullOrEmpty(this);
+        }
+
+        /**
+         * Determines whether any of the items in this chain satisfy the specified {@code condition}.
+         * @param condition
+         * @return {@code true} if there are any items that satisfy the specified {@code condition}
+         * @sawicki.similar
+         * <table summary="Similar to:">
+         * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#anyMatch(Predicate)}</td></tr>
+         * <tr><td><i>C#:</i></td><td>{@code Enumerable.Any(Func)}</td></tr>
+         * </table>
+         */
+        default boolean anyWhere(Predicate<T> condition) {
+            return Chainables.anyWhere(this, condition);
+        }
+
+        /**
+         * Determines whether any of the items in this chain satisfy any of the specified {@code conditions}.
+         * @param conditions
+         * @return true if there are any items that satisfy any of the specified {@code conditions}
+         * @see #anyWhere(Predicate)
+         */
+        @SuppressWarnings("unchecked")
+        default boolean anyWhereEither(Predicate<T>... conditions) {
+            return Chainables.anyWhereEither(this, conditions);
         }
 
         /**
@@ -416,6 +493,22 @@ public final class Chainables {
          */
         default Chainable<T> breadthFirstWhile(Function<T, Iterable<T>> childExtractor, Function<T, Boolean> condition) {
             return Chainables.breadthFirstWhile(this, childExtractor, condition);
+        }
+
+        /**
+         * Creates a chain that caches its evaluated items, once a full traversal is completed, so that subsequent traversals no longer
+         * re-evaluate each item but fetch them directly from the cache populated by the first traversal.
+         * <p>
+         * Note that if the first traversal is only partial (i.e. it does not reach the end) the cache is not yet activated, so the next traversal will still
+         * re-evaluate each item from the beginning, as if run for the first time.
+         * <p>
+         * If there are multiple iterators used from the chain, the first iterator to complete the traversal wins as far as cache population goes.
+         * The remaining iterators will continue unaffected, but their results, if different from the results of the first finished
+         * iterator, will be ignored for caching purposes.
+         * @return a chain that, upon the completion of the first full traversal, behaves like a fixed value list
+         */
+        default Chainable<T> cached() {
+            return Chainables.cached(this);
         }
 
         /**
@@ -932,6 +1025,32 @@ public final class Chainables {
         }
 
         /**
+         * Determines whether none of the items in this chain satisfy the specified {@code condition}.
+         * @param condition
+         * @return {@code true} if there are no items that meet the specified {@code condition}
+         * @sawicki.similar
+         * <table summary="Similar to:">
+         * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#noneMatch(Predicate)}</td></tr>
+         * <tr><td><i>C#:</i></td><td>{@code Enumerable.Where()}, but with a negated predicate</td></tr>
+         * </table>
+         * @see #noneWhereEither(Predicate...)
+         */
+        default boolean noneWhere(Predicate<T> condition) {
+            return Chainables.noneWhere(this, condition);
+        }
+
+        /**
+         * Determines whether none of the items in this chain satisfy any of the specified {@code conditions}.
+         * @param conditions
+         * @return {@code true} if there are no items that meet any of the specified {@code conditions}
+         * @see #noneWhere(Predicate)
+         */
+        @SuppressWarnings("unchecked")
+        default boolean noneWhereEither(Predicate<T>... conditions) {
+            return Chainables.noneWhereEither(this, conditions);
+        }
+
+        /**
          * Returns a chain of initial items from this chain upto and including the fist item that satisfies the specified {@code condition}, and none after it.
          * <p>
          * For example, if the items are { 1, 3, 5, 2, 7, 9, ...} and the {@code condition} is true when the item is an even number, then the resulting chain
@@ -1282,6 +1401,83 @@ public final class Chainables {
     }
 
     /**
+     * @param items
+     * @return
+     * @see Chainable#afterFirst()
+     */
+    public static <V> Chainable<V> afterFirst(Iterable<V> items) {
+        return afterFirst(items, 1);
+    }
+
+    /**
+     * @param items
+     * @param number
+     * @return
+     */
+    public static <V> Chainable<V> afterFirst(Iterable<V> items, long number) {
+        if (items == null) {
+            return Chainable.empty();
+        }
+
+        return Chainable.from(new Iterable<V>() {
+            @Override
+            public Iterator<V> iterator() {
+                return new Iterator<V>() {
+                    final Iterator<V> iter = items.iterator();
+                    long skippedNum = 0;
+
+                    @Override
+                    public boolean hasNext() {
+                        if (!this.iter.hasNext()) {
+                            return false;
+                        } else if (this.skippedNum >= number) {
+                            return this.iter.hasNext();
+                        } else {
+                            while (skippedNum < number && this.iter.hasNext()) {
+                                this.iter.next(); // Skip the next item
+                                this.skippedNum++;
+                            }
+
+                            return this.skippedNum >= number && this.iter.hasNext();
+                        }
+                    }
+
+                    @Override
+                    public V next() {
+                        return this.iter.next();
+                    }
+                };
+            }
+        });
+    }
+
+    /**
+     * @param items
+     * @param conditions
+     * @return
+     * @see Chainable#allWhereEither(Predicate...)
+     */
+    @SafeVarargs
+    public static <T> boolean allWhereEither(Iterable<T> items, Predicate<T>... conditions) {
+        if (items == null) {
+            return false;
+        } else {
+            Chainable<Predicate<T>> conds = Chainable.from(conditions);
+            return Chainables.noneWhere(items, i -> !conds.anyWhere(c -> c.test(i)));
+        }
+    }
+
+    /**
+     * @param items
+     * @param condition
+     * @return
+     * @see Chainable#allWhere(Predicate)
+     */
+    public static <T> boolean allWhere(Iterable<T> items, Predicate<T> condition) {
+        return allWhereEither(items, condition);
+    }
+
+    /**
      * Determines whether the specified iterable contains at least one element.
      *
      * @param iterable the {@link java.lang.Iterable} to check
@@ -1290,6 +1486,37 @@ public final class Chainables {
      */
     public static <V> boolean any(Iterable<V> iterable) {
         return !isNullOrEmpty(iterable);
+    }
+
+    /**
+     * @param items
+     * @param condition
+     * @return
+     * @see Chainable#anyWhere(Predicate)
+     */
+    public static <T> boolean anyWhere(Iterable<T> items, Predicate<T> condition) {
+        return Chainables.anyWhereEither(items, condition);
+    }
+
+    /**
+     * @param items
+     * @param conditions
+     * @return
+     * @see Chainable#anyWhereEither(Predicate...)
+     */
+    @SafeVarargs
+    public static <T> boolean anyWhereEither(Iterable<T> items, Predicate<T>...conditions) {
+        if (conditions == null) {
+            return true;
+        } else {
+            for (Predicate<T> condition : conditions) {
+                if (Chainables.firstWhereEither(items, condition) != null) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
     }
 
     /**
@@ -1576,6 +1803,56 @@ public final class Chainables {
             Function<T, Boolean> condition) {
         final Function<T, Boolean> appliedCondition = (condition != null) ? condition : (o -> true);
         return breadthFirst(items, o -> Chainables.whereEither(childTraverser.apply(o), c -> Boolean.TRUE.equals(appliedCondition.apply(c))));
+    }
+
+    /**
+     * @param items
+     * @return
+     * @see Chainable#cached()
+     */
+    public static <T> Chainable<T> cached(Iterable<T> items) {
+        if (items == null) {
+            return Chainable.empty();
+        }
+
+        return Chainable.from(new Iterable<T>() {
+
+            List<T> cache = null;
+
+            @Override
+            public Iterator<T> iterator() {
+                if (cache != null) {
+                    // Cache already filled so return from it
+                    return this.cache.iterator();
+                } else {
+                    return new Iterator<T>() {
+                        Iterator<T> iter = items.iterator();
+                        List<T> tempCache = new ArrayList<>();
+
+                        @Override
+                        public boolean hasNext() {
+                            if (iter.hasNext()) {
+                                return true;
+                            } else {
+                                if (cache == null) {
+                                    // The first iterator to fill the cache wins
+                                    cache = tempCache;
+                                }
+
+                                return false;
+                            }
+                        }
+
+                        @Override
+                        public T next() {
+                            T next = iter.next();
+                            tempCache.add(next);
+                            return next;
+                        }
+                    };
+                }
+            }
+        });
     }
 
     /**
@@ -2589,6 +2866,27 @@ public final class Chainables {
         }
 
         return minItem;
+    }
+
+    /**
+     * @param items
+     * @param condition
+     * @return
+     * @see Chainable#noneWhere(Predicate)
+     */
+    public static <T> boolean noneWhere(Iterable<T> items, Predicate<T> condition) {
+        return Chainables.noneWhereEither(items, condition);
+    }
+
+    /**
+     * @param items
+     * @param conditions
+     * @return
+     * @see Chainable#noneWhereEither(Predicate...)
+     */
+    @SafeVarargs
+    public static <T> boolean noneWhereEither(Iterable<T> items, Predicate<T>... conditions) {
+        return !Chainables.anyWhereEither(items, conditions);
     }
 
     /**
