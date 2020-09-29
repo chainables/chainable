@@ -973,6 +973,32 @@ public final class Chainables {
         }
 
         /**
+         * Determines whether none of the items in this chain satisfy the specified {@code condition}.
+         * @param condition
+         * @return {@code true} if there are no items that meet the specified {@code condition}
+         * @sawicki.similar
+         * <table summary="Similar to:">
+         * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#noneMatch(Predicate)}</td></tr>
+         * <tr><td><i>C#:</i></td><td>{@code Enumerable.Where()}, but with a negated predicate</td></tr>
+         * </table>
+         * @see #noneWhereEither(Predicate...)
+         */
+        default boolean noneWhere(Predicate<T> condition) {
+            return Chainables.noneWhere(this, condition);
+        }
+
+        /**
+         * Determines whether none of the items in this chain satisfy any of the specified {@code conditions}.
+         * @param conditions
+         * @return {@code true} if there are no items that meet any of the specified {@code conditions}
+         * @see #noneWhere(Predicate)
+         */
+        @SuppressWarnings("unchecked")
+        default boolean noneWhereEither(Predicate<T>... conditions) {
+            return Chainables.noneWhereEither(this, conditions);
+        }
+
+        /**
          * Returns a chain of initial items from this chain upto and including the fist item that satisfies the specified {@code condition}, and none after it.
          * <p>
          * For example, if the items are { 1, 3, 5, 2, 7, 9, ...} and the {@code condition} is true when the item is an even number, then the resulting chain
@@ -2711,6 +2737,27 @@ public final class Chainables {
         }
 
         return minItem;
+    }
+
+    /**
+     * @param items
+     * @param condition
+     * @return
+     * @see Chainable#noneWhere(Predicate)
+     */
+    public static <T> boolean noneWhere(Iterable<T> items, Predicate<T> condition) {
+        return Chainables.noneWhereEither(items, condition);
+    }
+
+    /**
+     * @param items
+     * @param conditions
+     * @return
+     * @see Chainable#noneWhereEither(Predicate...)
+     */
+    @SafeVarargs
+    public static <T> boolean noneWhereEither(Iterable<T> items, Predicate<T>... conditions) {
+        return !Chainables.anyWhereEither(items, conditions);
     }
 
     /**
