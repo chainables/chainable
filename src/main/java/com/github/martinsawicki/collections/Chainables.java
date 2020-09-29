@@ -161,6 +161,19 @@ public final class Chainables {
         }
 
         /**
+         * Returns a chain of items after the first one in this chain.
+         * @return items following the first one
+         * @sawicki.similar
+         * <table summary="Similar to:">
+         * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#skip(long))} with 1 as the number to skip</td></tr>
+         * <tr><td><i>C#:</i></td><td>{@code Enumerable.Skip()}</td></tr>
+         * </table>
+         */
+        default Chainable<T> afterFirst() {
+            return Chainables.afterFirst(this);
+        }
+
+        /**
          * Determines whether all the items in this chain satisfy the specified {@code condition}.
          * @param condition
          * @return {@code true} if all items satisfy the specified {@code condition}, otherwise {@code false}
@@ -1371,6 +1384,44 @@ public final class Chainables {
         public String toString() {
             return Chainables.join("", this);
         }
+    }
+
+    /**
+     * @param items
+     * @return
+     * @see Chainable#afterFirst()
+     */
+    public static <V> Chainable<V> afterFirst(Iterable<V> items) {
+        if (items == null) {
+            return Chainable.from(new LinkedList<>());
+        }
+
+        return Chainable.from(new Iterable<V>() {
+            @Override
+            public Iterator<V> iterator() {
+                return new Iterator<V>() {
+                    final Iterator<V> iter = items.iterator();
+                    boolean skippedFirst = false;
+
+                    @Override
+                    public boolean hasNext() {
+                        if (!this.iter.hasNext()) {
+                            return false;
+                        } else if (!this.skippedFirst) {
+                            this.iter.next();
+                            this.skippedFirst = true;
+                        }
+
+                        return this.iter.hasNext();
+                    }
+
+                    @Override
+                    public V next() {
+                        return this.hasNext() ? this.iter.next() : null;
+                    }
+                };
+            }
+        });
     }
 
     /**

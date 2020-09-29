@@ -46,6 +46,24 @@ public class ChainableTest {
     }
 
     @Test
+    public void testAfterFirst() {
+        // Given
+        Chainable<String> items = Chainable.from("a", "b", "c", "d", "e");
+        String expectedAfterFirst = "bcde";
+        String expectedAfterSecond = "cde";
+
+        // When
+        Chainable<String> afterFirst = items.afterFirst();
+        Chainable<String> afterSecond = afterFirst.afterFirst();
+        String actualAfterFirst = Chainables.join("", afterFirst);
+        String actualAfterSecond = Chainables.join("", afterSecond);
+
+        // Then
+        assertEquals(expectedAfterFirst, actualAfterFirst);
+        assertEquals(expectedAfterSecond, actualAfterSecond);
+    }
+
+    @Test
     public void testAllWhereEither() {
         // Given
         final Chainable<Integer> odds = Chainable.from(1, 3, 5, 7);
