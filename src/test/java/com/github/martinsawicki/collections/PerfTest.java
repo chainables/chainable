@@ -17,8 +17,6 @@ import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Warmup;
 import org.openjdk.jmh.runner.RunnerException;
 
-import com.github.martinsawicki.collections.Chainables.Chainable;
-
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;

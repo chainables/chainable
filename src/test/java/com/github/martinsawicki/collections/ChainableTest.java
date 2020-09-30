@@ -6,9 +6,6 @@ package com.github.martinsawicki.collections;
 
 import org.junit.jupiter.api.Test;
 
-import com.github.martinsawicki.collections.Chainables.Chainable;
-import com.github.martinsawicki.collections.Chainables.ChainableQueue;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.ArrayList;
