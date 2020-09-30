@@ -451,11 +451,10 @@ public final class Chainables {
          * <p>
          * To indicate the absence of children for an item, the child extractor may output {@code null}.
          * <p>
-         * The traversal protects against potential cycles by not visiting items that satisfy the equality ({@code equals()}) check against an item already seen before.
+         * The traversal protects against potential cycles by not visiting items that satisfy the equality ({@code equals()})
+         * check against an item already seen before.
          * @param childExtractor
          * @return resulting chain
-         * @see #queue(Function)
-         * @see #queueUntil(Function, Function)
          * @see #breadthFirstUntil(Function, Function)
          * @see #breadthFirstWhile(Function, Function)
          * @see #depthFirst(Function)
@@ -477,15 +476,13 @@ public final class Chainables {
          * The traversal protects against potential cycles by not visiting items that satisfy the equality ({@code equals()}) check against an item already seen before.
          * @param childExtractor
          * @param condition
-         * @return resulting {@link Chainable}
-         * @see #queueUntil(Function, Function)
-         * @see #queue(Function)
+         * @return resulting chain
          * @see #breadthFirstWhile(Function, Function)
          * @see #breadthFirst(Function)
          * @see #depthFirst(Function)
          */
         default Chainable<T> breadthFirstUntil(Function<T, Iterable<T>> childExtractor, Function<T, Boolean> condition) {
-            return Chainables.queueUntil(this, childExtractor, condition);
+            return Chainables.breadthFirstUntil(this, childExtractor, condition);
         }
 
         /**
@@ -496,9 +493,7 @@ public final class Chainables {
          * the {@code condition}, but continuing with other items in the chain.
          * @param childExtractor
          * @param condition
-         * @return resulting {@link Chainable}
-         * @see #queueUntil(Function, Function)
-         * @see #queue(Function)
+         * @return resulting chain
          * @see #breadthFirstUntil(Function, Function)
          * @see #breadthFirst(Function)
          * @see #depthFirst(Function)
@@ -1166,42 +1161,6 @@ public final class Chainables {
          */
         default Chainable<T> notWhere(Predicate<T> condition) {
             return Chainables.notWhere(this, condition);
-        }
-
-        /**
-         * For each item in this chain, the items output by the specified {@code queuer} applied to it are appended at the end of the chain,
-         * effectively resulting in a breadth-first traversal of a hypothetical tree where the {@code queuer} is the source of the children of each tree node.
-         * @param queuer
-         * @return resulting {@link Chainable}
-         * @see #queueUntil(Function, Function)
-         * @see #breadthFirst(Function)
-         * @see #breadthFirstUntil(Function, Function)
-         * @see #breadthFirstWhile(Function, Function)
-         * @see #depthFirst(Function)
-         */
-        default Chainable<T> queue(Function<T, Iterable<T>> queuer) {
-            return Chainables.queue(this, queuer);
-        }
-
-        /**
-         * For each item in this chain, the items output by the specified {@code queuer} applied to it are appended at the end of the chain,
-         * effectively resulting in a breadth-first traversal of a hypothetical tree where the {@code queuer} is the source of the children of
-         * each tree node, <i>up to and including</i> the item that satisfies the specified {@code condition}, but not its descendants that would
-         * be otherwise returned by the {@code queuer}.
-         * <p>
-         * It can be thought of trimming the breadth-first traversal right below the level of the item satisfying
-         * the {@code condition}, but continuing with other items in the chain.
-         * @param queuer
-         * @param condition
-         * @return resulting {@link Chainable}
-         * @see #queue(Function)
-         * @see #breadthFirst(Function)
-         * @see #breadthFirstUntil(Function, Function)
-         * @see #breadthFirstWhile(Function, Function)
-         * @see #depthFirst(Function)
-         */
-        default Chainable<T> queueUntil(Function<T, Iterable<T>> queuer, Function<T, Boolean> condition) {
-            return Chainables.queueUntil(this, queuer, condition);
         }
 
         /**
@@ -1913,7 +1872,7 @@ public final class Chainables {
      * @see Chainable#breadthFirst(Function)
      */
     public static <T> Chainable<T> breadthFirst(Iterable<T> items, Function<T, Iterable<T>> childTraverser) {
-        return queue(items, childTraverser);
+        return traverse(items, childTraverser, true);
     }
 
     /**
@@ -1928,7 +1887,7 @@ public final class Chainables {
             Function<T, Iterable<T>> childTraverser,
             Function<T, Boolean> condition) {
         final Function<T, Boolean> appliedCondition = (condition != null) ? condition : (o -> false);
-        return queue(items, o -> Boolean.FALSE.equals(appliedCondition.apply(o)) ? childTraverser.apply(o) : Chainable.empty());
+        return breadthFirst(items, o -> Boolean.FALSE.equals(appliedCondition.apply(o)) ? childTraverser.apply(o) : Chainable.empty());
     }
 
     /**
@@ -3212,31 +3171,6 @@ public final class Chainables {
      */
     public static final <T> Chainable<T> notWhere(Iterable<T> items, Predicate<T> condition) {
         return (condition != null) ? Chainables.whereEither(items, condition.negate()) : Chainable.from(items);
-    }
-
-    /**
-     * @param items
-     * @param queuer
-     * @return
-     * @see Chainable#queue(Function)
-     */
-    public static <T> Chainable<T> queue(Iterable<T> items, Function<T, Iterable<T>> queuer) {
-        return traverse(items, queuer, true);
-    }
-
-    /**
-     * @param items
-     * @param queuer
-     * @param condition
-     * @return
-     * @see Chainable#queueUntil(Function, Function)
-     */
-    public static <T> Chainable<T> queueUntil(
-            Iterable<T> items,
-            Function<T, Iterable<T>> queuer,
-            Function<T, Boolean> condition) {
-        final Function<T, Boolean> appliedCondition = (condition != null) ? condition : (o -> false);
-        return queue(items, o -> Boolean.FALSE.equals(appliedCondition.apply(o)) ? queuer.apply(o) : Chainable.empty());
     }
 
     @SuppressWarnings("unchecked")
