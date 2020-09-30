@@ -387,6 +387,15 @@ public final class Chainables {
         }
 
         /**
+         * Create a {@link ChainableQueue} with the current items as the initial contents of the queue, but not yet traversed/evaluated.
+         * @return a mutable {@link ChainableQueue} with the current items as the initial contents of the queue
+         */
+        @Experimental
+        default ChainableQueue<T> asQueue() {
+            return Chainables.asQueue(this);
+        }
+
+        /**
          * Determines whether this chain contains at least the specified {@code min} number of items, stopping the traversal as soon as that can be determined.
          * @param min
          * @return {@code true} if there are at least the specified {@code min} number of items in this chain
@@ -1359,6 +1368,42 @@ public final class Chainables {
         }
     }
 
+    /**
+     * A simple FIFO queue supporting the {@link Chainable} interface.
+     *
+     * @author Martin Sawicki
+     * @param <T>
+     */
+    @Experimental
+    public interface ChainableQueue<T> extends Chainable<T> {
+        /**
+         * Removes the first item from the queue, without affecting the underlying chain.
+         * @return the first item
+         */
+        T removeFirst();
+
+        /**
+         * Adds the specified {@code items} to the end of the queue.
+         * <p>
+         * Note that the original chain the queue was created from is not affected, as new items are added to a hidden
+         * separate collection concatenated with that original chain.
+         * @param items
+         * @return self
+         */
+        @SuppressWarnings("unchecked")
+        ChainableQueue<T> withLast(T...items);
+
+        /**
+         * Adds the specified {@code items} to the end of the queue.
+         * <p>
+         * Note that the original chain the queue was created from is not affected, as new items are added to a hidden
+         * separate collection concatenated with that original chain.
+         * @param items
+         * @return self
+         */
+        ChainableQueue<T> withLast(Iterable<T> items);
+    }
+
     private static class Chain<T> implements Chainable<T> {
         protected Iterable<T> iterable;
 
@@ -1410,6 +1455,62 @@ public final class Chainables {
         @Override
         public String toString() {
             return Chainables.join("", this);
+        }
+    }
+
+    private static class ChainableQueueImpl<T> extends Chain<T> implements ChainableQueue<T> {
+
+        final Deque<T> queue = new LinkedList<>();
+        Iterable<T> originalIterable;
+        final Iterator<T> initialIter;
+
+        private ChainableQueueImpl(Iterable<T> iterable) {
+            // Specified iterable becomes initial head, but joined with actual FIFO queue
+            super(null);
+            this.originalIterable = iterable;
+            this.iterable = iterable;
+            this.initialIter = iterable.iterator();
+        }
+
+        @Override
+        public T removeFirst() {
+            if (this.originalIterable == null) {
+                // No more original iterable, so just queue left
+                return this.queue.removeFirst();
+            } else if (!this.initialIter.hasNext()) {
+                // Empty original iterable, just queue left, so eliminate the original iterable altogether
+                this.iterable = this.queue;
+                this.originalIterable = null;
+                return this.queue.removeFirst();
+            } else {
+                // Original iterable still around, so fetch from it and adjust the merger
+                T first = this.initialIter.next();
+                this.originalIterable = Chainables.afterFirst(this.originalIterable); // Makes traversal increasingly long, but ChainableQueue should not really be traversed like this if the initial iterable is very large...
+                this.iterable = Chainables.concat(this.originalIterable, this.queue);
+                return first;
+            }
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public ChainableQueueImpl<T> withLast(T...items) {
+            if (items.length == 1 ) {
+                this.queue.addLast(items[0]);
+            } else {
+                this.queue.addAll(Arrays.asList(items));
+            }
+
+            if (!Chainables.isNullOrEmpty(this.originalIterable)) {
+                this.iterable = Chainables.concat(this.originalIterable, this.queue);
+            }
+
+            return this;
+        }
+
+        @Override
+        public ChainableQueue<T> withLast(Iterable<T> items) {
+            this.queue.addAll(Chainable.from(items).toList());
+            return this;
         }
     }
 
@@ -1664,6 +1765,16 @@ public final class Chainables {
      */
     public static <T> Chainable<T> asLongAsValue(Iterable<T> items, T item) {
         return asLongAs(items, o -> o == item);
+    }
+
+    /**
+     * @param items
+     * @return
+     * @see Chainable#asQueue()
+     */
+    @Experimental
+    public static <T> ChainableQueue<T> asQueue(Iterable<T> items) {
+        return new ChainableQueueImpl<>(items);
     }
 
     /**

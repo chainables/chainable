@@ -7,6 +7,7 @@ package com.github.martinsawicki.collections;
 import org.junit.jupiter.api.Test;
 
 import com.github.martinsawicki.collections.Chainables.Chainable;
+import com.github.martinsawicki.collections.Chainables.ChainableQueue;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -138,6 +139,73 @@ public class ChainableTest {
         String actual = Chainables.asLongAsValue(testList, "a").join();
 
         // Then
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testAsQueue() {
+        // Given
+        String[] items = { "a", "b", "c", "d", "e" };
+        String expected = String.join("", items);
+
+        // Adding individual items to end of queue
+        ChainableQueue<String> queue = Chainable.from(items[0]).asQueue();
+        for (int i = 1; i < items.length; i++) {
+            queue.withLast(items[i]);
+        }
+
+        String actual = String.join("", queue);
+        assertEquals(expected, actual);
+
+        // Removing from front of queue
+        StringBuilder sb = new StringBuilder();
+        while (queue.any()) {
+            sb.append(queue.removeFirst());
+        }
+
+        actual = sb.toString();
+        assertEquals(expected, actual);
+
+        // Adding and removing in one loop
+        sb.setLength(0);
+        for (String item : items) {
+            queue.withLast(item);
+            if (queue.any()) {
+                sb.append(queue.removeFirst());
+            }
+        }
+
+        actual = sb.toString();
+        assertEquals(expected, actual);
+
+        // Adding entire set to end
+        queue
+            .withLast(items)
+            .withLast(items);
+
+        sb.setLength(0);
+        while (queue.any()) {
+            sb.append(queue.removeFirst());
+        }
+
+        actual = sb.toString();
+        expected = String.join("", items) + String.join("", items);
+        assertEquals(expected, actual);
+
+        // Larger initial iterable
+        queue = Chainable.from(items[0], items[1]).asQueue();
+        sb.setLength(0);
+        for (int i = 2; i < items.length; i++) {
+            queue.withLast(items[i]);
+            sb.append(queue.removeFirst());
+        }
+
+        while (queue.any()) {
+            sb.append(queue.removeFirst());
+        }
+
+        expected = String.join("", items);
+        actual = sb.toString();
         assertEquals(expected, actual);
     }
 

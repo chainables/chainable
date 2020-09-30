@@ -8,8 +8,8 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 
 /**
- * Methods annotated with {@code @Experimental} may be removed or changed significantly in the future.
+ * Methods and types annotated with {@code @Experimental} may be removed or changed significantly in the future.
  */
-@Target(ElementType.METHOD)
+@Target({ ElementType.METHOD, ElementType.TYPE})
 public @interface Experimental {
 }
