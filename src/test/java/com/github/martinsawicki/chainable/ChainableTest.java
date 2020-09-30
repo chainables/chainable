@@ -2,18 +2,22 @@
  * Copyright (c) Martin Sawicki. All rights reserved.
  * Licensed under the MIT License. See LICENSE in the project root for license information.
  */
-package com.github.martinsawicki.collections;
+package com.github.martinsawicki.chainable;
 
 import org.junit.jupiter.api.Test;
 
-import com.github.martinsawicki.collections.Chainables.Chainable;
+import com.github.martinsawicki.chainable.Chainable;
+import com.github.martinsawicki.chainable.ChainableQueue;
+import com.github.martinsawicki.chainable.Chainables;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -41,6 +45,57 @@ public class ChainableTest {
         // Then
         assertEquals("CHAIN", text);
         assertEquals("NIAHC", textBackwards);
+    }
+
+    @Test
+    public void testAfterFirst() {
+        // Given
+        Chainable<String> items = Chainable.from("a", "b", "c", "d", "e");
+        String expectedAfterFirst = "bcde";
+        String expectedAfterSecond = "cde";
+
+        // When
+        Chainable<String> afterFirst = items.afterFirst();
+        String actualAfterFirst = Chainables.join("", afterFirst);
+        String actualAfterSecond = afterFirst.afterFirst().join();
+        String actualAfterSecondNum = items.afterFirst(2).join();
+
+        // Then
+        assertEquals(expectedAfterFirst, actualAfterFirst);
+        assertEquals(expectedAfterSecond, actualAfterSecond);
+        assertEquals(expectedAfterSecond, actualAfterSecondNum);
+    }
+
+    @Test
+    public void testAllWhereEither() {
+        // Given
+        final Chainable<Integer> odds = Chainable.from(1, 3, 5, 7);
+        final Chainable<Integer> evens = Chainable.from(2, 4, 6, 8);
+        final Chainable<Integer> mixed = Chainable.from(1, 2, 3, 4);
+
+        // When + Then
+        assertTrue(Chainables.allWhereEither(odds,
+                o -> o % 2 != 0,
+                o -> o > 0));
+        assertTrue(Chainables.allWhereEither(evens,
+                o -> o % 2 != 0,
+                o -> o > 0));
+        assertFalse(Chainables.allWhereEither(mixed,
+                o -> o % 2 != 0,
+                o -> o < 0));
+        assertFalse(Chainables.allWhereEither(odds,
+                o -> o % 2 == 0,
+                o -> o < 0));
+    }
+
+    @Test
+    public void testAny() {
+        // Given
+        Iterable<String> items = Arrays.asList("a", "b", "c");
+
+        // When/Then
+        assertTrue(Chainables.anyWhereEither(items, o -> o.equals("b")));
+        assertFalse(Chainables.anyWhereEither(items, o -> o.equals("d")));
     }
 
     @Test
@@ -82,9 +137,76 @@ public class ChainableTest {
         String expected = "aa";
 
         // When
-        String actual = Chainables.asLongAsValue(testList, "a").join();
+        String actual = Chainables.asLongAsEquals(testList, "a").join();
 
         // Then
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testAsQueue() {
+        // Given
+        String[] items = { "a", "b", "c", "d", "e" };
+        String expected = String.join("", items);
+
+        // Adding individual items to end of queue
+        ChainableQueue<String> queue = Chainable.from(items[0]).toQueue();
+        for (int i = 1; i < items.length; i++) {
+            queue.withLast(items[i]);
+        }
+
+        String actual = String.join("", queue);
+        assertEquals(expected, actual);
+
+        // Removing from front of queue
+        StringBuilder sb = new StringBuilder();
+        while (queue.any()) {
+            sb.append(queue.removeFirst());
+        }
+
+        actual = sb.toString();
+        assertEquals(expected, actual);
+
+        // Adding and removing in one loop
+        sb.setLength(0);
+        for (String item : items) {
+            queue.withLast(item);
+            if (queue.any()) {
+                sb.append(queue.removeFirst());
+            }
+        }
+
+        actual = sb.toString();
+        assertEquals(expected, actual);
+
+        // Adding entire set to end
+        queue
+            .withLast(items)
+            .withLast(items);
+
+        sb.setLength(0);
+        while (queue.any()) {
+            sb.append(queue.removeFirst());
+        }
+
+        actual = sb.toString();
+        expected = String.join("", items) + String.join("", items);
+        assertEquals(expected, actual);
+
+        // Larger initial iterable
+        queue = Chainable.from(items[0], items[1]).toQueue();
+        sb.setLength(0);
+        for (int i = 2; i < items.length; i++) {
+            queue.withLast(items[i]);
+            sb.append(queue.removeFirst());
+        }
+
+        while (queue.any()) {
+            sb.append(queue.removeFirst());
+        }
+
+        expected = String.join("", items);
+        actual = sb.toString();
         assertEquals(expected, actual);
     }
 
@@ -165,13 +287,101 @@ public class ChainableTest {
         String expected = String.join(",", expectedResults);
 
         // When
-        Chainable<String> results = roots.breadthFirstWhile(
+        String actual = roots.breadthFirstWhile(
                 s -> roots.transform(o -> s + o),
-                s -> s.length() < 3);
-        String actual = String.join(",", results);
+                s -> s.length() < 3)
+                .join(",");
 
         // Then
         assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testCached() {
+        // Given
+        Chainable<Long> randomInts = Chainable
+                .from((Long)null)
+                .chain(o -> Math.round(Math.random() * 100.0))
+                .withoutNull()
+                .first(10)
+                .cached();
+
+        // When
+        String partialTraversal = Chainables.join(", ", randomInts.first(5));
+        String fullTraversal = Chainables.join(", ", randomInts);
+        String secondTraversal = Chainables.join(", ", randomInts);
+
+        // Then
+        assertFalse(fullTraversal.startsWith(partialTraversal));
+        assertEquals(fullTraversal, secondTraversal);
+    }
+
+    @Test
+    public void testChain() {
+        // Given
+        Iterable<String> items = Arrays.asList("a", "b", "c", "d");
+        final Iterator<String> iter1 = items.iterator();
+        String expected = Chainables.join("", items);
+
+        Chainable<String> initial = Chainable.from("1", "2", "3");
+        final Iterator<String> iter2 = items.iterator();
+        String expected2 = String.join("", Chainables.concat(initial, items));
+
+        // When
+        Chainable<String> chain = Chainables.chain(iter1.next(), s -> (iter1.hasNext()) ? iter1.next() : null);
+        String actual = String.join("", chain);
+
+        Chainable<String> chain2 = initial.chain(i -> (iter2.hasNext()) ? iter2.next() : null);
+        String actual2 = String.join("", chain2);
+
+        // Then
+        assertEquals(expected, actual);
+        assertEquals(expected2, actual2);
+    }
+
+    @Test
+    public void testChainIf() {
+        // Given/When
+        Chainable<String> items = Chainable.from("a", "b", "c");
+        String expectedText = "abcd";
+        String expectedText2 = "d";
+
+        Chainable<String> itemsEmpty = Chainable.from(new ArrayList<String>());
+
+        Chainable<Boolean> bools = Chainable
+                .from(false, false, false, true, false, false)
+                .transform(b -> Boolean.TRUE.equals(b) ? true : null)
+                .notAfter(b -> Boolean.TRUE.equals(b))
+                .chainIf(b -> b == null, b -> false);
+
+        Chainable<Boolean> bools2 = Chainable.from(false, false, true)
+                .transform(b -> Boolean.TRUE.equals(b) ? true : null)
+                .notAfter(b -> Boolean.TRUE.equals(b))
+                .chainIf(b -> b == null, b -> false);
+
+        Chainable<Boolean> bools3 = Chainable.from(false, false, false)
+                .transform(b -> Boolean.TRUE.equals(b) ? true : null)
+                .notAfter(b -> Boolean.TRUE.equals(b))
+                .chainIf(b -> b == null, b -> false);
+
+        Chainable<Boolean> bools4 = Chainable.from(new ArrayList<Boolean>())
+                .transform(b -> Boolean.TRUE.equals(b) ? true : null)
+                .notAfter(b -> Boolean.TRUE.equals(b))
+                .chainIf(b -> b == null, b -> false);
+
+        Chainable<String> actual = items.chainIf(null, i -> "c".equals(i) ? "d" : null);
+        String actualText = String.join("", actual);
+
+        Chainable<String> actual2 = itemsEmpty.chainIf(null, i -> "d".equals(i) ? null : "d");
+        String actualText2 = String.join("", actual2);
+
+        // Then
+        assertTrue(Boolean.TRUE.equals(bools.last()));
+        assertTrue(Boolean.TRUE.equals(bools2.last()));
+        assertTrue(Boolean.FALSE.equals(bools3.last()));
+        assertTrue(Boolean.FALSE.equals(bools4.last()));
+        assertEquals(expectedText, actualText);
+        assertEquals(expectedText2, actualText2);
     }
 
     @Test
@@ -190,7 +400,7 @@ public class ChainableTest {
         String actual = String.join("", collection);
 
         // Then
-        assertEquals(expected.length(), oddsLessThan6.size());
+        assertEquals(expected.length(), oddsLessThan6.count());
         assertEquals(expected, actual);
     }
 
@@ -368,6 +578,40 @@ public class ChainableTest {
     }
 
     @Test
+    public void testFirst() {
+        // Given
+        Iterable<String> items = Arrays.asList("a", "b", "c");
+        Iterable<String> itemsEmpty = new ArrayList<>();
+
+        // When
+        String first = Chainables.first(items);
+
+        // Then
+        assertNotNull(first);
+        assertEquals("a", first);
+        assertNull(Chainables.first(itemsEmpty));
+        assertNull(Chainables.first(null));
+        assertNotNull(Chainables.firstWhereEither(items, i -> i.equals("b")));
+        assertNull(Chainables.firstWhereEither(items, i -> i.equals("d")));
+    }
+
+    @Test
+    public void testFirstNumber() {
+        // Given
+        final Chainable<String> items = Chainable.from("a", "b", "c", "d", "e", "f", "g", "h", "i");
+
+        // When
+        String actualFirst5 = items.first(5).join();
+        String actualFirst11 = items.first(11).join();
+        Chainable<String> first0 = items.first(0);
+
+        // Then
+        assertEquals("abcde", actualFirst5);
+        assertEquals("abcdefghi", actualFirst11);
+        assertTrue(first0.isEmpty());
+    }
+
+    @Test
     public void testFrom() {
         // Given
         String inputs[] = { "A", "B", "C", "D" };
@@ -384,6 +628,40 @@ public class ChainableTest {
         assertEquals(expectedTransformed, actualTransformed);
     }
 
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testInterleave() {
+        // Given
+        final Chainable<Integer> odds = Chainable.from(1, 3, 5, 7);
+        final Chainable<Integer> evens = Chainable.from(2, 4, 6, 8, 10, 12);
+        final Chainable<Integer> zeros = Chainable.from(0, 0, 0);
+        String expected = "123456781012";
+        String expected2 = "102304506781012";
+
+        // When
+        String actual = odds.interleave(evens).join();
+        String actual2 = Chainables.interleave(odds, zeros, evens).join();
+
+        // Then
+        assertEquals(expected, actual);
+        assertEquals(expected2, actual2);
+    }
+
+    @Test
+    public void testIterativeContains() {
+        // Given
+        Chainable<String> items = Chainable.from("a", "b", "c", "d", "e");
+
+        // When/Then
+        assertTrue(Boolean.TRUE.equals(items.iterativeContains("a").last()));
+        assertTrue(Boolean.TRUE.equals(items.iterativeContains("c").last()));
+        assertTrue(Boolean.TRUE.equals(items.iterativeContains("e").last()));
+        assertTrue(Boolean.FALSE.equals(items.iterativeContains("x").last()));
+
+        items = Chainable.from(new ArrayList<String>());
+        assertTrue(Boolean.FALSE.equals(items.iterativeContains("x").last()));
+    }
+
     @Test
     public void testJoin() {
         // Given
@@ -396,6 +674,48 @@ public class ChainableTest {
 
         // Then
         assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testLast() {
+        // Given
+        Iterable<String> items = Arrays.asList("a", "b", "c");
+        Iterable<String> itemsEmpty = new ArrayList<>();
+
+        // When
+        String last = Chainables.last(items);
+        String actualLastOneNonEmpty = Chainables.last(items, 1).join();
+        String actualLastOneEmpty = Chainables.last(itemsEmpty, 1).join();
+        String actualTooMany = Chainables.last(items, 4).join();
+        String actualAll = Chainables.last(items, Chainables.count(items)).join();
+        String actualLastTwo = Chainables.last(items, 2).join();
+
+        // Then
+        assertNotNull(last);
+        assertEquals("c", last);
+        assertNull(Chainables.last(null));
+        assertNull(Chainables.last(itemsEmpty));
+        assertEquals("c", actualLastOneNonEmpty);
+        assertTrue(actualLastOneEmpty.isEmpty());
+        assertTrue(actualTooMany.isEmpty());
+        assertEquals("abc", actualAll);
+        assertEquals("bc", actualLastTwo);
+    }
+
+    @Test
+    public void testMap() {
+        // Given
+        final Chainable<String> items = Chainable.from("a", "b", "c", "d", "e");
+
+        // When
+        Map<String, String> map = items.toMap(i -> i);
+
+        // Then
+        assertEquals(items.count(), map.size());
+        for (String item : items) {
+            String mappedItem = map.get(item);
+            assertNotNull(mappedItem);
+        }
     }
 
     @Test
@@ -465,10 +785,30 @@ public class ChainableTest {
         String expected = "cde";
 
         // When
-        String actual = Chainables.notBeforeValue(testList, "c").join();
+        String actual = Chainables.notBeforeEquals(testList, "c").join();
 
         // Then
         assertEquals(expected, actual);
+    }
+
+    private class TypeA {};
+    private class TypeB {};
+
+    @Test
+    public void testOfType() {
+        // Given
+        TypeA typeAExample = new TypeA();
+        TypeB typeBExample = new TypeB();
+        Chainable<Object> chain = Chainable.from(new TypeA(), new TypeB(), new TypeA(), new TypeA(), new TypeB());
+        long expectedACount = 3, expectedBCount = 2;
+
+        // When
+        long actualACount = chain.ofType(typeAExample).count();
+        long actualBCount = chain.ofType(typeBExample).count();
+
+        // Then
+        assertEquals(expectedACount, actualACount);
+        assertEquals(expectedBCount, actualBCount);
     }
 
     @Test
@@ -507,14 +847,38 @@ public class ChainableTest {
         Chainable<String> transformedChain = itemsChain.transform(o -> o.toString());
 
         // When
-        int actualItemsChainSize = itemsChain.size();
-        int actualEmptyChainSize = emptyChain.size();
-        int actualTransformedChainSize = transformedChain.size();
+        long actualItemsChainSize = itemsChain.count();
+        long actualEmptyChainSize = emptyChain.count();
+        long actualTransformedChainSize = transformedChain.count();
 
         // Then
         assertEquals(expectedItemsSize, actualItemsChainSize);
         assertEquals(0, actualEmptyChainSize);
         assertEquals(expectedItemsSize, actualTransformedChainSize);
+    }
+
+    @Test
+    public void testSorting() {
+        // Given
+        Chainable<String> textChain = Chainable.from(Arrays.asList("c", "b", "a", "d"));
+        Chainable<Long> numericalChain = Chainable.from(Arrays.asList(3l, 2l, 1l, 4l));
+        Chainable<Double> decimalChain = Chainable.from(1.0, 3.0, 2.0, 5.0, 4.0);
+
+        // When
+        String actualTextAlphaAsc = textChain.ascending().join();
+        String actualTextAlphaDesc = textChain.descending().join();
+        String actualNumbersAsc = numericalChain.ascending().join();
+        String actualNumbersDesc = numericalChain.descending().join();
+        String actualDecAsc = decimalChain.ascending().join(",");
+        String actualDecDesc = decimalChain.descending().join(",");
+
+        // Then
+        assertEquals("abcd", actualTextAlphaAsc);
+        assertEquals("dcba", actualTextAlphaDesc);
+        assertEquals("1234", actualNumbersAsc);
+        assertEquals("4321", actualNumbersDesc);
+        assertEquals("1.0,2.0,3.0,4.0,5.0", actualDecAsc);
+        assertEquals("5.0,4.0,3.0,2.0,1.0", actualDecDesc);
     }
 
     @Test
@@ -526,9 +890,9 @@ public class ChainableTest {
 
         // When
         Chainable<String> tokens = Chainables.split(text, " ,'\"!?.()[]{};:-+=");
-        int actualTokens = tokens.size();
+        long actualTokens = tokens.count();
         Chainable<String> chars = Chainables.split(text);
-        int actualChars = chars.size();
+        long actualChars = chars.count();
         String mergedTokens = tokens.join();
         String mergedChars = chars.join();
 
