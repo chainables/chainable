@@ -790,6 +790,26 @@ public class ChainableTest {
         assertEquals(expected, actual);
     }
 
+    private class TypeA {};
+    private class TypeB {};
+
+    @Test
+    public void testOfType() {
+        // Given
+        TypeA typeAExample = new TypeA();
+        TypeB typeBExample = new TypeB();
+        Chainable<Object> chain = Chainable.from(new TypeA(), new TypeB(), new TypeA(), new TypeA(), new TypeB());
+        long expectedACount = 3, expectedBCount = 2;
+
+        // When
+        long actualACount = chain.ofType(typeAExample).count();
+        long actualBCount = chain.ofType(typeBExample).count();
+
+        // Then
+        assertEquals(expectedACount, actualACount);
+        assertEquals(expectedBCount, actualBCount);
+    }
+
     @Test
     public void testReplace() {
         // Given

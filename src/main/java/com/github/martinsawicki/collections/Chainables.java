@@ -387,6 +387,17 @@ public final class Chainables {
         }
 
         /**
+         * Returns a chain of items from this chain that are of the same type as the specified {@code example}.
+         * <p>
+         * For example, consider a mixed collection of super-classes and subclasses, or hybrid interfaces.
+         * @param example
+         * @return only those items that are of the same type as the specified {@code example}
+         */
+        default <O> Chainable<O> ofType(O example) {
+            return Chainables.ofType(this, example);
+        }
+
+        /**
          * Create a {@link ChainableQueue} with the current items as the initial contents of the queue, but not yet traversed/evaluated.
          * @return a mutable {@link ChainableQueue} with the current items as the initial contents of the queue
          */
@@ -1765,6 +1776,22 @@ public final class Chainables {
      */
     public static <T> Chainable<T> asLongAsValue(Iterable<T> items, T item) {
         return asLongAs(items, o -> o == item);
+    }
+
+    /**
+     * @param items
+     * @param example
+     * @return
+     * @see Chainable#ofType(Object)
+     */
+    @SuppressWarnings("unchecked")
+    public static <T, O> Chainable<O> ofType(Iterable<T> items, O example) {
+        Class<? extends Object> clazz = example.getClass();
+        return (Chainable<O>) Chainable
+                .from(items)
+                .withoutNull()
+                .transform(i -> (clazz.isAssignableFrom(i.getClass())) ? clazz.cast(i) : null)
+                .withoutNull();
     }
 
     /**
