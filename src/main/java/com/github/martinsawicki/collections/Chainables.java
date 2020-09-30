@@ -30,6 +30,7 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import com.github.martinsawicki.annotation.Experimental;
 import com.github.martinsawicki.function.ToStringFunction;
 
 /**
@@ -940,6 +941,18 @@ public final class Chainables {
          */
         default boolean isEmpty() {
             return Chainables.isNullOrEmpty(this);
+        }
+
+        /**
+         * Enables the item existence check to be performed iteratively, emitting {@code null} values as long as the item is not <i>yet</i> found,
+         * and ultimately emitting either {@code true} if the item is found, or otherwise {@code false} if the end has been reached.
+         * @param item item to search for
+         * @return a {@link Chainable} consisting of {@code null} values as long as the search is not completed, and ultimately either {@code true} or {@code false}
+         * @see #contains(Iterable, Object))
+         */
+        @Experimental
+        default Chainable<Boolean> iterativeContains(T item) {
+            return Chainables.iterativeContains(this, item);
         }
 
         /**
@@ -2697,6 +2710,28 @@ public final class Chainables {
         }
 
         return false;
+    }
+
+    /**
+     * @param container
+     * @param item
+     * @return
+     * @see Chainable#iterativeContains(Object)
+     */
+    @Experimental
+    public static <T> Chainable<Boolean> iterativeContains(Iterable<T> container, T item) {
+        if (container == null) {
+            return Chainable.from(false);
+        } else if (container instanceof Set<?> && item != null) {
+            return Chainable.from(((Set<?>) container).contains(item));
+        } else {
+            return Chainable
+                    .from(container)
+                    .transform(i -> i == null ? item == null : i.equals(item))
+                    .transform(b -> Boolean.TRUE.equals(b) ? true : null)
+                    .notAfter(b -> Boolean.TRUE.equals(b))
+                    .chainIf(b -> b == null, b -> false); // Last item is false
+        }
     }
 
     /**

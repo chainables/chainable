@@ -579,6 +579,21 @@ public class ChainableTest {
     }
 
     @Test
+    public void testIterativeContains() {
+        // Given
+        Chainable<String> items = Chainable.from("a", "b", "c", "d", "e");
+
+        // When/Then
+        assertTrue(Boolean.TRUE.equals(items.iterativeContains("a").last()));
+        assertTrue(Boolean.TRUE.equals(items.iterativeContains("c").last()));
+        assertTrue(Boolean.TRUE.equals(items.iterativeContains("e").last()));
+        assertTrue(Boolean.FALSE.equals(items.iterativeContains("x").last()));
+
+        items = Chainable.from(new ArrayList<String>());
+        assertTrue(Boolean.FALSE.equals(items.iterativeContains("x").last()));
+    }
+
+    @Test
     public void testJoin() {
         // Given
         List<String> items = Arrays.asList("a", "b", "c", "d");
