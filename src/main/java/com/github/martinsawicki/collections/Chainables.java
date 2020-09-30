@@ -84,13 +84,13 @@ public final class Chainables {
         }
 
         /**
-         * Creates a new chain from the specified {@code items} in a "lazy" fashion, i.e. not traversing/evaluating the items, just holding an internal reference
-         * to them.
-         * @param items
-         * @return a {@link Chainable} wrapper for the specified {@code items}
+         * Creates a new chain from the specified {@code items} in a "lazy" fashion, not traversing/evaluating the items,
+         * just holding internal references to them.
+         * @param items the items to create the chain from
+         * @return a chain for the specified {@code items}
          * @sawicki.similar
          * <table summary="Similar to:">
-         * <tr><td><i>Java:</i></td><td>{@link Collection#stream()} but operating on {@link Iterable}, so not requiring a {@link Collection} as a starting point</td></tr>
+         * <tr><td><i>Java:</i></td><td>{@link Collection#stream()} but operating on {@link Iterable}, so not requiring a {@link Collection} as its starting point</td></tr>
          * <tr><td><i>C#:</i></td><td>{@code Enumerable.AsEnumerable()}</td></tr>
          * </table>
          */
@@ -99,9 +99,9 @@ public final class Chainables {
         }
 
         /**
-         * Creates a new chain from the specified {@code items} in a "lazy" fashion, i.e. not traversing/evaluating/copying the items, just holding an internal reference
-         * to them.
-         * @param items
+         * Creates a new chain from the specified {@code items} in a "lazy" fashion, not traversing/evaluating/copying the items,
+         * just holding internal references to them.
+         * @param items the items to create a chain from
          * @return an {@link Chainable} wrapper for the specified {@code items}
          * @sawicki.similar
          * <table summary="Similar to:">
@@ -115,12 +115,12 @@ public final class Chainables {
         }
 
         /**
-         * Creates a new chain from the specified {@code stream}, which supports multiple traversals, just like a standard {@link java.lang.Iterable},
-         * even though the underlying {@link java.util.stream.Stream} does not.
+         * Creates a new chain from the specified {@code stream}, which supports multiple traversals, just like a
+         * standard {@link java.lang.Iterable}, even though the underlying {@link java.util.stream.Stream} does not.
          * <p>
-         * Note that upon subsequent traversals of the chain, the original stream is not recomputed, but rather its values as obtained during its
-         * first traversal are cached internally and used for any subsequent traversals.
-         * @param stream
+         * Note that upon subsequent traversals of the chain, the original stream is not recomputed, but rather its values as
+         * obtained during its first traversal are cached internally and used for any subsequent traversals.
+         * @param stream the stream to create a chain from
          * @return a chain based on the specified {@code stream}
          */
         static <T> Chainable<T> from(Stream<T> stream) {
@@ -166,7 +166,7 @@ public final class Chainables {
          * @return items following the first one
          * @sawicki.similar
          * <table summary="Similar to:">
-         * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#skip(long))} with 1 as the number to skip</td></tr>
+         * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#skip(long)} with 1 as the number to skip</td></tr>
          * <tr><td><i>C#:</i></td><td>{@code Enumerable.Skip()}</td></tr>
          * </table>
          */
@@ -180,7 +180,7 @@ public final class Chainables {
          * @return the remaining chain
          * @sawicki.similar
          * <table summary="Similar to:">
-         * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#skip(long))}</td></tr>
+         * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#skip(long)}</td></tr>
          * <tr><td><i>C#:</i></td><td>{@code Enumerable.Skip()}</td></tr>
          * </table>
          */
@@ -194,7 +194,7 @@ public final class Chainables {
          * @return {@code true} if all items satisfy the specified {@code condition}, otherwise {@code false}
          * @sawicki.similar
          * <table summary="Similar to:">
-         * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#allMatch(Predicate)))}</td></tr>
+         * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#allMatch(Predicate)}</td></tr>
          * <tr><td><i>C#:</i></td><td>{@code Enumerable.All()}</td></tr>
          * </table>
          */
@@ -227,7 +227,7 @@ public final class Chainables {
 
         /**
          * Determines whether any of the items in this chain satisfy the specified {@code condition}.
-         * @param condition
+         * @param condition the condition to satisfy
          * @return {@code true} if there are any items that satisfy the specified {@code condition}
          * @sawicki.similar
          * <table summary="Similar to:">
@@ -241,7 +241,7 @@ public final class Chainables {
 
         /**
          * Determines whether any of the items in this chain satisfy any of the specified {@code conditions}.
-         * @param conditions
+         * @param conditions the conditions to satisfy
          * @return true if there are any items that satisfy any of the specified {@code conditions}
          * @see #anyWhere(Predicate)
          */
@@ -273,8 +273,8 @@ public final class Chainables {
         }
 
         /**
-         * Applies the specified {@code action} to each item one by one lazily, i.e. without triggering a full evaluation of the entire {@link Chainable},
-         * but only to the extent that the returned {@link Chainable} is evaluated using another function.
+         * Applies the specified {@code action} to each item one by one lazily, that is without triggering a full
+         * evaluation of the entire chain, but only to the extent that the returned chain is evaluated using another function.
          * @param action
          * @return self
          * @sawicki.similar
@@ -368,7 +368,7 @@ public final class Chainables {
          * <table summary="Similar to:">
          * <tr><td><i>C#:</i></td><td>{@code Enumerable.TakeWhile()}</td></tr>
          * </table>
-         * @see #asLongAsValue(Object)
+         * @see #asLongAsEquals(Object)
          */
         default Chainable<T> asLongAs(Predicate<T> condition) {
             return (condition == null) ? this : this.before(condition.negate());
@@ -382,8 +382,8 @@ public final class Chainables {
          * @return items <i>before</i> the first one that is not equal to the specified {@code value}
          * @see #asLongAs(Predicate)
          */
-        default Chainable<T> asLongAsValue(T value) {
-            return Chainables.asLongAsValue(this, value);
+        default Chainable<T> asLongAsEquals(T value) {
+            return Chainables.asLongAsEquals(this, value);
         }
 
         /**
@@ -395,15 +395,6 @@ public final class Chainables {
          */
         default <O> Chainable<O> ofType(O example) {
             return Chainables.ofType(this, example);
-        }
-
-        /**
-         * Create a {@link ChainableQueue} with the current items as the initial contents of the queue, but not yet traversed/evaluated.
-         * @return a mutable {@link ChainableQueue} with the current items as the initial contents of the queue
-         */
-        @Experimental
-        default ChainableQueue<T> asQueue() {
-            return Chainables.asQueue(this);
         }
 
         /**
@@ -554,7 +545,7 @@ public final class Chainables {
          * @return resulting {@link Chainable}
          * @sawicki.similar
          * <table summary="Similar to:">
-         * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#iterate(Object, java.util.function.UnaryOperator))}, except that the "seed" is just the last item of the underlying {@link Chainable}</td></tr>
+         * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#iterate(Object, java.util.function.UnaryOperator)}, except that the "seed" is just the last item of the underlying {@link Chainable}</td></tr>
          * </table>
          */
         default Chainable<T> chain(UnaryOperator<T> nextItemExtractor) {
@@ -567,7 +558,7 @@ public final class Chainables {
          * @param condition
          * @param nextItemExtractor
          * @return resulting {@link Chainable}
-         * @see #chain(Function)
+         * @see #chain(UnaryOperator)
          */
         default Chainable<T> chainIf(Predicate<T> condition, UnaryOperator<T> nextItemExtractor) {
             return Chainables.chainIf(this, condition, nextItemExtractor);
@@ -896,7 +887,7 @@ public final class Chainables {
 
         /**
          * Returns the first {@code count} of items in this chain.
-         * @param number
+         * @param count
          * @return the specified {@code count} of items from the beginning
          * @sawicki.similar
          * <table summary="Similar to:">
@@ -924,7 +915,7 @@ public final class Chainables {
         }
 
         /**
-         * Finds the first item satisying any of the specified {@code conditions}
+         * Finds the first item satisying any of the specified {@code conditions}.
          * @param conditions
          * @return the first item satisfying any of the specified {@code conditions}
          * @see #firstWhere(Predicate)
@@ -968,7 +959,7 @@ public final class Chainables {
          * and ultimately emitting either {@code true} if the item is found, or otherwise {@code false} if the end has been reached.
          * @param item item to search for
          * @return a {@link Chainable} consisting of {@code null} values as long as the search is not completed, and ultimately either {@code true} or {@code false}
-         * @see #contains(Iterable, Object))
+         * @see #contains(Object)
          */
         @Experimental
         default Chainable<Boolean> iterativeContains(T item) {
@@ -1158,8 +1149,8 @@ public final class Chainables {
          * @see #notAfter(Predicate)
          * @see #asLongAs(Predicate)
          */
-        default Chainable<T> notBeforeValue(T item) {
-            return Chainables.notBeforeValue(this, item);
+        default Chainable<T> notBeforeEquals(T item) {
+            return Chainables.notBeforeEquals(this, item);
         }
 
         /**
@@ -1275,7 +1266,7 @@ public final class Chainables {
         }
 
         /**
-         * Computes the sum of values generated by the specified {@code valueExtractor} applied to each iten in this chain.
+         * Computes the sum of values generated by the specified {@code valueExtractor} applied to each item in this chain.
          * <p>
          * This trighers a full traversal/evaluation of the items.
          * @param valueExtractor
@@ -1313,6 +1304,15 @@ public final class Chainables {
          */
         default <K> Map<K, T> toMap(Function<T, K> keyExtractor) {
             return Chainables.toMap(this, keyExtractor);
+        }
+
+        /**
+         * Create a {@link ChainableQueue} with the current items as the initial contents of the queue, but not yet traversed/evaluated.
+         * @return a mutable {@link ChainableQueue} with the current items as the initial contents of the queue
+         */
+        @Experimental
+        default ChainableQueue<T> toQueue() {
+            return Chainables.toQueue(this);
         }
 
         /**
@@ -1774,7 +1774,7 @@ public final class Chainables {
      * @param item the item that returned items must be equal to
      * @return items before the first one is encountered that no longer equals the specified item
      */
-    public static <T> Chainable<T> asLongAsValue(Iterable<T> items, T item) {
+    public static <T> Chainable<T> asLongAsEquals(Iterable<T> items, T item) {
         return asLongAs(items, o -> o == item);
     }
 
@@ -1796,17 +1796,7 @@ public final class Chainables {
 
     /**
      * @param items
-     * @return
-     * @see Chainable#asQueue()
-     */
-    @Experimental
-    public static <T> ChainableQueue<T> asQueue(Iterable<T> items) {
-        return new ChainableQueueImpl<>(items);
-    }
-
-    /**
-     * @param items
-     * @param number
+     * @param min
      * @return true if there are at least the specified {@code min} number of {@code items}, stopping the traversal as soon as that can be determined
      * @see Chainable#atLeast(int)
      */
@@ -2020,7 +2010,7 @@ public final class Chainables {
      * @param item
      * @param nextItemExtractor
      * @return
-     * @see Chainable#chain(Function)
+     * @see Chainable#chain(UnaryOperator)
      */
     public static <T> Chainable<T> chain(T item, UnaryOperator<T> nextItemExtractor) {
         return chain(Chainable.from(item), nextItemExtractor);
@@ -2030,7 +2020,7 @@ public final class Chainables {
      * @param items
      * @param nextItemExtractor
      * @return
-     * @see Chainable#chain(Function)
+     * @see Chainable#chain(UnaryOperator)
      */
     public static <T> Chainable<T> chain(Iterable<T> items, UnaryOperator<T> nextItemExtractor) {
         if (items == null || nextItemExtractor == null) {
@@ -2082,7 +2072,7 @@ public final class Chainables {
      * @param items
      * @param condition
      * @param nextItemExtractor
-     * @return {@link Chainable#chainIf(Predicate, Function)}
+     * @return {@link Chainable#chainIf(Predicate, UnaryOperator)}
      */
     public static <T> Chainable<T> chainIf(Iterable<T> items, Predicate<T> condition, UnaryOperator<T> nextItemExtractor) {
         if (items == null || nextItemExtractor == null) {
@@ -2750,7 +2740,7 @@ public final class Chainables {
     /**
      * Finds the first item satisfying the specified condition.
      * @param items
-     * @param predicate
+     * @param conditions
      * @return
      * @see Chainable#firstWhereEither(Predicate...)
      */
@@ -3208,9 +3198,9 @@ public final class Chainables {
      * @param items items to skip over
      * @param item item to skip until
      * @return the rest of the items
-     * @see Chainable#notBeforeValue(Object)
+     * @see Chainable#notBeforeEquals(Object)
      */
-    public static <T> Chainable<T> notBeforeValue(Iterable<T> items, T item) {
+    public static <T> Chainable<T> notBeforeEquals(Iterable<T> items, T item) {
         return notBefore(items, (Predicate<T>)(o -> o == item));
     }
 
@@ -3569,6 +3559,16 @@ public final class Chainables {
     }
 
     /**
+     * @param items
+     * @return
+     * @see Chainable#toQueue()
+     */
+    @Experimental
+    public static <T> ChainableQueue<T> toQueue(Iterable<T> items) {
+        return new ChainableQueueImpl<>(items);
+    }
+
+    /**
      * Converts the specified {@code items} into a sequential stream.
      * @param items the items to convert into a stream
      * @return the resulting stream
@@ -3799,7 +3799,7 @@ public final class Chainables {
 
     /**
      * @param items
-     * @return
+     * @return chain without null values
      * @see Chainable#withoutNull()
      */
     public static <T> Chainable<T> withoutNull(Iterable<T> items) {

@@ -136,7 +136,7 @@ public class ChainableTest {
         String expected = "aa";
 
         // When
-        String actual = Chainables.asLongAsValue(testList, "a").join();
+        String actual = Chainables.asLongAsEquals(testList, "a").join();
 
         // Then
         assertEquals(expected, actual);
@@ -149,7 +149,7 @@ public class ChainableTest {
         String expected = String.join("", items);
 
         // Adding individual items to end of queue
-        ChainableQueue<String> queue = Chainable.from(items[0]).asQueue();
+        ChainableQueue<String> queue = Chainable.from(items[0]).toQueue();
         for (int i = 1; i < items.length; i++) {
             queue.withLast(items[i]);
         }
@@ -193,7 +193,7 @@ public class ChainableTest {
         assertEquals(expected, actual);
 
         // Larger initial iterable
-        queue = Chainable.from(items[0], items[1]).asQueue();
+        queue = Chainable.from(items[0], items[1]).toQueue();
         sb.setLength(0);
         for (int i = 2; i < items.length; i++) {
             queue.withLast(items[i]);
@@ -784,7 +784,7 @@ public class ChainableTest {
         String expected = "cde";
 
         // When
-        String actual = Chainables.notBeforeValue(testList, "c").join();
+        String actual = Chainables.notBeforeEquals(testList, "c").join();
 
         // Then
         assertEquals(expected, actual);
