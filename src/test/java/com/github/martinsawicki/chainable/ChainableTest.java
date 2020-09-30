@@ -2,9 +2,13 @@
  * Copyright (c) Martin Sawicki. All rights reserved.
  * Licensed under the MIT License. See LICENSE in the project root for license information.
  */
-package com.github.martinsawicki.collections;
+package com.github.martinsawicki.chainable;
 
 import org.junit.jupiter.api.Test;
+
+import com.github.martinsawicki.chainable.Chainable;
+import com.github.martinsawicki.chainable.ChainableQueue;
+import com.github.martinsawicki.chainable.Chainables;
 
 import static org.junit.jupiter.api.Assertions.*;
 

@@ -2,7 +2,7 @@
  * Copyright (c) Martin Sawicki. All rights reserved.
  * Licensed under the MIT License. See LICENSE in the project root for license information.
  */
-package com.github.martinsawicki.collections;
+package com.github.martinsawicki.chainable;
 
 import org.openjdk.jmh.Main;
 import org.openjdk.jmh.annotations.Benchmark;
@@ -17,6 +17,8 @@ import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Warmup;
 import org.openjdk.jmh.runner.RunnerException;
 
+import com.github.martinsawicki.chainable.Chainable;
+
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
@@ -30,6 +32,11 @@ import java.util.stream.Stream;
 @Warmup(iterations=2)
 @Measurement(iterations=3)
 public class PerfTest {
+    /*
+     * To run benchmarks:
+     * 1. build project with mvn install
+     * 2. 
+     */
     public static final void main(final String args[]) throws RunnerException, IOException {
         Main.main(args);
     }

@@ -1,4 +1,4 @@
-package com.github.martinsawicki.collections;
+package com.github.martinsawicki.chainable;
 
 import com.github.martinsawicki.annotation.Experimental;
 

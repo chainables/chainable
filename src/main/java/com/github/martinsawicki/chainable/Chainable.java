@@ -2,7 +2,7 @@
  * Copyright (c) Martin Sawicki. All rights reserved.
  * Licensed under the MIT License. See LICENSE in the project root for license information.
  */
-package com.github.martinsawicki.collections;
+package com.github.martinsawicki.chainable;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -19,7 +19,7 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
 import com.github.martinsawicki.annotation.Experimental;
-import com.github.martinsawicki.collections.Chainables.Chain;
+import com.github.martinsawicki.chainable.Chainables.Chain;
 import com.github.martinsawicki.function.ToStringFunction;
 
 /**
