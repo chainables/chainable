@@ -34,8 +34,8 @@ import java.util.stream.Stream;
 public class PerfTest {
     /*
      * To run benchmarks:
-     * 1. build project with mvn install
-     * 2. 
+     * 1. build project with mvn clean install
+     * 2. from Eclipse, run this test class as Java Application
      */
     public static final void main(final String args[]) throws RunnerException, IOException {
         Main.main(args);
