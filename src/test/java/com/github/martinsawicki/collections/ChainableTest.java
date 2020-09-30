@@ -7,6 +7,7 @@ package com.github.martinsawicki.collections;
 import org.junit.jupiter.api.Test;
 
 import com.github.martinsawicki.collections.Chainables.Chainable;
+import com.github.martinsawicki.collections.Chainables.ChainableQueue;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -138,6 +139,73 @@ public class ChainableTest {
         String actual = Chainables.asLongAsValue(testList, "a").join();
 
         // Then
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testAsQueue() {
+        // Given
+        String[] items = { "a", "b", "c", "d", "e" };
+        String expected = String.join("", items);
+
+        // Adding individual items to end of queue
+        ChainableQueue<String> queue = Chainable.from(items[0]).asQueue();
+        for (int i = 1; i < items.length; i++) {
+            queue.withLast(items[i]);
+        }
+
+        String actual = String.join("", queue);
+        assertEquals(expected, actual);
+
+        // Removing from front of queue
+        StringBuilder sb = new StringBuilder();
+        while (queue.any()) {
+            sb.append(queue.removeFirst());
+        }
+
+        actual = sb.toString();
+        assertEquals(expected, actual);
+
+        // Adding and removing in one loop
+        sb.setLength(0);
+        for (String item : items) {
+            queue.withLast(item);
+            if (queue.any()) {
+                sb.append(queue.removeFirst());
+            }
+        }
+
+        actual = sb.toString();
+        assertEquals(expected, actual);
+
+        // Adding entire set to end
+        queue
+            .withLast(items)
+            .withLast(items);
+
+        sb.setLength(0);
+        while (queue.any()) {
+            sb.append(queue.removeFirst());
+        }
+
+        actual = sb.toString();
+        expected = String.join("", items) + String.join("", items);
+        assertEquals(expected, actual);
+
+        // Larger initial iterable
+        queue = Chainable.from(items[0], items[1]).asQueue();
+        sb.setLength(0);
+        for (int i = 2; i < items.length; i++) {
+            queue.withLast(items[i]);
+            sb.append(queue.removeFirst());
+        }
+
+        while (queue.any()) {
+            sb.append(queue.removeFirst());
+        }
+
+        expected = String.join("", items);
+        actual = sb.toString();
         assertEquals(expected, actual);
     }
 
@@ -579,6 +647,21 @@ public class ChainableTest {
     }
 
     @Test
+    public void testIterativeContains() {
+        // Given
+        Chainable<String> items = Chainable.from("a", "b", "c", "d", "e");
+
+        // When/Then
+        assertTrue(Boolean.TRUE.equals(items.iterativeContains("a").last()));
+        assertTrue(Boolean.TRUE.equals(items.iterativeContains("c").last()));
+        assertTrue(Boolean.TRUE.equals(items.iterativeContains("e").last()));
+        assertTrue(Boolean.FALSE.equals(items.iterativeContains("x").last()));
+
+        items = Chainable.from(new ArrayList<String>());
+        assertTrue(Boolean.FALSE.equals(items.iterativeContains("x").last()));
+    }
+
+    @Test
     public void testJoin() {
         // Given
         List<String> items = Arrays.asList("a", "b", "c", "d");
@@ -705,6 +788,26 @@ public class ChainableTest {
 
         // Then
         assertEquals(expected, actual);
+    }
+
+    private class TypeA {};
+    private class TypeB {};
+
+    @Test
+    public void testOfType() {
+        // Given
+        TypeA typeAExample = new TypeA();
+        TypeB typeBExample = new TypeB();
+        Chainable<Object> chain = Chainable.from(new TypeA(), new TypeB(), new TypeA(), new TypeA(), new TypeB());
+        long expectedACount = 3, expectedBCount = 2;
+
+        // When
+        long actualACount = chain.ofType(typeAExample).count();
+        long actualBCount = chain.ofType(typeBExample).count();
+
+        // Then
+        assertEquals(expectedACount, actualACount);
+        assertEquals(expectedBCount, actualBCount);
     }
 
     @Test

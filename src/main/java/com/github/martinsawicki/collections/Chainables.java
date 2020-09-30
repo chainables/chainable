@@ -30,6 +30,7 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import com.github.martinsawicki.annotation.Experimental;
 import com.github.martinsawicki.function.ToStringFunction;
 
 /**
@@ -383,6 +384,26 @@ public final class Chainables {
          */
         default Chainable<T> asLongAsValue(T value) {
             return Chainables.asLongAsValue(this, value);
+        }
+
+        /**
+         * Returns a chain of items from this chain that are of the same type as the specified {@code example}.
+         * <p>
+         * For example, consider a mixed collection of super-classes and subclasses, or hybrid interfaces.
+         * @param example
+         * @return only those items that are of the same type as the specified {@code example}
+         */
+        default <O> Chainable<O> ofType(O example) {
+            return Chainables.ofType(this, example);
+        }
+
+        /**
+         * Create a {@link ChainableQueue} with the current items as the initial contents of the queue, but not yet traversed/evaluated.
+         * @return a mutable {@link ChainableQueue} with the current items as the initial contents of the queue
+         */
+        @Experimental
+        default ChainableQueue<T> asQueue() {
+            return Chainables.asQueue(this);
         }
 
         /**
@@ -943,6 +964,18 @@ public final class Chainables {
         }
 
         /**
+         * Enables the item existence check to be performed iteratively, emitting {@code null} values as long as the item is not <i>yet</i> found,
+         * and ultimately emitting either {@code true} if the item is found, or otherwise {@code false} if the end has been reached.
+         * @param item item to search for
+         * @return a {@link Chainable} consisting of {@code null} values as long as the search is not completed, and ultimately either {@code true} or {@code false}
+         * @see #contains(Iterable, Object))
+         */
+        @Experimental
+        default Chainable<Boolean> iterativeContains(T item) {
+            return Chainables.iterativeContains(this, item);
+        }
+
+        /**
          * Joins all the members of the chain into a string with no delimiters, calling each member's {@code toString()} method.
          * @return the merged string
          * @see #join(String)
@@ -1346,6 +1379,42 @@ public final class Chainables {
         }
     }
 
+    /**
+     * A simple FIFO queue supporting the {@link Chainable} interface.
+     *
+     * @author Martin Sawicki
+     * @param <T>
+     */
+    @Experimental
+    public interface ChainableQueue<T> extends Chainable<T> {
+        /**
+         * Removes the first item from the queue, without affecting the underlying chain.
+         * @return the first item
+         */
+        T removeFirst();
+
+        /**
+         * Adds the specified {@code items} to the end of the queue.
+         * <p>
+         * Note that the original chain the queue was created from is not affected, as new items are added to a hidden
+         * separate collection concatenated with that original chain.
+         * @param items
+         * @return self
+         */
+        @SuppressWarnings("unchecked")
+        ChainableQueue<T> withLast(T...items);
+
+        /**
+         * Adds the specified {@code items} to the end of the queue.
+         * <p>
+         * Note that the original chain the queue was created from is not affected, as new items are added to a hidden
+         * separate collection concatenated with that original chain.
+         * @param items
+         * @return self
+         */
+        ChainableQueue<T> withLast(Iterable<T> items);
+    }
+
     private static class Chain<T> implements Chainable<T> {
         protected Iterable<T> iterable;
 
@@ -1397,6 +1466,62 @@ public final class Chainables {
         @Override
         public String toString() {
             return Chainables.join("", this);
+        }
+    }
+
+    private static class ChainableQueueImpl<T> extends Chain<T> implements ChainableQueue<T> {
+
+        final Deque<T> queue = new LinkedList<>();
+        Iterable<T> originalIterable;
+        final Iterator<T> initialIter;
+
+        private ChainableQueueImpl(Iterable<T> iterable) {
+            // Specified iterable becomes initial head, but joined with actual FIFO queue
+            super(null);
+            this.originalIterable = iterable;
+            this.iterable = iterable;
+            this.initialIter = iterable.iterator();
+        }
+
+        @Override
+        public T removeFirst() {
+            if (this.originalIterable == null) {
+                // No more original iterable, so just queue left
+                return this.queue.removeFirst();
+            } else if (!this.initialIter.hasNext()) {
+                // Empty original iterable, just queue left, so eliminate the original iterable altogether
+                this.iterable = this.queue;
+                this.originalIterable = null;
+                return this.queue.removeFirst();
+            } else {
+                // Original iterable still around, so fetch from it and adjust the merger
+                T first = this.initialIter.next();
+                this.originalIterable = Chainables.afterFirst(this.originalIterable); // Makes traversal increasingly long, but ChainableQueue should not really be traversed like this if the initial iterable is very large...
+                this.iterable = Chainables.concat(this.originalIterable, this.queue);
+                return first;
+            }
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public ChainableQueueImpl<T> withLast(T...items) {
+            if (items.length == 1 ) {
+                this.queue.addLast(items[0]);
+            } else {
+                this.queue.addAll(Arrays.asList(items));
+            }
+
+            if (!Chainables.isNullOrEmpty(this.originalIterable)) {
+                this.iterable = Chainables.concat(this.originalIterable, this.queue);
+            }
+
+            return this;
+        }
+
+        @Override
+        public ChainableQueue<T> withLast(Iterable<T> items) {
+            this.queue.addAll(Chainable.from(items).toList());
+            return this;
         }
     }
 
@@ -1651,6 +1776,32 @@ public final class Chainables {
      */
     public static <T> Chainable<T> asLongAsValue(Iterable<T> items, T item) {
         return asLongAs(items, o -> o == item);
+    }
+
+    /**
+     * @param items
+     * @param example
+     * @return
+     * @see Chainable#ofType(Object)
+     */
+    @SuppressWarnings("unchecked")
+    public static <T, O> Chainable<O> ofType(Iterable<T> items, O example) {
+        Class<? extends Object> clazz = example.getClass();
+        return (Chainable<O>) Chainable
+                .from(items)
+                .withoutNull()
+                .transform(i -> (clazz.isAssignableFrom(i.getClass())) ? clazz.cast(i) : null)
+                .withoutNull();
+    }
+
+    /**
+     * @param items
+     * @return
+     * @see Chainable#asQueue()
+     */
+    @Experimental
+    public static <T> ChainableQueue<T> asQueue(Iterable<T> items) {
+        return new ChainableQueueImpl<>(items);
     }
 
     /**
@@ -2697,6 +2848,28 @@ public final class Chainables {
         }
 
         return false;
+    }
+
+    /**
+     * @param container
+     * @param item
+     * @return
+     * @see Chainable#iterativeContains(Object)
+     */
+    @Experimental
+    public static <T> Chainable<Boolean> iterativeContains(Iterable<T> container, T item) {
+        if (container == null) {
+            return Chainable.from(false);
+        } else if (container instanceof Set<?> && item != null) {
+            return Chainable.from(((Set<?>) container).contains(item));
+        } else {
+            return Chainable
+                    .from(container)
+                    .transform(i -> i == null ? item == null : i.equals(item))
+                    .transform(b -> Boolean.TRUE.equals(b) ? true : null)
+                    .notAfter(b -> Boolean.TRUE.equals(b))
+                    .chainIf(b -> b == null, b -> false); // Last item is false
+        }
     }
 
     /**
