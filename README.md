@@ -2,9 +2,9 @@
 
 > :warning: Under construction / Work in progress / Coming soon...
 
-## Summary
+## Overview
 
-`Chainable` is an `Iterable`-based alternative to Java's `Stream`, focused on delivering richer fluent API for achieving sequential access logic, heavily inspired by the **iterator pattern**, **functional programming**, **lazy evaluation** and C#'s `Enumerable`, but also extended into areas of functionality not yet addressed by older approaches. It is intended to enable writing code that is more succinct, readable, simpler to implement, and sometimes faster than its non-lazy/non-functional equivalents.
+`Chainable` is an `Iterable`-based alternative to Java's `Stream`, focused on delivering richer fluent API for achieving sequential access logic. It is heavily inspired by the **iterator pattern**, **functional programming**, **lazy evaluation** and C#'s `Enumerable`, but also extended into areas of functionality not yet addressed by older approaches. It is intended to enable writing code that is more succinct, readable, simpler to implement, and sometimes faster than its non-lazy/non-functional equivalents.
 
 ```java
         Chainable<String> chain = Chainable
@@ -25,17 +25,21 @@
 
 The implementation is lightweight and self-contained, i.e. it has no external dependencies, so as not to contribute to any sub-dependency versioning challenges.
 
+(A note on the terminology: `Chainable` is the interface, whereas the word *"chain"* is used throughout the documentation to refer to specific instances of `Chainable`).
+
+### Chainable vs Java Stream
+
 Although `Chainable` overlaps with Java's `Stream` in some areas of functionality, the design of `Chainable` is optimized for a somewhat different set of goals and aligns more with C#'s `Enumerable`'s LINQ-style methods than Java streams.
 
-For example, one of the key differences from `Stream` is that `Chainable` fully preserves the functional and re-entrancy semantics of `Iterable`, i.e. it can be traversed multiple times, with multiple iterator instantiations, whereas Java's built-in `Stream` can be traversed only once.
+For example, one of the key differences from `Stream` is that `Chainable` fully preserves the functional and re-entrancy semantics of `Iterable`, that is it can be traversed multiple times, with multiple iterator instantiations, whereas Java's built-in `Stream` can be traversed only once.
 
-The `Chainable` API surface also exposes various additional convenience methods for chain processing with functional programming, and is not so much oriented toward the parallelism that was a key guiding design principle behind Java's `Stream`. Also, some of the overlapping APIs are only available in Java streams starting with Java 9, whereas `Chainable` is fully functional in Java 8.
+The `Chainable` API surface also exposes various additional convenience methods for sequential chain processing with functional programming, and not so much oriented toward the parallelism that was a key guiding design principle behind Java's `Stream`. Also, some of the overlapping APIs are only available in Java streams starting with Java 9, whereas `Chainable` is fully functional from Java 8 on.
 
-Having said that, a basic level of interoperability between `Stream` and `Chainable` exists: a chain can be created from a stream (see `Chainable#from(Stream)`, and vice-versa (see `Chainable#stream()`).
+Having said that, a level of interoperability between `Stream` and `Chainable` exists: a chain can be created from a stream (see `Chainable#from(Stream)`, and vice-versa (see `Chainable#stream()`).
 
-(A note on the vocabulary: `Chainable` is the interface, whereas the word *"chain"* is used throughout the documentation to refer to specific instances of `Chainable`).
+### Highlights
 
-Overall, the current highlights of `Chainable` include:
+Besides the part of the API overlapping with streams, current highlights of `Chainable` include:
 
 > :warning: Section under construction as the API is under active development/at pre-release stage.
 
@@ -60,18 +64,22 @@ so that subsequent chain can apply to their outputs in a quasi-parallel (or sequ
 
 - chainable **string joining/splitting** operations - you can quickly get a chain of tokens or characters out of a string (see `Chainables#split()`, process it using `Chainable` APIs and go back to a string (see `Chainable#join()`).
 
-## Performance Considerations
+### Performance Considerations
 
 In general, although Java (as of v8) supports a notion of functional programming with lambdas, Java is known not to be optimized for functional programming's performance. Hence, in scenarios where code speed is a topmost priority, this style of programming may not be preferable, regardless of whether `Chainable` or Java's `Stream` is considered.
 
 However, if most of the processing time is spent by the application on fetching data from external sources (an inherently slower process), or where the evaluation of each item in a sequence is time-consuming in general, then lazy evaluation enabled by `Chainable` can result in significant performance gains. It is in those scenarios where the benefits of functional programming begin to greatly outweigh the performance costs of Java's lambda support. (Not to mention the improved code readability and succinctness that can be achieved.)
 
-With this in mind, based on some initial testing in Java 8 so far, `Chainable` currently appears comparable in performance to `Streams`, outperforming it slightly in some circumstances and under-performing it slightly in some others. Although under the hood `Chainable` works quite differently from `Stream`, the biggest factor in the performance of either approach is ultimately the JVM's handling of lambdas, arguably more than anything else. This likely explains why the performance differences between the two so far are not significant. (see existing benchmarks in *PerfTest.java*. 
+With this in mind, based on some initial testing in Java 8 so far, `Chainable` currently appears comparable in performance to `Streams`, outperforming it slightly in some circumstances and under-performing it slightly in some others. Although under the hood `Chainable` works quite differently from `Stream`, the biggest factor in the performance of either approach is ultimately the JVM's handling of lambdas, arguably more than anything else. This likely explains why the performance differences between the two so far are not significant (see existing benchmarks in [PerfTest.java](https://github.com/martinsawicki/chainable/blob/dev/src/test/java/com/github/martinsawicki/chainable/PerfTest.java)). 
 
 ## System requirements
 
 - Java 8+
 
+## Usage (Maven)
+
+> :triangular_flag_on_post: To do...
+
 ## Examples
 
-> :triangular_flag_on_post: To be continued...
+> :triangular_flag_on_post: To do...
