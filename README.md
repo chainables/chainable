@@ -45,6 +45,7 @@ Besides the part of the API overlapping with streams, current highlights of `Cha
 
 - **interleaving** (see `Chainable#interleave`) - two or more chains that have their own evaluation logic can be interleaved,
 so that subsequent chain can apply to their outputs in a quasi-parallel (or sequential round-robin) fashion, so as not to have a bias toward one chain first, while still not actually being concurrent.
+![Interleave](./src/main/java/doc-files/img/interleave.png)
 
 - **breadth-first/depth-first traversal** - enabling tree-like traversals of a chain of items, where children of an item are dynamically added by the caller-specified child extractor and traversed either breadth-first (queue-like, `Chainable#breadthFirst()`) or depth-first (stack-like, `Chainable#depthFirst()`), both in a lazy fashion.
 
