@@ -12,6 +12,8 @@ import com.github.martinsawicki.chainable.Chainables;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.io.File;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -496,6 +498,21 @@ public class ChainableTest {
 
         // Then
         assertEquals(expectedDepthFirst, actualDepthFirst);
+    }
+
+    @Test
+    public void testDirectoryList() {
+        File currentDir = Paths.get("").toAbsolutePath().toFile();
+        Chainable<File> directories = Chainables.directoriesFromPath(currentDir);
+        for (File dir : directories) {
+            assertNotNull(dir);
+            assertTrue(dir.isDirectory());
+        }
+
+        currentDir = new File("nonexistentDir");
+        directories = Chainables.directoriesFromPath(currentDir);
+        assertNotNull(directories);
+        assertFalse(directories.any());
     }
 
     @Test

@@ -4,6 +4,11 @@
  */
 package com.github.martinsawicki.chainable;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.StringCharacterIterator;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1094,6 +1099,74 @@ public final class Chainables {
      */
     public static <T> Chainable<T> descending(Iterable<T> items, ToStringFunction<T> keyExtractor) {
         return sortedBy(items, keyExtractor, false);
+    }
+
+    /**
+     * Lists directories under the specified {@code directory}.
+     * @param directory the root directory to list the sub-directories of
+     * @return a chain of {@link java.io.File} references to sub-directories
+     */
+    public static Chainable<File> directoriesFromPath(File directory) {
+        if (directory == null) {
+            return null;
+        }
+
+        return Chainable.from(new Iterable<File>() {
+            @Override
+            public Iterator<File> iterator() {
+                try {
+                    return new Iterator<File>() {
+                        final Path path = directory.toPath();
+                        final DirectoryStream<Path> stream = (directory.isDirectory()) ? Files.newDirectoryStream(path) : null;
+                        final Iterator<Path> pathIter = (stream != null) ? stream.iterator() : null;
+                        File nextDirFile = null;
+
+                        @Override
+                        public boolean hasNext() {
+                            if (this.pathIter == null) {
+                                return false;
+                            } else if (this.nextDirFile != null) {
+                                return true;
+                            }
+
+                            while(pathIter.hasNext()) {
+                                Path path = pathIter.next();
+                                if (path == null) {
+                                    continue;
+                                }
+
+                                this.nextDirFile = new File(path.toUri());
+                                if (this.nextDirFile.isDirectory()) {
+                                    return true;
+                                } else {
+                                    this.nextDirFile = null;
+                                }
+                            }
+
+                            try {
+                                this.stream.close();
+                            } catch (IOException e) {
+                            }
+                            
+                            return false;
+                        }
+
+                        @Override
+                        public File next() {
+                            if (this.hasNext()) {
+                                File next = this.nextDirFile;
+                                this.nextDirFile = null;
+                                return next;
+                            } else {
+                                return null;
+                            }
+                        }
+                    };
+                } catch (IOException e) {
+                    return null;
+                }
+            }
+        });
     }
 
     /**
