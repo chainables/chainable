@@ -4,6 +4,8 @@
  */
 package com.github.martinsawicki.chainable;
 
+import java.util.function.Function;
+
 import com.github.martinsawicki.chainable.ChainableTrees.ChainableTreeImpl;
 
 /**
@@ -53,6 +55,29 @@ public interface ChainableTree<T> {
      */
     @SuppressWarnings("unchecked")
     ChainableTree<T> withChildren(ChainableTree<T>... children);
+
+    /**
+     * Wraps the values generated lazily by the specified {@code childExtractor} into child trees of this tree, appending them to the existing
+     * children of this tree.
+     * @param childExtractor a function that returns child values based on the parent value it is being fed
+     * @return self
+     */
+    ChainableTree<T> withChildValueExtractor(Function<T, Iterable<T>> childExtractor);
+
+    /**
+     * Appends trees with the specified wrapped {@code childValues} to the children of this tree.
+     * @param childValues child values to wrap in trees and appends to the children of this tree
+     * @return self
+     */
+    ChainableTree<T> withChildValues(Iterable<T> childValues);
+
+    /**
+     * Appends trees with the specified wrapped {@code childValues} to the children of this tree.
+     * @param childValues child values to wrap in trees and appends to the children of this tree
+     * @return self
+     */
+    @SuppressWarnings("unchecked")
+    ChainableTree<T> withChildValues(T... childValues);
 
     /**
      * Creates a new tree (a single node) with the specified wrapped {@code value}.
