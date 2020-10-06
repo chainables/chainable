@@ -80,6 +80,12 @@ public interface ChainableTree<T> {
     ChainableTree<T> withChildValues(T... childValues);
 
     /**
+     * Removes all children from this tree.
+     * @return self
+     */
+    ChainableTree<T> withoutChildren();
+
+    /**
      * Creates a new tree (a single node) with the specified wrapped {@code value}.
      * @param value the value to wrap in the new tree node
      * @return

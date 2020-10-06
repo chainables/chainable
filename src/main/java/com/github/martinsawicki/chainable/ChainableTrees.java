@@ -84,6 +84,11 @@ public abstract class ChainableTrees {
             }
         }
 
+        @Override
+        public ChainableTree<T> withoutChildren() {
+            return this.withChildren((Iterable<ChainableTree<T>>) null);
+        }
+
         ChainableTreeImpl<T> withParent(ChainableTree<T> parent) {
             this.parent = parent;
             return this;
