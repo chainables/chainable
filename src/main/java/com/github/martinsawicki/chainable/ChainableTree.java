@@ -18,6 +18,9 @@ import com.github.martinsawicki.chainable.ChainableTrees.ChainableTreeImpl;
 public interface ChainableTree<T> {
     /**
      * Returns the direct children of this tree.
+     * <p>
+     * The values of the children are lazily evaluated on each incomplete traversal, but once a complete traversal occurs, the values of the children
+     * become fixed (cached).
      * @return direct children of this tree
      */
     Chainable<ChainableTree<T>> children();
@@ -34,7 +37,24 @@ public interface ChainableTree<T> {
      */
     ChainableTree<T> parent();
 
-    /***
+    /**
+     * Appends the specified trees to the children of this tree, if any.
+     * <p>
+     * Passing {@code null} clears the existing children and makes the node childless.
+     * @param children the direct children to append to the existing children of this tree
+     * @return self
+     */
+    ChainableTree<T> withChildren(Iterable<ChainableTree<T>> children);
+
+    /**
+     * Appends the specified trees to the children of this tree, if any.
+     * @param children the direct children to append to the existing children of this tree
+     * @return self
+     */
+    @SuppressWarnings("unchecked")
+    ChainableTree<T> withChildren(ChainableTree<T>... children);
+
+    /**
      * Creates a new tree (a single node) with the specified wrapped {@code value}.
      * @param value the value to wrap in the new tree node
      * @return
