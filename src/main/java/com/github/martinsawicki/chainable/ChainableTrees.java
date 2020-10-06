@@ -12,6 +12,7 @@ public abstract class ChainableTrees {
 
     static class ChainableTreeImpl<T> implements ChainableTree<T> {
         private final T inner;
+        ChainableTree<T> parent = null;
 
         protected ChainableTreeImpl(T inner) {
             this.inner = inner;
@@ -20,6 +21,11 @@ public abstract class ChainableTrees {
         @Override
         public T inner() {
             return this.inner;
+        }
+
+        @Override
+        public ChainableTree<T> parent() {
+            return this.parent;
         }
     }
 }

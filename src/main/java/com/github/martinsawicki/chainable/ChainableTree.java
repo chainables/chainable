@@ -22,6 +22,12 @@ public interface ChainableTree<T> {
      */
     T inner();
 
+    /**
+     * Returns the parent of this tree, or {@code null} if this is the root node.
+     * @return the parent of this tree
+     */
+    ChainableTree<T> parent();
+
     /***
      * Creates a new tree (a single node) with the specified wrapped {@code value}.
      * @param value the value to wrap in the new tree node
