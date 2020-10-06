@@ -665,13 +665,14 @@ public final class Chainables {
                     return new Iterator<T>() {
                         Iterator<T> iter = items.iterator();
                         T next = null;
+                        boolean isFetched = false; // If iter is empty, pretend it starts with null
                         boolean isStopped = false;
 
                         @Override
                         public boolean hasNext() {
                             if (isStopped) {
                                 return false;
-                            } else if (this.next != null) {
+                            } else if (isFetched) {
                                 return true;
                             } else if (Chainables.isNullOrEmpty(this.iter)) {
                                 // Seed iterator already finished so start the chaining
@@ -679,12 +680,15 @@ public final class Chainables {
                                 this.next = nextItemExtractor.apply(this.next);
                                 if (this.next == null) {
                                     isStopped = true;
+                                    isFetched = false;
                                     return false;
                                 } else {
+                                    isFetched = true;
                                     return true;
                                 }
                             } else {
                                 this.next = iter.next();
+                                isFetched = true;
                                 return true;
                             }
                         }
@@ -693,6 +697,7 @@ public final class Chainables {
                         public T next() {
                             T temp = this.next;
                             this.next = null;
+                            isFetched = false;
                             return temp;
                         }
                     };

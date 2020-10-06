@@ -329,6 +329,8 @@ public class ChainableTest {
         final Iterator<String> iter2 = items.iterator();
         String expected2 = String.join("", Chainables.concat(initial, items));
 
+        int unseededChainLength = 5;
+
         // When
         Chainable<String> chain = Chainables.chain(iter1.next(), s -> (iter1.hasNext()) ? iter1.next() : null);
         String actual = String.join("", chain);
@@ -336,9 +338,23 @@ public class ChainableTest {
         Chainable<String> chain2 = initial.chain(i -> (iter2.hasNext()) ? iter2.next() : null);
         String actual2 = String.join("", chain2);
 
+        Chainable<Long> unseededChain = Chainable
+                .empty() // Test chaining without a seed
+                .chain(o -> Math.round(Math.random() * 10))
+                .first(5)
+                .cast(Long.class);
+
+        Chainable<String> trulyEmptyChain = Chainable
+                .empty()
+                .chain(i -> (i == null) ? null : "A")
+                .first(5)
+                .cast(String.class);
+
         // Then
         assertEquals(expected, actual);
         assertEquals(expected2, actual2);
+        assertEquals(unseededChainLength, unseededChain.count());
+        assertTrue(trulyEmptyChain.isEmpty());
     }
 
     @Test
