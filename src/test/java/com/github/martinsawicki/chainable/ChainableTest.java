@@ -264,7 +264,7 @@ public class ChainableTest {
     }
 
     @Test
-    public void testBreadthFirstUntil() {
+    public void testBreadthFirstNotBelow() {
         // Given
         Chainable<String> roots = Chainable.from("a", "b", "c");
         String expected = Chainable
@@ -282,7 +282,7 @@ public class ChainableTest {
     }
 
     @Test
-    public void testBreadthFirstWhile() {
+    public void testBreadthFirstAsLongAs() {
         // Given
         Chainable<String> roots = Chainable.from("a", "b", "c");
         Chainable<String> expectedResults = Chainable.from("a", "b", "c", "aa", "ab", "ac", "ba", "bb", "bc", "ca", "cb", "cc");
@@ -514,6 +514,21 @@ public class ChainableTest {
 
         // Then
         assertEquals(expectedDepthFirst, actualDepthFirst);
+    }
+
+    @Test
+    public void testDepthFirstNotBelow() {
+        // Given
+        final int depth = 4;
+        Chainable<String> initial = Chainable.from("1");
+        Function<String, Iterable<String>> childExtractor = (s) -> (s.length() < (depth - 1)  * 2) ? Chainable.from(s + ".1", s + ".2") : null;
+        String expected = "1, 1.1, 1.1.1, 1.1.2, 1.2, 1.2.1, 1.2.2";
+
+        // When
+        String actual = initial.depthFirstNotBelow(childExtractor, i -> i.length() == 5).join(", ");
+
+        // Then
+        assertEquals(expected, actual);
     }
 
     @Test
