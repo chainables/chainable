@@ -17,6 +17,12 @@ import com.github.martinsawicki.chainable.ChainableTrees.ChainableTreeImpl;
  */
 public interface ChainableTree<T> {
     /**
+     * Returns the direct children of this tree.
+     * @return direct children of this tree
+     */
+    Chainable<ChainableTree<T>> children();
+
+    /**
      * Returns the wrapped value.
      * @return the wrapped value
      */
