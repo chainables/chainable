@@ -93,4 +93,13 @@ public interface ChainableTree<T> {
     static <T> ChainableTree<T> withValue(T value) {
         return new ChainableTreeImpl<T>(value);
     }
+
+    /**
+     * Extracts the chain of values from the specified {@code trees}.
+     * @param trees the trees to extract values from
+     * @return a chain of values from the specified {@code trees}
+     */
+    static <T> Chainable<T> values(Iterable<ChainableTree<T>> trees) {
+        return ChainableTrees.values(trees);
+    }
 }
