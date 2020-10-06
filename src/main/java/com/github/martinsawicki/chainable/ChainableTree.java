@@ -4,6 +4,8 @@
  */
 package com.github.martinsawicki.chainable;
 
+import java.util.function.Function;
+
 import com.github.martinsawicki.chainable.ChainableTrees.ChainableTreeImpl;
 
 /**
@@ -55,11 +57,49 @@ public interface ChainableTree<T> {
     ChainableTree<T> withChildren(ChainableTree<T>... children);
 
     /**
+     * Wraps the values generated lazily by the specified {@code childExtractor} into child trees of this tree, appending them to the existing
+     * children of this tree.
+     * @param childExtractor a function that returns child values based on the parent value it is being fed
+     * @return self
+     */
+    ChainableTree<T> withChildValueExtractor(Function<T, Iterable<T>> childExtractor);
+
+    /**
+     * Appends trees with the specified wrapped {@code childValues} to the children of this tree.
+     * @param childValues child values to wrap in trees and appends to the children of this tree
+     * @return self
+     */
+    ChainableTree<T> withChildValues(Iterable<T> childValues);
+
+    /**
+     * Appends trees with the specified wrapped {@code childValues} to the children of this tree.
+     * @param childValues child values to wrap in trees and appends to the children of this tree
+     * @return self
+     */
+    @SuppressWarnings("unchecked")
+    ChainableTree<T> withChildValues(T... childValues);
+
+    /**
+     * Removes all children from this tree.
+     * @return self
+     */
+    ChainableTree<T> withoutChildren();
+
+    /**
      * Creates a new tree (a single node) with the specified wrapped {@code value}.
      * @param value the value to wrap in the new tree node
      * @return
      */
     static <T> ChainableTree<T> withValue(T value) {
         return new ChainableTreeImpl<T>(value);
+    }
+
+    /**
+     * Extracts the chain of values from the specified {@code trees}.
+     * @param trees the trees to extract values from
+     * @return a chain of values from the specified {@code trees}
+     */
+    static <T> Chainable<T> values(Iterable<ChainableTree<T>> trees) {
+        return ChainableTrees.values(trees);
     }
 }

@@ -5,6 +5,7 @@
 package com.github.martinsawicki.chainable;
 
 import java.util.ArrayList;
+import java.util.function.Function;
 
 /**
  * This is the source of all the static methods underlying the default implementation of {@link ChainableTree} as well as some other conveniences.
@@ -57,6 +58,35 @@ public abstract class ChainableTrees {
         @Override
         public ChainableTreeImpl<T> withChildren(ChainableTree<T>... children) {
             return this.withChildren(Chainable.from(children));
+        }
+
+        @Override
+        public ChainableTreeImpl<T> withChildValues(Iterable<T> childValues) {
+            return this.withChildren(Chainable
+                    .from(childValues)
+                    .transform(c -> ChainableTree.withValue(c)));
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public ChainableTreeImpl<T> withChildValues(T... childValues) {
+            return this.withChildValues(Chainable.from(childValues));
+        }
+
+        @Override
+        public ChainableTreeImpl<T> withChildValueExtractor(Function<T, Iterable<T>> childExtractor) {
+            if (childExtractor != null) {
+                return this.withChildren(Chainable
+                        .from(childExtractor.apply(this.inner()))
+                        .transform(c -> ChainableTree.withValue(c).withChildValueExtractor(childExtractor)));
+            } else {
+                return this;
+            }
+        }
+
+        @Override
+        public ChainableTree<T> withoutChildren() {
+            return this.withChildren((Iterable<ChainableTree<T>>) null);
         }
 
         ChainableTreeImpl<T> withParent(ChainableTree<T> parent) {
