@@ -434,8 +434,8 @@ public interface Chainable<T> extends Iterable<T> {
      * check against an item already seen before.
      * @param childExtractor
      * @return resulting chain
-     * @see #breadthFirstUntil(Function, Function)
-     * @see #breadthFirstWhile(Function, Function)
+     * @see #breadthFirstNotBelow(Function, Function)
+     * @see #breadthFirstAsLongAs(Function, Function)
      * @see #depthFirst(Function)
      */
     default Chainable<T> breadthFirst(Function<T, Iterable<T>> childExtractor) {
@@ -456,29 +456,29 @@ public interface Chainable<T> extends Iterable<T> {
      * @param childExtractor
      * @param condition
      * @return resulting chain
-     * @see #breadthFirstWhile(Function, Function)
+     * @see #breadthFirstAsLongAs(Function, Function)
      * @see #breadthFirst(Function)
      * @see #depthFirst(Function)
      */
-    default Chainable<T> breadthFirstUntil(Function<T, Iterable<T>> childExtractor, Function<T, Boolean> condition) {
-        return Chainables.breadthFirstUntil(this, childExtractor, condition);
+    default Chainable<T> breadthFirstNotBelow(Function<T, Iterable<T>> childExtractor, Function<T, Boolean> condition) {
+        return Chainables.breadthFirstNotBelow(this, childExtractor, condition);
     }
 
     /**
-     * Traverses the items in this chain in a breadth-first order as if it's a tree, where for each item, those of its children returned by the specified
-     * {@code childTraverser} are appended to the end of the chain that satisfy the specified {@code condition}.
+     * Traverses the items in this chain in a breadth-first order as if it's a tree, where for each item, only those of its children returned by
+     * the specified {@code childTraverser} are appended to the end of the chain that satisfy the specified {@code condition}.
      * <p>
      * It can be thought of trimming the breadth-first traversal of a hypothetical tree right above the level of each item satisfying
      * the {@code condition}, but continuing with other items in the chain.
      * @param childExtractor
      * @param condition
      * @return resulting chain
-     * @see #breadthFirstUntil(Function, Function)
+     * @see #breadthFirstNotBelow(Function, Function)
      * @see #breadthFirst(Function)
      * @see #depthFirst(Function)
      */
-    default Chainable<T> breadthFirstWhile(Function<T, Iterable<T>> childExtractor, Function<T, Boolean> condition) {
-        return Chainables.breadthFirstWhile(this, childExtractor, condition);
+    default Chainable<T> breadthFirstAsLongAs(Function<T, Iterable<T>> childExtractor, Function<T, Boolean> condition) {
+        return Chainables.breadthFirstAsLongAs(this, childExtractor, condition);
     }
 
     /**

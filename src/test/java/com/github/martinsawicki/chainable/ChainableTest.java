@@ -272,7 +272,7 @@ public class ChainableTest {
                 .join(",");
 
         // When
-        String actual = roots.breadthFirstUntil(
+        String actual = roots.breadthFirstNotBelow(
                 s -> roots.transform(o -> s + o),
                 s -> s.length() == 2)
                 .join(",");
@@ -289,7 +289,7 @@ public class ChainableTest {
         String expected = String.join(",", expectedResults);
 
         // When
-        String actual = roots.breadthFirstWhile(
+        String actual = roots.breadthFirstAsLongAs(
                 s -> roots.transform(o -> s + o),
                 s -> s.length() < 3)
                 .join(",");

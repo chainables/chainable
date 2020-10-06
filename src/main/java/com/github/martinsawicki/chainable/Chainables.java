@@ -554,9 +554,9 @@ public final class Chainables {
      * @param childTraverser
      * @param condition
      * @return
-     * @see Chainable#breadthFirstUntil(Function, Function)
+     * @see Chainable#breadthFirstNotBelow(Function, Function)
      */
-    public static <T> Chainable<T> breadthFirstUntil(
+    public static <T> Chainable<T> breadthFirstNotBelow(
             Iterable<T> items,
             Function<T, Iterable<T>> childTraverser,
             Function<T, Boolean> condition) {
@@ -569,9 +569,9 @@ public final class Chainables {
      * @param childTraverser
      * @param condition
      * @return
-     * @see Chainable#breadthFirstWhile(Function, Function)
+     * @see Chainable#breadthFirstAsLongAs(Function, Function)
      */
-    public static <T> Chainable<T> breadthFirstWhile(
+    public static <T> Chainable<T> breadthFirstAsLongAs(
             Iterable<T> items,
             Function<T, Iterable<T>> childTraverser,
             Function<T, Boolean> condition) {
