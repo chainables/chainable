@@ -559,9 +559,8 @@ public final class Chainables {
     public static <T> Chainable<T> breadthFirstNotBelow(
             Iterable<T> items,
             Function<T, Iterable<T>> childTraverser,
-            Function<T, Boolean> condition) {
-        final Function<T, Boolean> appliedCondition = (condition != null) ? condition : (o -> false);
-        return breadthFirst(items, o -> Boolean.FALSE.equals(appliedCondition.apply(o)) ? childTraverser.apply(o) : Chainable.empty());
+            Predicate<T> condition) {
+        return notBelow(items, childTraverser, condition, true);
     }
 
     /**
@@ -574,9 +573,9 @@ public final class Chainables {
     public static <T> Chainable<T> breadthFirstAsLongAs(
             Iterable<T> items,
             Function<T, Iterable<T>> childTraverser,
-            Function<T, Boolean> condition) {
-        final Function<T, Boolean> appliedCondition = (condition != null) ? condition : (o -> true);
-        return breadthFirst(items, o -> Chainables.whereEither(childTraverser.apply(o), c -> Boolean.TRUE.equals(appliedCondition.apply(c))));
+            Predicate<T> condition) {
+        final Predicate<T> appliedCondition = (condition != null) ? condition : (o -> true);
+        return breadthFirst(items, o -> Chainables.whereEither(childTraverser.apply(o), c -> Boolean.TRUE.equals(appliedCondition.test(c))));
     }
 
     /**
@@ -1085,6 +1084,20 @@ public final class Chainables {
      */
     public static <T> Chainable<T> depthFirst(Iterable<T> items, Function<T, Iterable<T>> childTraverser) {
         return traverse(items, childTraverser, false);
+    }
+
+    /**
+     * @param items
+     * @param childTraverser
+     * @param condition
+     * @return
+     * @see Chainable#depthFirstNotBelow(Function, Predicate)
+     */
+    public static <T> Chainable<T> depthFirstNotBelow(
+            Iterable<T> items,
+            Function<T, Iterable<T>> childTraverser,
+            Predicate<T> condition) {
+        return notBelow(items, childTraverser, condition, false);
     }
 
     /**
@@ -1908,6 +1921,15 @@ public final class Chainables {
      */
     public static <T> Chainable<T> notBeforeEquals(Iterable<T> items, T item) {
         return notBefore(items, (Predicate<T>)(o -> o == item));
+    }
+
+    private static <T> Chainable<T> notBelow(
+            Iterable<T> items,
+            Function<T, Iterable<T>> childTraverser,
+            Predicate<T> condition,
+            boolean breadthFirst) {
+        final Predicate<T> appliedCondition = (condition != null) ? condition : (o -> false);
+        return traverse(items, o -> Boolean.FALSE.equals(appliedCondition.test(o)) ? childTraverser.apply(o) : Chainable.empty(), breadthFirst);
     }
 
     /**

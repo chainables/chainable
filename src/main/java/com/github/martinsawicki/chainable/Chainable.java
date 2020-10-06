@@ -460,7 +460,7 @@ public interface Chainable<T> extends Iterable<T> {
      * @see #breadthFirst(Function)
      * @see #depthFirst(Function)
      */
-    default Chainable<T> breadthFirstNotBelow(Function<T, Iterable<T>> childExtractor, Function<T, Boolean> condition) {
+    default Chainable<T> breadthFirstNotBelow(Function<T, Iterable<T>> childExtractor, Predicate<T> condition) {
         return Chainables.breadthFirstNotBelow(this, childExtractor, condition);
     }
 
@@ -477,7 +477,7 @@ public interface Chainable<T> extends Iterable<T> {
      * @see #breadthFirst(Function)
      * @see #depthFirst(Function)
      */
-    default Chainable<T> breadthFirstAsLongAs(Function<T, Iterable<T>> childExtractor, Function<T, Boolean> condition) {
+    default Chainable<T> breadthFirstAsLongAs(Function<T, Iterable<T>> childExtractor, Predicate<T> condition) {
         return Chainables.breadthFirstAsLongAs(this, childExtractor, condition);
     }
 
@@ -688,6 +688,26 @@ public interface Chainable<T> extends Iterable<T> {
      */
     default Chainable<T> depthFirst(Function<T, Iterable<T>> childExtractor) {
         return Chainables.depthFirst(this, childExtractor);
+    }
+
+    /**
+     * Traverses the items in this chain in a depth-first order as if it were a tree, where for each item, the items output by the specified
+     * {@code childExtractor} applied to it are inserted at the beginning of the chain, <i>up to and including</i> the parent item that satisfies
+     * the specified {@code condition}, but not its descendants that would be otherwise returned by the {@code childExtractor}.
+     * <p>
+     * It can be thought of trimming the depth-first traversal of a hypothetical tree right below the level of the item satisfying
+     * the {@code condition}, but continuing with other items in the chain.
+     * <p>
+     * To indicate the absence of children for an item, the child extractor may output {@code null}.
+     * <p>
+     * The traversal protects against potential cycles by not visiting items that satisfy the equality ({@code equals()}) check against
+     * an item already seen before.
+     * @param childExtractor
+     * @param condition
+     * @return resulting chain
+     */
+    default Chainable<T> depthFirstNotBelow(Function<T, Iterable<T>> childExtractor, Predicate<T> condition) {
+        return Chainables.depthFirstNotBelow(this, childExtractor, condition);
     }
 
     /**
