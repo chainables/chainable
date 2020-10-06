@@ -515,11 +515,15 @@ public interface Chainable<T> extends Iterable<T> {
      * Appends to the chain the result of the specified {@code nextItemExtractor} applied to the last item, unless the last item is null.
      * <p>
      * If the {@code nextItemExtractor} returns {@code null}, that is considered as the end of the chain and is not included in the resulting chain.
+     * <p>
+     * If applied to an empty chain, the behavior is the same as if applied to a chain where the last value is {@code null}, which means that if
+     * the extractor returns null as a result as well, then the resulting chain is still de-facto empty. But the extractor can use this {@code null} as
+     * an opportunity to create a non-empty chain out of an empty one.
      * @param nextItemExtractor
      * @return resulting {@link Chainable}
      * @sawicki.similar
      * <table summary="Similar to:">
-     * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#iterate(Object, java.util.function.UnaryOperator)}, except that the "seed" is just the last item of the underlying {@link Chainable}</td></tr>
+     * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#iterate(Object, java.util.function.UnaryOperator)}, except that the "seed" is just the last item of the underlying chain, or {@code null} if empty.</td></tr>
      * </table>
      */
     default Chainable<T> chain(UnaryOperator<T> nextItemExtractor) {
