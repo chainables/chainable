@@ -45,7 +45,7 @@ import com.github.martinsawicki.function.ToStringFunction;
  *
  * @author Martin Sawicki
  *
- * @param <T>
+ * @param <T> the type of items in the chain
  */
 public interface Chainable<T> extends Iterable<T> {
     /**
