@@ -44,4 +44,24 @@ public class ChainableTreeTest {
         assertEquals(firstRunLength + secondRunLength, root.children().count());
         assertEquals(actual1, actual2); // Ensure children are evaluated only once and cached from thereon
     }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    // TODO: Make this richer
+    public void testWithoutChildren() {
+        // Given
+        ChainableTree<String> tree = ChainableTree.withValue("A").withChildren(
+                ChainableTree.withValue("A.1")
+                    .withChildren(
+                            ChainableTree.withValue("A.1.1"),
+                            ChainableTree.withValue("A.1.2")),
+                ChainableTree.withValue("A.2")
+                    .withChildren(
+                            ChainableTree.withValue("A.2.1"),
+                            ChainableTree.withValue("A.2.2")));
+
+        // When / Then
+        assertEquals(2, tree.children().count());
+        assertEquals(0, tree.withoutChildren().children().count());
+    }
 }
