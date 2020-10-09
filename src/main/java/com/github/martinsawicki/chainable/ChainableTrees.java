@@ -29,7 +29,7 @@ public abstract class ChainableTrees {
         }
 
         @Override
-        public T inner() {
+        public T value() {
             return this.inner;
         }
 
@@ -78,7 +78,7 @@ public abstract class ChainableTrees {
         public ChainableTreeImpl<T> withChildValueExtractor(Function<T, Iterable<T>> childExtractor) {
             if (childExtractor != null) {
                 return this.withChildren(Chainable
-                        .from(childExtractor.apply(this.inner()))
+                        .from(childExtractor.apply(this.value()))
                         .transform(c -> ChainableTree.withValue(c).withChildValueExtractor(childExtractor)));
             } else {
                 return this;
@@ -94,6 +94,15 @@ public abstract class ChainableTrees {
             this.parent = parent;
             return this;
         }
+    }
+
+    /**
+     * @param root
+     * @return
+     * @see ChainableTree#breadthFirst()
+     */
+    public static <T> Chainable<ChainableTree<T>> breadthFirst(ChainableTree<T> root) {
+        return Chainable.from(root).breadthFirst(t -> t.children());
     }
 
     /**
@@ -114,6 +123,6 @@ public abstract class ChainableTrees {
     public static <T> Chainable<T> values(Iterable<ChainableTree<T>> trees) {
         return (trees == null) ? Chainable.empty() : Chainable
                 .from(trees)
-                .transform(t -> t.inner());
+                .transform(t -> t.value());
     }
 }

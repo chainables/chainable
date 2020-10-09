@@ -20,11 +20,20 @@ import com.github.martinsawicki.chainable.ChainableTrees.ChainableTreeImpl;
  */
 public interface ChainableTree<T> {
     /**
-     * Traverses the tree in a breadth-first fashion, but not below nodes that meet the specified {@code condition}.
+     * Traverses the tree in a breadth-first fashion returning a chain of encountered nodes.
+     * @return the resulting chain of visited tree nodes
+     */
+    default Chainable<ChainableTree<T>> breadthFirst() {
+        return ChainableTrees.breadthFirst(this);
+    }
+
+    /**
+     * Traverses the tree in a breadth-first fashion returning a chain of encountered nodes, but not below nodes that meet the
+     * specified {@code condition}.
      * <p>
      * In other words, the node that satisfies this condition is included in the returned chain, but its descendants are not.
      * @param condition the condition for a node to satisfy so that its descendants would not be traversed
-     * @return the resulting chain
+     * @return the resulting chain of visited tree nodes
      */
     default Chainable<ChainableTree<T>> breadthFirstNotBelow(Predicate<ChainableTree<T>> condition) {
         return ChainableTrees.breadthFirstNotBelow(this, condition);
@@ -43,7 +52,7 @@ public interface ChainableTree<T> {
      * Returns the wrapped value.
      * @return the wrapped value
      */
-    T inner();
+    T value();
 
     /**
      * Returns the parent of this tree, or {@code null} if this is the root node.
