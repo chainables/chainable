@@ -12,6 +12,34 @@ import org.junit.jupiter.api.Test;
  * Unit tests
  */
 public class ChainableTreeTest {
+    @SuppressWarnings("unchecked")
+    ChainableTree<String> root = ChainableTree.withValue("1").withChildren(
+            ChainableTree.withValue("1.1").withChildValues("1.1.1", "1.1.2"),
+            ChainableTree.withValue("1.2").withChildValues("1.2.1", "1.2.2"));
+    @Test
+    public void testBreadthFirst() {
+        // Given
+        String expected = "1, 1.1, 1.2, 1.1.1, 1.1.2, 1.2.1, 1.2.2";
+
+        // When
+        String actual = ChainableTree.values(root.breadthFirst()).join(", ");
+
+        // Then
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testBreadthFirstNotBelow() {
+        // Given
+        String expected = "1, 1.1, 1.2, 1.2.1, 1.2.2";
+
+        // When
+        String actual = ChainableTree.values(root.breadthFirstNotBelow(t -> "1.1".equals(t.value()))).join(", ");
+
+        // Then
+        assertEquals(expected, actual);
+    }
+
     @Test
     public void testChildren() {
         // Given

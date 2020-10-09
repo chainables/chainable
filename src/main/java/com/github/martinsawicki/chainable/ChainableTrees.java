@@ -6,6 +6,7 @@ package com.github.martinsawicki.chainable;
 
 import java.util.ArrayList;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 /**
  * This is the source of all the static methods underlying the default implementation of {@link ChainableTree} as well as some other conveniences.
@@ -28,7 +29,7 @@ public abstract class ChainableTrees {
         }
 
         @Override
-        public T inner() {
+        public T value() {
             return this.inner;
         }
 
@@ -77,7 +78,7 @@ public abstract class ChainableTrees {
         public ChainableTreeImpl<T> withChildValueExtractor(Function<T, Iterable<T>> childExtractor) {
             if (childExtractor != null) {
                 return this.withChildren(Chainable
-                        .from(childExtractor.apply(this.inner()))
+                        .from(childExtractor.apply(this.value()))
                         .transform(c -> ChainableTree.withValue(c).withChildValueExtractor(childExtractor)));
             } else {
                 return this;
@@ -96,6 +97,25 @@ public abstract class ChainableTrees {
     }
 
     /**
+     * @param root
+     * @return
+     * @see ChainableTree#breadthFirst()
+     */
+    public static <T> Chainable<ChainableTree<T>> breadthFirst(ChainableTree<T> root) {
+        return Chainable.from(root).breadthFirst(t -> t.children());
+    }
+
+    /**
+     * @param root
+     * @param condition
+     * @return
+     * @see ChainableTree#breadthFirstNotBelow(Predicate)
+     */
+    public static <T> Chainable<ChainableTree<T>> breadthFirstNotBelow(ChainableTree<T> root, Predicate<ChainableTree<T>> condition) {
+        return Chainable.from(root).breadthFirstNotBelow(t -> t.children(), condition);
+    }
+
+    /**
      * Returns the inner wrapped values of the specified {@code trees}.
      * @param trees the tree nodes to extract wrapped values from
      * @return the wrapper inner values of the specified tree nodes
@@ -103,6 +123,6 @@ public abstract class ChainableTrees {
     public static <T> Chainable<T> values(Iterable<ChainableTree<T>> trees) {
         return (trees == null) ? Chainable.empty() : Chainable
                 .from(trees)
-                .transform(t -> t.inner());
+                .transform(t -> t.value());
     }
 }
