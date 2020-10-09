@@ -5,6 +5,7 @@
 package com.github.martinsawicki.chainable;
 
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 import com.github.martinsawicki.chainable.ChainableTrees.ChainableTreeImpl;
 
@@ -18,6 +19,17 @@ import com.github.martinsawicki.chainable.ChainableTrees.ChainableTreeImpl;
  * @param <T> type of values to wrap
  */
 public interface ChainableTree<T> {
+    /**
+     * Traverses the tree in a breadth-first fashion, but not below nodes that meet the specified {@code condition}.
+     * <p>
+     * In other words, the node that satisfies this condition is included in the returned chain, but its descendants are not.
+     * @param condition the condition for a node to satisfy so that its descendants would not be traversed
+     * @return the resulting chain
+     */
+    default Chainable<ChainableTree<T>> breadthFirstNotBelow(Predicate<ChainableTree<T>> condition) {
+        return ChainableTrees.breadthFirstNotBelow(this, condition);
+    }
+
     /**
      * Returns the direct children of this tree.
      * <p>

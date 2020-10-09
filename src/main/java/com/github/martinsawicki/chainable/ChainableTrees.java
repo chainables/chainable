@@ -6,6 +6,7 @@ package com.github.martinsawicki.chainable;
 
 import java.util.ArrayList;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 /**
  * This is the source of all the static methods underlying the default implementation of {@link ChainableTree} as well as some other conveniences.
@@ -93,6 +94,16 @@ public abstract class ChainableTrees {
             this.parent = parent;
             return this;
         }
+    }
+
+    /**
+     * @param root
+     * @param condition
+     * @return
+     * @see ChainableTree#breadthFirstNotBelow(Predicate)
+     */
+    public static <T> Chainable<ChainableTree<T>> breadthFirstNotBelow(ChainableTree<T> root, Predicate<ChainableTree<T>> condition) {
+        return Chainable.from(root).breadthFirstNotBelow(t -> t.children(), condition);
     }
 
     /**
