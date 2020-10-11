@@ -649,6 +649,75 @@ public final class Chainables {
     }
 
     /**
+     * @param item
+     * @param nextItemExtractor
+     * @return
+     * @see Chainable#chain(BiFunction)
+     */
+    public static <T> Chainable<T> chain(T item, BiFunction<T, Long, T> nextItemExtractor) {
+        return chain(Chainable.from(item), nextItemExtractor);
+    }
+
+    /**
+     * @param items
+     * @param nextItemExtractor
+     * @return
+     * @see Chainable#chain(BiFunction)
+     */
+    public static <T> Chainable<T> chain(Iterable<T> items, BiFunction<T, Long, T> nextItemExtractor) {
+        if (items == null || nextItemExtractor == null) {
+            return Chainable.from(items);
+        } else {
+            return Chainable.from(new Iterable<T>() {
+                @Override
+                public Iterator<T> iterator() {
+                    return new Iterator<T>() {
+                        Iterator<T> iter = items.iterator();
+                        T next = null;
+                        boolean isFetched = false; // If iter is empty, pretend it starts with null
+                        boolean isStopped = false;
+                        long index = 0;
+
+                        @Override
+                        public boolean hasNext() {
+                            if (isStopped) {
+                                return false;
+                            } else if (isFetched) {
+                                return true;
+                            } else if (Chainables.isNullOrEmpty(this.iter)) {
+                                // Seed iterator already finished so start the chaining
+                                this.iter = null;
+                                this.next = nextItemExtractor.apply(this.next, index);
+                                if (this.next == null) {
+                                    isStopped = true;
+                                    isFetched = false;
+                                    return false;
+                                } else {
+                                    isFetched = true;
+                                    return true;
+                                }
+                            } else {
+                                this.next = iter.next();
+                                isFetched = true;
+                                return true;
+                            }
+                        }
+
+                        @Override
+                        public T next() {
+                            T temp = this.next;
+                            this.next = null;
+                            isFetched = false;
+                            index++;
+                            return temp;
+                        }
+                    };
+                }
+            });
+        }
+    }
+
+    /**
      * @param items
      * @param nextItemExtractor
      * @return
