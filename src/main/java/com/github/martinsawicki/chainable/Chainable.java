@@ -14,6 +14,7 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.function.ToDoubleFunction;
 import java.util.function.ToLongFunction;
 import java.util.function.UnaryOperator;
@@ -76,6 +77,15 @@ public interface Chainable<T> extends Iterable<T> {
      */
     static <T> Chainable<T> from(Iterable<T> items) {
         return Chain.from(items);
+    }
+
+    /**
+     * Creates a new chain such that its iterator is a new iterator instance created by the specified {@code iteratorSupplier}
+     * @param iteratorSupplier an iterator supplying function
+     * @return the resulting chain
+     */
+    static <T> Chainable<T> fromIterator(Supplier<Iterator<T>> iteratorSupplier) {
+        return Chain.from(iteratorSupplier);
     }
 
     /**
