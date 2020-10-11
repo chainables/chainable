@@ -319,6 +319,22 @@ public class ChainableTest {
     }
 
     @Test
+    public void testChainIndexed() {
+        // Given
+        String expected = "01234";
+
+        // When
+        String actual = Chainable
+                .empty()
+                .chain((v, i) -> Long.toString(i))
+                .first(5)
+                .join();
+
+        // Then
+        assertEquals(expected, actual);
+    }
+
+    @Test
     public void testChain() {
         // Given
         Iterable<String> items = Arrays.asList("a", "b", "c", "d");

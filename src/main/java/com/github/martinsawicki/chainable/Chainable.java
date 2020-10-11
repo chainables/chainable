@@ -10,9 +10,11 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.function.ToDoubleFunction;
 import java.util.function.ToLongFunction;
 import java.util.function.UnaryOperator;
@@ -75,6 +77,15 @@ public interface Chainable<T> extends Iterable<T> {
      */
     static <T> Chainable<T> from(Iterable<T> items) {
         return Chain.from(items);
+    }
+
+    /**
+     * Creates a new chain such that its iterator is a new iterator instance created by the specified {@code iteratorSupplier}
+     * @param iteratorSupplier an iterator supplying function
+     * @return the resulting chain
+     */
+    static <T> Chainable<T> fromIterator(Supplier<Iterator<T>> iteratorSupplier) {
+        return Chain.from(iteratorSupplier);
     }
 
     /**
@@ -519,14 +530,26 @@ public interface Chainable<T> extends Iterable<T> {
      * If applied to an empty chain, the behavior is the same as if applied to a chain where the last value is {@code null}, which means that if
      * the extractor returns null as a result as well, then the resulting chain is still de-facto empty. But the extractor can use this {@code null} as
      * an opportunity to create a non-empty chain out of an empty one.
-     * @param nextItemExtractor
-     * @return resulting {@link Chainable}
+     * @param nextItemExtractor a function returning the next item given the item it is fed, or null if it is the first item
+     * @return resulting chain
      * @sawicki.similar
      * <table summary="Similar to:">
-     * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#iterate(Object, java.util.function.UnaryOperator)}, except that the "seed" is just the last item of the underlying chain, or {@code null} if empty.</td></tr>
+     * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#iterate(Object, java.util.function.UnaryOperator)}, except that
+     * the "seed" is just the last item of the underlying chain, or {@code null} if empty.</td></tr>
      * </table>
      */
     default Chainable<T> chain(UnaryOperator<T> nextItemExtractor) {
+        return Chainables.chain(this, nextItemExtractor);
+    }
+
+    /**
+     * Works the same way as {@link #chain(UnaryOperator)}, except that the specified {@code nextItemExtractor} will also be fed its index in the chain,
+     * starting with 0.
+     * @param nextItemExtractor a function returning the next item given the item it is fed or null if it is the first item, and its index in the chain,
+     * startint with 0
+     * @return resulting chain
+     */
+    default Chainable<T> chain(BiFunction<T, Long, T> nextItemExtractor) {
         return Chainables.chain(this, nextItemExtractor);
     }
 

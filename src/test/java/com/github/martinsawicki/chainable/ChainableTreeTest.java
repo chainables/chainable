@@ -16,6 +16,7 @@ public class ChainableTreeTest {
     ChainableTree<String> root = ChainableTree.withValue("1").withChildren(
             ChainableTree.withValue("1.1").withChildValues("1.1.1", "1.1.2"),
             ChainableTree.withValue("1.2").withChildValues("1.2.1", "1.2.2"));
+
     @Test
     public void testBreadthFirst() {
         // Given
@@ -71,6 +72,26 @@ public class ChainableTreeTest {
         // Then
         assertEquals(firstRunLength + secondRunLength, root.children().count());
         assertEquals(actual1, actual2); // Ensure children are evaluated only once and cached from thereon
+    }
+
+    @Test
+    public void testDepthFirstNotBelow() {
+        // Given
+        String expected = "1, 1.1, 1.1.1, 1.1.2, 1.1.3, 1.2, 1.2.1, 1.2.2, 1.2.3, 1.3, 1.3.1, 1.3.2, 1.3.3";
+        ChainableTree<String> tree = ChainableTree
+                .withValue("1")
+                .withChildValueExtractor(p -> Chainable
+                        .empty()
+                        .chain((c, i) -> String.format("%s.%s", p, Long.toString(i + 1)))
+                        .first(3)
+                        .cast(String.class)); // Limit the number, otherwise infinite
+
+        // When
+        String actual = ChainableTree.values(tree.depthFirstNotBelow(t -> t.value().length() == 5))
+                .join(", ");
+
+        // Then
+        assertEquals(expected, actual);
     }
 
     @SuppressWarnings("unchecked")
