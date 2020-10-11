@@ -43,7 +43,7 @@ public abstract class ChainableTrees {
             if (children != null) {
                 // Link children to parent
                 Chainable<ChainableTree<T>> newChildren = Chainables
-                        .apply(children, c -> ((ChainableTreeImpl<T>)c).withParent(this))
+                        .applyAsYouGo(children, c -> ((ChainableTreeImpl<T>)c).withParent(this))
                         .cached(); // Cached after first complete evaluation
 
                 // Attach to end of parent's children
@@ -106,13 +106,23 @@ public abstract class ChainableTrees {
     }
 
     /**
-     * @param root
+     * @param tree
      * @param condition
      * @return
      * @see ChainableTree#breadthFirstNotBelow(Predicate)
      */
-    public static <T> Chainable<ChainableTree<T>> breadthFirstNotBelow(ChainableTree<T> root, Predicate<ChainableTree<T>> condition) {
-        return Chainable.from(root).breadthFirstNotBelow(t -> t.children(), condition);
+    public static <T> Chainable<ChainableTree<T>> breadthFirstNotBelow(ChainableTree<T> tree, Predicate<ChainableTree<T>> condition) {
+        return Chainable.from(tree).breadthFirstNotBelow(t -> t.children(), condition);
+    }
+
+    /**
+     * @param tree
+     * @param condition
+     * @return
+     * @see ChainableTree#
+     */
+    public static <T> Chainable<ChainableTree<T>> depthFirstNotBelow(ChainableTree<T> tree, Predicate<ChainableTree<T>> condition) {
+        return Chainable.from(tree).depthFirstNotBelow(t -> t.children(), condition);
     }
 
     /**
