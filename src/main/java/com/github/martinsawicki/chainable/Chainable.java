@@ -89,8 +89,7 @@ public interface Chainable<T> extends Iterable<T> {
     }
 
     /**
-     * Creates a new chain from the specified {@code items} in a "lazy" fashion, not traversing/evaluating/copying the items,
-     * just holding internal references to them.
+     * Creates a new chain from the specified {@code items} array,
      * @param items the items to create a chain from
      * @return an {@link Chainable} wrapper for the specified {@code items}
      * @sawicki.similar
