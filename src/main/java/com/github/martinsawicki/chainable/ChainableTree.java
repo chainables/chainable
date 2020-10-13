@@ -49,7 +49,15 @@ public interface ChainableTree<T> {
     Chainable<ChainableTree<T>> children();
 
     /**
-     * Traverses the tree in a depth-first fashion returning a chain of encountered nodes, but excluding the descendants of nodes that meet the
+     * Traverses this tree in a breadth-first fashion returning a chain of encountered nodes.
+     * @return the resulting chain of visited tree nodes
+     */
+    default Chainable<ChainableTree<T>> depthFirst() {
+        return ChainableTrees.depthFirst(this);
+    }
+
+    /**
+     * Traverses this tree in a depth-first fashion returning a chain of encountered nodes, but excluding the descendants of nodes that meet the
      * specified {@code condition}.
      * <p>
      * In other words, the node that satisfies this condition is included in the returned chain, but its descendants are not.
@@ -71,6 +79,14 @@ public interface ChainableTree<T> {
      * @return the parent of this tree
      */
     ChainableTree<T> parent();
+
+    /**
+     * Returns a chain of siblings following this tree node.
+     * @return a chain of sibling tree nodes following this one
+     */
+    default Chainable<ChainableTree<T>> successors() {
+        return ChainableTrees.successors(this);
+    }
 
     /**
      * Appends the specified trees to the children of this tree, if any.

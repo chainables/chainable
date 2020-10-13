@@ -83,4 +83,45 @@ With this in mind, based on some initial testing in Java 8 so far, `Chainable` c
 
 ## Examples
 
+### Fibonacci Sequence
+
+In this example, each next item is the sum of the previous two:
+
+```java
+    String fibonacciFirst7 = Chainable
+                .empty(Long.class) // Start with empty chain of Longs
+                .chain((i0, i1) -> (i0 == null || i1 == null) ? 1 : i0 + i1) // Fibonacci number generator
+                .first(7)          // Take the first 7 items
+                .join(", ");       // Merge into a string
+
+    assertEquals(
+        "1, 1, 2, 3, 5, 8, 13",
+        fibonacciFirst7);
+```
+
+The flavor of the `chain()` method used above feeds the user-specified lambda with the two preceding items.
+
+### Interleaving
+
+In this examples, a chain of odd numbers is interleaved with a chain of even numbers to produce a chain of natural numbers:
+
+```java
+    final Chainable<Long> odds = Chainable
+        .from(1l)           // Start with 1
+        .chain(o -> o + 2); // Generate infinite chain of odd numbers
+
+    final Chainable<Long> evens = Chainable
+        .from(2l)           // Start with 2
+        .chain(o -> o + 2); // Generate infinite chain of even numbers
+
+    String naturals = odds
+        .interleave(evens) // Interleave odds with evens
+        .first(10)         // Take the first 10 items 
+        .join(", ");       // Merge into a string
+
+    assertEquals(
+        "1, 2, 3, 4, 5, 6, 7, 8, 9, 10"
+        naturals);
+```
+
 > :triangular_flag_on_post: To do...

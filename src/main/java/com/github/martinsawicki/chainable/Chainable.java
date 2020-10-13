@@ -11,6 +11,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
+import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -52,7 +53,7 @@ import com.github.martinsawicki.function.ToStringFunction;
 public interface Chainable<T> extends Iterable<T> {
     /**
      * Returns an empty chain.
-     * @return an empty {@link Chainable}
+     * @return an empty chain
      * @sawicki.similar
      * <table summary="Similar to:">
      * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#empty()}</td></tr>
@@ -62,6 +63,15 @@ public interface Chainable<T> extends Iterable<T> {
      */
     static <T> Chainable<T> empty() {
         return Chain.empty();
+    }
+
+    /**
+     * Returns an empty chain whose items are expected to be of the specified {@code clazz} type.
+     * @param clazz the expected type of the items in the chain
+     * @return an empty chain expected to contain items of the specified {@code clazz} type.
+     */
+    static <T> Chainable<T> empty(Class<T> clazz) {
+        return empty().cast(clazz);
     }
 
     /**
@@ -89,8 +99,7 @@ public interface Chainable<T> extends Iterable<T> {
     }
 
     /**
-     * Creates a new chain from the specified {@code items} in a "lazy" fashion, not traversing/evaluating/copying the items,
-     * just holding internal references to them.
+     * Creates a new chain from the specified {@code items} array,
      * @param items the items to create a chain from
      * @return an {@link Chainable} wrapper for the specified {@code items}
      * @sawicki.similar
@@ -543,14 +552,33 @@ public interface Chainable<T> extends Iterable<T> {
     }
 
     /**
+     * Appends to the chain the result of the specified {@code nextItemExtractorFromLastTwo} applied to the last two items, passed to the function
+     * chronological order.
+     * <p>
+     * If the {@code nextItemExtractorFromLastTwi} returns {@code null}, that is considered as the end of the chain and is not included in the resulting chain.
+     * <p>
+     * If applied to an empty chain, the behavior is the same as if applied to a chain where the last two values are {@code null}, which means that if
+     * the extractor returns {@code null} as a result as well, then the resulting chain is still de-facto empty. But the extractor can use this {@code null} as
+     * an opportunity to create a non-empty chain out of an empty one.
+     * <p>
+     * If applied to a chain that contains only one item, then the first argument to the {@code nextItemExtractorFromLastTwo}, which represents the earlier of
+     * the last two items, will be passed as {@code null}.
+     * @param nextItemExtractorFromLastTwo
+     * @return the resulting chain
+     */
+    default Chainable<T> chain(BinaryOperator<T> nextItemExtractorFromLastTwo) {
+        return Chainables.chain(this, nextItemExtractorFromLastTwo);
+    }
+
+    /**
      * Works the same way as {@link #chain(UnaryOperator)}, except that the specified {@code nextItemExtractor} will also be fed its index in the chain,
      * starting with 0.
      * @param nextItemExtractor a function returning the next item given the item it is fed or null if it is the first item, and its index in the chain,
      * startint with 0
-     * @return resulting chain
+     * @return the resulting chain
      */
-    default Chainable<T> chain(BiFunction<T, Long, T> nextItemExtractor) {
-        return Chainables.chain(this, nextItemExtractor);
+    default Chainable<T> chainIndexed(BiFunction<T, Long, T> nextItemExtractor) {
+        return Chainables.chainIndexed(this, nextItemExtractor);
     }
 
     /**
@@ -916,7 +944,7 @@ public interface Chainable<T> extends Iterable<T> {
      * <tr><td><i>C#:</i></td><td>{@code Enumerable.Take()}</td></tr>
      * </table>
      */
-    default Chainable<T> first(int count) {
+    default Chainable<T> first(long count) {
         return Chainables.first(this, count);
     }
 

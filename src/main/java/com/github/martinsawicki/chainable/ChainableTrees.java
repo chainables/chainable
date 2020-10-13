@@ -117,12 +117,35 @@ public abstract class ChainableTrees {
 
     /**
      * @param tree
+     * @return
+     * @see ChainableTree#depthFirst()
+     */
+    public static <T> Chainable<ChainableTree<T>> depthFirst(ChainableTree<T> tree) {
+        return Chainable
+                .from(tree)
+                .depthFirst(t -> t.children());
+    }
+
+    /**
+     * @param tree
      * @param condition
      * @return
-     * @see ChainableTree#
+     * @see ChainableTree#depthFirstNotBelow(Predicate)
      */
     public static <T> Chainable<ChainableTree<T>> depthFirstNotBelow(ChainableTree<T> tree, Predicate<ChainableTree<T>> condition) {
         return Chainable.from(tree).depthFirstNotBelow(t -> t.children(), condition);
+    }
+
+    /**
+     * @param tree
+     * @return
+     * @see ChainableTree#successors()
+     */
+    public static <T> Chainable<ChainableTree<T>> successors(ChainableTree<T> tree) {
+        return (tree == null || tree.parent() == null) ? Chainable.empty() : Chainable
+                .from(tree.parent().children())
+                .notBefore(c -> c == tree)
+                .afterFirst();
     }
 
     /**

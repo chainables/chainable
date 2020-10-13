@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
  */
 public class ChainableTreeTest {
     @SuppressWarnings("unchecked")
-    ChainableTree<String> root = ChainableTree.withValue("1").withChildren(
+    ChainableTree<String> testTree = ChainableTree.withValue("1").withChildren(
             ChainableTree.withValue("1.1").withChildValues("1.1.1", "1.1.2"),
             ChainableTree.withValue("1.2").withChildValues("1.2.1", "1.2.2"));
 
@@ -23,7 +23,7 @@ public class ChainableTreeTest {
         String expected = "1, 1.1, 1.2, 1.1.1, 1.1.2, 1.2.1, 1.2.2";
 
         // When
-        String actual = ChainableTree.values(root.breadthFirst()).join(", ");
+        String actual = ChainableTree.values(testTree.breadthFirst()).join(", ");
 
         // Then
         assertEquals(expected, actual);
@@ -35,7 +35,7 @@ public class ChainableTreeTest {
         String expected = "1, 1.1, 1.2, 1.2.1, 1.2.2";
 
         // When
-        String actual = ChainableTree.values(root.breadthFirstNotBelow(t -> "1.1".equals(t.value()))).join(", ");
+        String actual = ChainableTree.values(testTree.breadthFirstNotBelow(t -> "1.1".equals(t.value()))).join(", ");
 
         // Then
         assertEquals(expected, actual);
@@ -75,6 +75,18 @@ public class ChainableTreeTest {
     }
 
     @Test
+    public void testDepthFirst() {
+        // Given
+        String expected = "1, 1.1, 1.1.1, 1.1.2, 1.2, 1.2.1, 1.2.2";
+
+        // When
+        String actual = ChainableTrees.values(testTree.depthFirst()).join(", ");
+
+        // Then
+        assertEquals(expected, actual);
+    }
+
+    @Test
     public void testDepthFirstNotBelow() {
         // Given
         String expected = "1, 1.1, 1.1.1, 1.1.2, 1.1.3, 1.2, 1.2.1, 1.2.2, 1.2.3, 1.3, 1.3.1, 1.3.2, 1.3.3";
@@ -82,7 +94,7 @@ public class ChainableTreeTest {
                 .withValue("1")
                 .withChildValueExtractor(p -> Chainable
                         .empty()
-                        .chain((c, i) -> String.format("%s.%s", p, Long.toString(i + 1)))
+                        .chainIndexed((c, i) -> String.format("%s.%s", p, Long.toString(i + 1)))
                         .first(3)
                         .cast(String.class)); // Limit the number, otherwise infinite
 
@@ -94,6 +106,30 @@ public class ChainableTreeTest {
         assertEquals(expected, actual);
     }
 
+    @Test
+    public void testSkipping() {
+        // Given
+        String expected = "1.1.2, 1.2, 1.2.1, 1.2.2";
+
+        // When
+        String actual = ChainableTrees.values(testTree.depthFirst()).notBeforeEquals("1.1.2").join(", ");
+
+        // Then
+        assertEquals(expected, actual);        
+    }
+
+    @Test
+    public void testSuccessors() {
+        // Given
+        String expected = "1.2";
+
+        // When
+        String actual = ChainableTree.values(testTree.children().first().successors()).join(", ");
+
+        // Then
+        assertEquals(expected, actual);
+    }
+    
     @SuppressWarnings("unchecked")
     @Test
     // TODO: Make this richer
