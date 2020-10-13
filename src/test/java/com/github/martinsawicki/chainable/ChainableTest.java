@@ -326,7 +326,7 @@ public class ChainableTest {
         // When
         String actual = Chainable
                 .empty()
-                .chain((v, i) -> Long.toString(i))
+                .chainIndexed((v, i) -> Long.toString(i))
                 .first(5)
                 .join();
 
@@ -345,14 +345,23 @@ public class ChainableTest {
         final Iterator<String> iter2 = items.iterator();
         String expected2 = String.join("", Chainables.concat(initial, items));
 
+        long length = 10, expected3 = length;
         int unseededChainLength = 5;
 
         // When
-        Chainable<String> chain = Chainables.chain(iter1.next(), s -> (iter1.hasNext()) ? iter1.next() : null);
-        String actual = String.join("", chain);
+        String actual = Chainables
+                .chain(iter1.next(), s -> (iter1.hasNext()) ? iter1.next() : null)
+                .join();
 
-        Chainable<String> chain2 = initial.chain(i -> (iter2.hasNext()) ? iter2.next() : null);
-        String actual2 = String.join("", chain2);
+        String actual2 = initial
+                .chain(i -> (iter2.hasNext()) ? iter2.next() : null)
+                .join();
+
+        Long actual3 = Chainable
+                .from(1l)
+                .chain(i -> i + 1)
+                .first(length)
+                .last();
 
         Chainable<Long> unseededChain = Chainable
                 .empty() // Test chaining without a seed
@@ -371,6 +380,22 @@ public class ChainableTest {
         assertEquals(expected2, actual2);
         assertEquals(unseededChainLength, unseededChain.count());
         assertTrue(trulyEmptyChain.isEmpty());
+        assertEquals(expected3, actual3);
+    }
+
+    @Test void testChainLastTwo() {
+        // Given
+        String expected = "1, 1, 2, 3, 5, 8, 13";
+
+        // When
+        String actual = Chainable
+                .empty(Long.class)
+                .chain((i0, i1) -> (i0 == null || i1 == null) ? 1 : i0 + i1) // Fibonacci sequence
+                .first(7)
+                .join(", ");
+
+        // Then
+        assertEquals(expected, actual);
     }
 
     @Test
@@ -696,19 +721,24 @@ public class ChainableTest {
     @Test
     public void testInterleave() {
         // Given
-        final Chainable<Integer> odds = Chainable.from(1, 3, 5, 7);
-        final Chainable<Integer> evens = Chainable.from(2, 4, 6, 8, 10, 12);
-        final Chainable<Integer> zeros = Chainable.from(0, 0, 0);
+        final Chainable<Long> odds = Chainable.from(1l).chain(o -> o + 2);
+        final Chainable<Long> oddsFirst4 = odds.first(4);
+        final Chainable<Long> evens = Chainable.from(2l).chain(o -> o + 2);
+        final Chainable<Long> evensFirst6 = evens.first(6);
+        final Chainable<Long> zeros = Chainable.from(0l, 0l, 0l);
         String expected = "123456781012";
         String expected2 = "102304506781012";
+        String expectedNaturals = "1, 2, 3, 4, 5, 6, 7, 8, 9, 10";
 
         // When
-        String actual = odds.interleave(evens).join();
-        String actual2 = Chainables.interleave(odds, zeros, evens).join();
+        String actual = oddsFirst4.interleave(evensFirst6).join();
+        String actual2 = Chainables.interleave(oddsFirst4, zeros, evensFirst6).join();
+        String actualNaturals = odds.interleave(evens).first(10).join(", ");
 
         // Then
         assertEquals(expected, actual);
         assertEquals(expected2, actual2);
+        assertEquals(expectedNaturals, actualNaturals);
     }
 
     @Test

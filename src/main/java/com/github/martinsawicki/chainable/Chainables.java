@@ -26,6 +26,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.function.BiFunction;
+import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -637,19 +638,69 @@ public final class Chainables {
      * @param item
      * @param nextItemExtractor
      * @return
-     * @see Chainable#chain(BiFunction)
+     * @see Chainable#chainIndexed(BiFunction)
      */
     public static <T> Chainable<T> chain(T item, BiFunction<T, Long, T> nextItemExtractor) {
-        return chain(Chainable.from(item), nextItemExtractor);
+        return chainIndexed(Chainable.from(item), nextItemExtractor);
+    }
+
+    /**
+     * @param items
+     * @param nextItemExtractorFromLastTwo
+     * @return
+     */
+    public static <T> Chainable<T> chain(Iterable<T> items, BinaryOperator<T> nextItemExtractorFromLastTwo) {
+        return (items == null || nextItemExtractorFromLastTwo == null) ? Chainable.from(items) : Chainable.fromIterator(() -> new Iterator<T>() {
+            Iterator<T> iter = items.iterator();
+            T next = null;
+            T prev = null;
+            boolean isFetched = false; // If iter is empty, pretend it starts with null
+            boolean isStopped = false;
+
+            @Override
+            public boolean hasNext() {
+                if (isStopped) {
+                    return false;
+                } else if (isFetched) {
+                    return true;
+                } else if (Chainables.isNullOrEmpty(this.iter)) {
+                    // Seed iterator already finished so start the chaining
+                    this.iter = null;
+                    T temp = this.next;
+                    this.next = nextItemExtractorFromLastTwo.apply(this.prev, this.next);
+                    this.prev = temp;
+                    if (this.next == null) {
+                        isStopped = true;
+                        isFetched = false;
+                        return false;
+                    } else {
+                        isFetched = true;
+                        return true;
+                    }
+                } else {
+                    this.prev = this.next;
+                    this.next = iter.next();
+                    isFetched = true;
+                    return true;
+                }
+            }
+
+            @Override
+            public T next() {
+                T temp = this.next;
+                isFetched = false;
+                return temp;
+            }
+        });
     }
 
     /**
      * @param items
      * @param nextItemExtractor
      * @return
-     * @see Chainable#chain(BiFunction)
+     * @see Chainable#chainIndexed(BiFunction)
      */
-    public static <T> Chainable<T> chain(Iterable<T> items, BiFunction<T, Long, T> nextItemExtractor) {
+    public static <T> Chainable<T> chainIndexed(Iterable<T> items, BiFunction<T, Long, T> nextItemExtractor) {
         return (items == null || nextItemExtractor == null) ? Chainable.from(items) : Chainable.fromIterator(() -> new Iterator<T>() {
             Iterator<T> iter = items.iterator();
             T next = null;
@@ -734,7 +785,6 @@ public final class Chainables {
             @Override
             public T next() {
                 T temp = this.next;
-                this.next = null;
                 isFetched = false;
                 return temp;
             }
@@ -1409,10 +1459,10 @@ public final class Chainables {
      * @return the first number of items
      * @see Chainable#first(int)
      */
-    public static <T> Chainable<T> first(Iterable<T> items, int number) {
+    public static <T> Chainable<T> first(Iterable<T> items, long number) {
         return (items == null) ? Chainable.empty() : Chainable.fromIterator(() -> new Iterator<T>() {
             Iterator<T> iter = items.iterator();
-            int returnedCount = 0;
+            long returnedCount = 0;
 
             @Override
             public boolean hasNext() {

@@ -94,7 +94,7 @@ public class ChainableTreeTest {
                 .withValue("1")
                 .withChildValueExtractor(p -> Chainable
                         .empty()
-                        .chain((c, i) -> String.format("%s.%s", p, Long.toString(i + 1)))
+                        .chainIndexed((c, i) -> String.format("%s.%s", p, Long.toString(i + 1)))
                         .first(3)
                         .cast(String.class)); // Limit the number, otherwise infinite
 
