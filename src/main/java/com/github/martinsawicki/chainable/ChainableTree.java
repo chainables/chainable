@@ -81,6 +81,14 @@ public interface ChainableTree<T> {
     ChainableTree<T> parent();
 
     /**
+     * Returns a chain of siblings following this tree node.
+     * @return a chain of sibling tree nodes following this one
+     */
+    default Chainable<ChainableTree<T>> successors() {
+        return ChainableTrees.successors(this);
+    }
+
+    /**
      * Appends the specified trees to the children of this tree, if any.
      * <p>
      * Passing {@code null} clears the existing children and makes the node childless.

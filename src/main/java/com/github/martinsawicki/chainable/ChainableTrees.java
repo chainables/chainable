@@ -137,6 +137,18 @@ public abstract class ChainableTrees {
     }
 
     /**
+     * @param tree
+     * @return
+     * @see ChainableTree#successors()
+     */
+    public static <T> Chainable<ChainableTree<T>> successors(ChainableTree<T> tree) {
+        return (tree == null || tree.parent() == null) ? Chainable.empty() : Chainable
+                .from(tree.parent().children())
+                .notBefore(c -> c == tree)
+                .afterFirst();
+    }
+
+    /**
      * Returns the inner wrapped values of the specified {@code trees}.
      * @param trees the tree nodes to extract wrapped values from
      * @return the wrapper inner values of the specified tree nodes

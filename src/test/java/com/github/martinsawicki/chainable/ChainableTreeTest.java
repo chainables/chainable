@@ -118,6 +118,18 @@ public class ChainableTreeTest {
         assertEquals(expected, actual);        
     }
 
+    @Test
+    public void testSuccessors() {
+        // Given
+        String expected = "1.2";
+
+        // When
+        String actual = ChainableTree.values(testTree.children().first().successors()).join(", ");
+
+        // Then
+        assertEquals(expected, actual);
+    }
+    
     @SuppressWarnings("unchecked")
     @Test
     // TODO: Make this richer
