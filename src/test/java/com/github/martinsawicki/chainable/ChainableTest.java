@@ -383,15 +383,16 @@ public class ChainableTest {
         assertEquals(expected3, actual3);
     }
 
+    // Note this is a test case for a README example
     @Test void testChainLastTwo() {
         // Given
-        String expected = "1, 1, 2, 3, 5, 8, 13";
+        String expected = "0, 1, 1, 2, 3, 5, 8, 13";
 
         // When
         String actual = Chainable
-                .empty(Long.class)
-                .chain((i0, i1) -> (i0 == null || i1 == null) ? 1 : i0 + i1) // Fibonacci sequence
-                .first(7)
+                .from(0l, 1l)
+                .chain((i0, i1) -> i0 + i1) // Fibonacci sequence
+                .first(8)
                 .join(", ");
 
         // Then
