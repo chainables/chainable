@@ -15,12 +15,12 @@ import java.util.function.Predicate;
 public abstract class ChainableTrees {
 
     static class ChainableTreeImpl<T> implements ChainableTree<T> {
-        private final T inner;
+        private final T value;
         private ChainableTree<T> parent = null;
         private Chainable<ChainableTree<T>> childrenChain = Chainable.from(new ArrayList<>());
 
         protected ChainableTreeImpl(T inner) {
-            this.inner = inner;
+            this.value = inner;
         }
 
         @Override
@@ -29,13 +29,43 @@ public abstract class ChainableTrees {
         }
 
         @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            } else if (obj == null) {
+                return false;
+            } else if (!(obj instanceof ChainableTree<?>)) {
+                return false;
+            }
+
+            ChainableTree<?> tree = (ChainableTree<?>) obj;
+            if (tree.value() == null) {
+                return this.value == null;
+            } else if (this.value == null) {
+                return false;
+            } else {
+                return this.value.equals(tree.value());
+            }
+        }
+
+        @Override
+        public int hashCode() {
+            return (this.value == null) ? 0 : this.value.hashCode();
+        }
+
+        @Override
         public T value() {
-            return this.inner;
+            return this.value;
         }
 
         @Override
         public ChainableTree<T> parent() {
             return this.parent;
+        }
+
+        @Override
+        public String toString() {
+            return (this.value == null) ? null : this.value.toString();
         }
 
         @Override
@@ -139,12 +169,23 @@ public abstract class ChainableTrees {
     /**
      * @param tree
      * @return
+     * @see ChainableTree#predecessors()
+     */
+    public static <T> Chainable<ChainableTree<T>> predecessors(final ChainableTree<T> tree) {
+        return (tree == null || tree.parent() == null) ? Chainable.empty() : Chainable
+                .from(tree.parent().children())
+                .before(c -> tree.equals(c));
+    }
+
+    /**
+     * @param tree
+     * @return
      * @see ChainableTree#successors()
      */
     public static <T> Chainable<ChainableTree<T>> successors(ChainableTree<T> tree) {
         return (tree == null || tree.parent() == null) ? Chainable.empty() : Chainable
                 .from(tree.parent().children())
-                .notBefore(c -> c == tree)
+                .notBefore(c -> tree.equals(c))
                 .afterFirst();
     }
 

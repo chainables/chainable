@@ -85,18 +85,19 @@ With this in mind, based on some initial testing in Java 8 so far, `Chainable` c
 
 ### Fibonacci Sequence
 
-In this example, each next item is the sum of the previous two:
+In this example, each next item is the sum of the previous two preceding it in the chain:
 
 ```java
-    String fibonacciFirst7 = Chainable
-                .empty(Long.class) // Start with empty chain of Longs
-                .chain((i0, i1) -> (i0 == null || i1 == null) ? 1 : i0 + i1) // Fibonacci number generator
-                .first(7)          // Take the first 7 items
-                .join(", ");       // Merge into a string
+    // When
+    String fibonacciFirst8 = Chainable
+        .from(0l, 1l)   // Starting values for Fibonacci
+        .chain((i0, i1) -> i0 + i1) // Generate next Fibonacci number
+        .first(8)       // Take first 8 items
+        .join(", ");    // Merge into a string
 
     assertEquals(
-        "1, 1, 2, 3, 5, 8, 13",
-        fibonacciFirst7);
+        "0, 1, 1, 2, 3, 5, 8, 13",
+        fibonacciFirst8);
 ```
 
 The flavor of the `chain()` method used above feeds the user-specified lambda with the two preceding items.

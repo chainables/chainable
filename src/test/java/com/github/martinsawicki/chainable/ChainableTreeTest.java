@@ -5,6 +5,11 @@
 package com.github.martinsawicki.chainable;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
@@ -16,6 +21,26 @@ public class ChainableTreeTest {
     ChainableTree<String> testTree = ChainableTree.withValue("1").withChildren(
             ChainableTree.withValue("1.1").withChildValues("1.1.1", "1.1.2"),
             ChainableTree.withValue("1.2").withChildValues("1.2.1", "1.2.2"));
+
+    private static ChainableTree<String> treeFrom(String[][][] data) {
+        assertNotNull(data);
+        assertTrue(data.length >= 1);
+        assertTrue(data[0].length >= 1);
+        assertTrue(data[0][0].length >= 1);
+
+        String rootKey = data[0][0][0];
+
+        final Map<String, String[]> dataMap = new HashMap<>();
+        for (String[][] entry : data) {
+            String key = (String) entry[0][0];
+            String[] values = (String[]) entry[1];
+            dataMap.put(key, values);
+        }
+
+        return ChainableTree
+                .withValue(rootKey)
+                .withChildValueExtractor(s -> Chainable.from(dataMap.get(s)));
+    }
 
     @Test
     public void testBreadthFirst() {
@@ -100,6 +125,28 @@ public class ChainableTreeTest {
 
         // When
         String actual = ChainableTree.values(tree.depthFirstNotBelow(t -> t.value().length() == 5))
+                .join(", ");
+
+        // Then
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testReverseSiblings() {
+        // Given
+        String expected = "1.2, 1.1";
+        ChainableTree<String> tree = treeFrom(new String[][][] {
+            { { "1" }, { "1.1", "1.2", "1.3", "1.4" } }
+        });
+
+        ChainableTree<String> treeNode = tree
+                .depthFirst()
+                .firstWhere(t -> "1.3".equals(t.value()));
+
+        // When
+        String actual = treeNode
+                .predecessors()
+                .reverse()
                 .join(", ");
 
         // Then
