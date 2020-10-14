@@ -91,7 +91,7 @@ In this example, each next item is the sum of the previous two preceding it in t
     // When
     String fibonacciFirst8 = Chainable
         .from(0l, 1l)   // Starting values for Fibonacci
-        .chain((i0, i1) -> i0 + i1) // Gneerate next Fibonacci number
+        .chain((i0, i1) -> i0 + i1) // Generate next Fibonacci number
         .first(8)       // Take first 8 items
         .join(", ");    // Merge into a string
 
