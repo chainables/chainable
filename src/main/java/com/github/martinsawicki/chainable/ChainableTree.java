@@ -13,7 +13,14 @@ import com.github.martinsawicki.chainable.ChainableTrees.ChainableTreeImpl;
  * A lazily evaluated, functional programming-based tree, where each node has children exposed as {@link Chainable} chains,
  * as well as a number of convenience methods.
  * <P>
- * Note that each node of the tree is itself a tree, so each tree has children and a parent that are trees themselves.
+ * Each "node" of the tree is itself a tree, so each tree has children and a parent that are trees themselves.
+ * <p>
+ * Note that in many operations that perform navigation relative to a specific tree, instances of tree nodes are compared to each other using
+ * the {@code equals()} method applied to their {@link ChainableTree#value()}, since the tree instances themselves may be different across different
+ * invocations of this method, even if referring to the same location in the tree. This implies that the values carried by the tree nodes should
+ * be unique across the entire tree, that is there should be no two nodes within a tree for which {@code equals()} would return {@code true}.
+ * Otherwise, the behavior is undefined, as this restriction is not explicitly enforced.
+
  * @author Martin Sawicki
  *
  * @param <T> type of values to wrap
@@ -79,6 +86,14 @@ public interface ChainableTree<T> {
      * @return the parent of this tree
      */
     ChainableTree<T> parent();
+
+    /**
+     * Returns a chain of siblings preceding this tree node.
+     * @return a chain of sibling tree nodes preceding this one
+     */
+    default Chainable<ChainableTree<T>> predecessors() {
+        return ChainableTrees.predecessors(this);
+    }
 
     /**
      * Returns a chain of siblings following this tree node.
