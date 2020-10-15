@@ -48,9 +48,7 @@ public class ChainableTreeTest {
         String expected = "1, 1.1, 1.2, 1.1.1, 1.1.2, 1.2.1, 1.2.2";
 
         // When
-        String actual = ChainableTree
-                .values(testTree.breadthFirst())
-                .join(", ");
+        String actual = testTree.breadthFirst().join(", ");
 
         // Then
         assertEquals(expected, actual);
@@ -62,8 +60,8 @@ public class ChainableTreeTest {
         String expected = "1, 1.1, 1.2, 1.2.1, 1.2.2";
 
         // When
-        String actual = ChainableTree
-                .values(testTree.breadthFirstNotBelow(t -> "1.1".equals(t.value())))
+        String actual = testTree
+                .breadthFirstNotBelow(t -> "1.1".equals(t.value()))
                 .join(", ");
 
         // Then
@@ -95,8 +93,8 @@ public class ChainableTreeTest {
             .withChildren(children1)
             .withChildren(children2);
 
-        String actual1 = ChainableTrees.values(root.children()).join();
-        String actual2 = ChainableTrees.values(root.children()).join();
+        String actual1 = root.children().join();
+        String actual2 = root.children().join();
 
         // Then
         assertEquals(firstRunLength + secondRunLength, root.children().count());
@@ -109,7 +107,7 @@ public class ChainableTreeTest {
         String expected = "1, 1.1, 1.1.1, 1.1.2, 1.2, 1.2.1, 1.2.2";
 
         // When
-        String actual = ChainableTrees.values(testTree.depthFirst()).join(", ");
+        String actual = testTree.depthFirst().join(", ");
 
         // Then
         assertEquals(expected, actual);
@@ -128,8 +126,8 @@ public class ChainableTreeTest {
                         .cast(String.class)); // Limit the number, otherwise infinite
 
         // When
-        String actual = ChainableTree
-                .values(tree.depthFirstNotBelow(t -> t.value().length() == 5))
+        String actual = tree
+                .depthFirstNotBelow(t -> t.value().length() == 5)
                 .join(", ");
 
         // Then
@@ -175,9 +173,9 @@ public class ChainableTreeTest {
         ChainableTree<String> node11 = testTree.firstWhere(t -> "1.1".equals(t.value()));
 
         // When
-        String actualSiblings = ChainableTree.values(node12.siblings()).join();
-        String actualPredecessors = ChainableTree.values(node12.predecessors()).join();
-        String actualSuccessors = ChainableTree.values(node11.successors()).join();
+        String actualSiblings = node12.siblings().join();
+        String actualPredecessors = node12.predecessors().join();
+        String actualSuccessors = node11.successors().join();
 
         // Then
         assertEquals("1.1", actualSiblings);
@@ -206,17 +204,16 @@ public class ChainableTreeTest {
         String expected = "1.2";
 
         // When
-        String actual = ChainableTree
-                .values(testTree
+        String actual = testTree
                         .children()
                         .first()
-                        .successors())
-                .join(", ");
+                        .successors()
+                        .join(", ");
 
         // Then
         assertEquals(expected, actual);
     }
-    
+
     @SuppressWarnings("unchecked")
     @Test
     // TODO: Make this richer
