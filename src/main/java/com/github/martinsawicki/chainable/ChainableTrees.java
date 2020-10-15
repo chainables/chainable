@@ -168,6 +168,18 @@ public abstract class ChainableTrees {
 
     /**
      * @param tree
+     * @param condition
+     * @return
+     * @see ChainableTree#firstWhere(Predicate)
+     */
+    public static <T> ChainableTree<T> firstWhere(ChainableTree<T> tree, Predicate<ChainableTree<T>> condition) {
+        return (tree == null || condition == null) ? null : tree
+                .breadthFirst()
+                .firstWhere(condition);
+    }
+
+    /**
+     * @param tree
      * @return
      * @see ChainableTree#predecessors()
      */

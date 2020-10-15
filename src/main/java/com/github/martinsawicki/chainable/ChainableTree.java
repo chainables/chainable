@@ -76,10 +76,14 @@ public interface ChainableTree<T> {
     }
 
     /**
-     * Returns the wrapped value.
-     * @return the wrapped value
+     * Finds the first tree node that satisfies the specified {@code condition}, based on a breadth-first traversal.
+     * @param tree the root of the tree to search
+     * @param condition the condition for the sought tree node to satisfy
+     * @return the first tree node satisfying the specified {@code condition}
      */
-    T value();
+    default ChainableTree<T> firstWhere(Predicate<ChainableTree<T>> condition) {
+        return ChainableTrees.firstWhere(this, condition);
+    } 
 
     /**
      * Returns the parent of this tree, or {@code null} if this is the root node.
@@ -116,6 +120,12 @@ public interface ChainableTree<T> {
     default Chainable<ChainableTree<T>> successors() {
         return ChainableTrees.successors(this);
     }
+
+    /**
+     * Returns the wrapped value.
+     * @return the wrapped value
+     */
+    T value();
 
     /**
      * Appends the specified trees to the children of this tree, if any.
