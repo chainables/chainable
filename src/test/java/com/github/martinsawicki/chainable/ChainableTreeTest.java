@@ -154,6 +154,28 @@ public class ChainableTreeTest {
     }
 
     @Test
+    public void testSiblings() {
+        // Given
+        ChainableTree<String> node12 = testTree
+                .breadthFirst()
+                .firstWhere(t -> "1.2".equals(t.value()));
+
+        ChainableTree<String> node11 = testTree
+                .breadthFirst()
+                .firstWhere(t -> "1.1".equals(t.value()));
+
+        // When
+        String actualSiblings = ChainableTree.values(node12.siblings()).join();
+        String actualPredecessors = ChainableTree.values(node12.predecessors()).join();
+        String actualSuccessors = ChainableTree.values(node11.successors()).join();
+
+        // Then
+        assertEquals("1.1", actualSiblings);
+        assertEquals("1.1", actualPredecessors);
+        assertEquals("1.2", actualSuccessors);
+    }
+
+    @Test
     public void testSkipping() {
         // Given
         String expected = "1.1.2, 1.2, 1.2.1, 1.2.2";

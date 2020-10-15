@@ -90,14 +90,28 @@ public interface ChainableTree<T> {
     /**
      * Returns a chain of siblings preceding this tree node.
      * @return a chain of sibling tree nodes preceding this one
+     * @see #successors()
+     * @see #siblings()
      */
     default Chainable<ChainableTree<T>> predecessors() {
         return ChainableTrees.predecessors(this);
     }
 
     /**
+     * Returns a chain of all the siblings of this tree node
+     * @return a chain of all the sibling tree nodes of this one
+     * @see #predecessors()
+     * @see #successors()
+     */
+    default Chainable<ChainableTree<T>> siblings() {
+        return ChainableTrees.siblings(this);
+    }
+
+    /**
      * Returns a chain of siblings following this tree node.
      * @return a chain of sibling tree nodes following this one
+     * @see #siblings()
+     * @see #predecessors()
      */
     default Chainable<ChainableTree<T>> successors() {
         return ChainableTrees.successors(this);

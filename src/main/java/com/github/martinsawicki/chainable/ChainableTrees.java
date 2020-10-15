@@ -180,6 +180,17 @@ public abstract class ChainableTrees {
     /**
      * @param tree
      * @return
+     * @see ChainableTree#siblings()
+     */
+    public static <T> Chainable<ChainableTree<T>> siblings(ChainableTree<T> tree) {
+        return (tree == null || tree.parent() == null) ? Chainable.empty() : Chainable
+                .from(tree.parent().children())
+                .where(c -> c != tree);
+    }
+
+    /**
+     * @param tree
+     * @return
      * @see ChainableTree#successors()
      */
     public static <T> Chainable<ChainableTree<T>> successors(ChainableTree<T> tree) {
