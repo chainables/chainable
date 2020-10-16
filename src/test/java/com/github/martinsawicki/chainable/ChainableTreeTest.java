@@ -43,6 +43,19 @@ public class ChainableTreeTest {
     }
 
     @Test
+    public void testAncestors() {
+        // Given
+        String expected = "1.1, 1";
+        ChainableTree<String> node = testTree.firstWhere(t -> "1.1.1".equals(t.value()));
+
+        // When
+        String actual = node.ancestors().join(", ");
+
+        // Then
+        assertEquals(expected, actual);
+    }
+
+    @Test
     public void testBreadthFirst() {
         // Given
         String expected = "1, 1.1, 1.2, 1.1.1, 1.1.2, 1.2.1, 1.2.2";

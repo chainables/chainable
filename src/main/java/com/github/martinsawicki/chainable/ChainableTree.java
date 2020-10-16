@@ -26,6 +26,16 @@ import com.github.martinsawicki.chainable.ChainableTrees.ChainableTreeImpl;
  * @param <T> type of values to wrap
  */
 public interface ChainableTree<T> {
+
+    /**
+     * Returns the chain of ancestors of this tree node starting with its parent.
+     * @return a chain of ancestors, starting with the parent
+     * @see #descendants()
+     */
+    default Chainable<ChainableTree<T>> ancestors() {
+        return ChainableTrees.ancestors(this);
+    }
+
     /**
      * Traverses the tree in a breadth-first fashion returning a chain of encountered nodes.
      * @return the resulting chain of visited tree nodes
@@ -78,6 +88,7 @@ public interface ChainableTree<T> {
     /**
      * Returns the chain of all the descendants of this tree node, in a breadth-first order
      * @return all descendants of this tree
+     * @see #ancestors()
      */
     default Chainable<ChainableTree<T>> descendants() {
         return ChainableTrees.descendants(this);

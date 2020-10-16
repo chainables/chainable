@@ -127,6 +127,17 @@ public abstract class ChainableTrees {
     }
 
     /**
+     * @param tree
+     * @return
+     * @see ChainableTree#ancestors()
+     */
+    public static <T> Chainable<ChainableTree<T>> ancestors(ChainableTree<T> tree) {
+        return (tree == null || tree.parent() == null) ? Chainable.empty() : Chainable
+                .from(tree.parent())
+                .chain(t -> t.parent());
+    }
+
+    /**
      * @param root
      * @return
      * @see ChainableTree#breadthFirst()
