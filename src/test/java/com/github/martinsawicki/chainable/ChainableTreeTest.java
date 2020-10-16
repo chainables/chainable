@@ -102,6 +102,18 @@ public class ChainableTreeTest {
     }
 
     @Test
+    public void testDecendants() {
+        // Given
+        String expected = "1.1, 1.2, 1.1.1, 1.1.2, 1.2.1, 1.2.2";
+
+        // When
+        String actual = testTree.descendants().join(", ");
+
+        // Then
+        assertEquals(expected, actual);
+    }
+
+    @Test
     public void testDepthFirst() {
         // Given
         String expected = "1, 1.1, 1.1.1, 1.1.2, 1.2, 1.2.1, 1.2.2";

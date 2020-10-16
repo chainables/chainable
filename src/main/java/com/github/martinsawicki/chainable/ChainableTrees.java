@@ -146,6 +146,15 @@ public abstract class ChainableTrees {
     }
 
     /**
+     * @param root
+     * @return
+     * @see ChainableTree#descendants()
+     */
+    public static <T> Chainable<ChainableTree<T>> descendants(ChainableTree<T> root) {
+        return (root == null) ? Chainable.empty() : breadthFirst(root).afterFirst();
+    }
+
+    /**
      * @param tree
      * @return
      * @see ChainableTree#depthFirst()
