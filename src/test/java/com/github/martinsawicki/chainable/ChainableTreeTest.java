@@ -57,20 +57,6 @@ public class ChainableTreeTest {
     }
 
     @Test
-    public void testUpAsLongAs() {
-        // Given
-        ChainableTree<String> start = testTree.firstWhere(t -> "1.1.1".equals(t.value()));
-        String expected = "1.1";
-
-        // When
-        ChainableTree<String> found = start.upAsLongAs(t -> !"1".equals(t.value()));
-
-        // Then
-        assertNotNull(found);
-        assertEquals(expected, found.value());
-    }
-
-    @Test
     public void testBreadthFirst() {
         // Given
         String expected = "1, 1.1, 1.2, 1.1.1, 1.1.2, 1.2.1, 1.2.2";
@@ -277,6 +263,36 @@ public class ChainableTreeTest {
 
         // Then
         assertEquals(expected, actual);        
+    }
+
+    @Test
+    public void testUpAsLongAs() {
+        // Given
+        String startValue = "1.1.1", expectedValue = "1.1", conditionValue = "1";
+
+        // When
+        ChainableTree<String> start = testTree.firstWhere(t -> startValue.equals(t.value()));
+        assertNotNull(start);
+        ChainableTree<String> found = start.upAsLongAs(t -> !conditionValue.equals(t.value()));
+
+        // Then
+        assertNotNull(found);
+        assertEquals(expectedValue, found.value());
+    }
+
+    @Test
+    public void testUpUntil() {
+        // Given
+        String startValue = "1.1.1", expectedValue = "1";
+
+        // When
+        ChainableTree<String> start = testTree.firstWhere(t -> startValue.equals(t.value()));
+        assertNotNull(start);
+        ChainableTree<String> found = start.upUntil(t -> expectedValue.equals(t.value()));
+
+        // Then
+        assertNotNull(found);
+        assertEquals(expectedValue, found.value());
     }
 
     @SuppressWarnings("unchecked")

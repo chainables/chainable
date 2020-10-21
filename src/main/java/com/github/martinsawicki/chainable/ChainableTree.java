@@ -158,14 +158,24 @@ public interface ChainableTree<T> {
     }
 
     /**
-     * Returns the last ancestor up the chain of ancestors and starting with this tree, that satisfies the specified {@code condition}.
+     * Returns the last ancestor up the chain of ancestors, but starting with this tree, that satisfies the specified {@code condition}.
      * <p>
      * If the entire ancestor chain satisfies the specified condition, the topmost tree node (root) is returned.
-     * @param condition the condition that the earliest ancestor is to satisfy
+     * @param condition the condition that the last ancestor up the chain of ancestors is to satisfy
      * @return the last ancestor up the ancestor chain starting with this tree itself, that satisfies the specified condition
      */
     default ChainableTree<T> upAsLongAs(Predicate<ChainableTree<T>> condition) {
         return ChainableTrees.upAsLongAs(this, condition);
+    }
+
+    /**
+     * Returns the first ancestor up the chain of ancestors, but starting with this tree, that does satisfies the specified {@code condition}.
+     * @param condition the condition that the first ancestor up the chain of ancestors is to satisfy
+     * @return the first ancestor up the ancestor chain starting with this tree itself, that satisfies the specified condition, or {@code null} if
+     * no such ancestor is found.
+     */
+    default ChainableTree<T> upUntil(Predicate<ChainableTree<T>> condition) {
+        return ChainableTrees.upUntil(this, condition);
     }
 
     /**

@@ -263,7 +263,7 @@ public abstract class ChainableTrees {
      * @param tree
      * @param condition
      * @return
-     * @see ChainableTree#
+     * @see ChainableTree#upAsLongAs(Predicate)
      */
     public static <T> ChainableTree<T> upAsLongAs(ChainableTree<T> tree, Predicate<ChainableTree<T>> condition) {
         return (tree == null || condition == null) ? tree : Chainable
@@ -271,6 +271,19 @@ public abstract class ChainableTrees {
                 .concat(tree.ancestors())
                 .before(t -> !condition.test(t))
                 .last();
+    }
+
+    /**
+     * @param tree
+     * @param condition
+     * @return
+     * @see ChainableTree#upUntil(Predicate)
+     */
+    public static <T> ChainableTree<T> upUntil(ChainableTree<T> tree, Predicate<ChainableTree<T>> condition) {
+        return (tree == null || condition == null) ? tree : Chainable
+                .from(tree)
+                .concat(tree.ancestors())
+                .firstWhere(condition);
     }
 
     /**
