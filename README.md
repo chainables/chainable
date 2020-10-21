@@ -4,7 +4,7 @@
 
 ## Overview
 
-`Chainable` is an `Iterable`-based alternative to Java's `Stream`, focused on delivering richer fluent API for achieving sequential access logic. It is heavily inspired by the **iterator pattern**, **functional programming**, **lazy evaluation** and C#'s `Enumerable`, but also extended into areas of functionality not yet addressed by older approaches. It is intended to enable writing code that is more succinct, readable, simpler to implement, and sometimes faster than its non-lazy/non-functional equivalents.
+`Chainable` is an `Iterable`-based alternative to Java's `Stream` and Google's *guava* focused on delivering richer fluent API for sequence and tree processing. It is heavily inspired by the **iterator pattern**, **functional programming**, **lazy evaluation** and C#'s `Enumerable`, but also extended into areas of functionality not addressed by older approaches. It is intended to enable writing code that is more succinct, readable, simpler to implement, and sometimes faster than its non-lazy/non-functional equivalents.
 
 ```java
         Chainable<String> chain = Chainable
@@ -29,11 +29,11 @@ The implementation is lightweight and self-contained, i.e. it has no external de
 
 ### Chainable vs Java Stream
 
-Although `Chainable` overlaps with Java's `Stream` in some areas of functionality, the design of `Chainable` is optimized for a somewhat different set of goals and aligns more with C#'s `Enumerable`'s LINQ-style methods than Java streams.
+Although `Chainable` overlaps with Java's `Stream` in some areas of functionality, the design of `Chainable` is optimized for a somewhat different set of goals and aligns more with C#'s `Enumerable`'s LINQ-style methods than Java streams. Also, *chainable* provides functional programming-based API for trees, seamlessly integrated with its sequence processing API, as well as other (future) basic data structures.
 
-For example, one of the key differences from `Stream` is that `Chainable` fully preserves the functional and re-entrancy semantics of `Iterable`, that is it can be traversed multiple times, with multiple iterator instantiations, whereas Java's built-in `Stream` can be traversed only once.
+Another key difference from `Stream` is that `Chainable` fully preserves the functional and re-entrancy semantics of `Iterable`, that is it can be traversed multiple times, with multiple iterator instantiations, whereas Java's built-in `Stream` can be traversed only once.
 
-The `Chainable` API surface also exposes various additional convenience methods for sequential chain processing with functional programming, and not so much oriented toward the parallelism that was a key guiding design principle behind Java's `Stream`. Also, some of the overlapping APIs are only available in Java streams starting with Java 9, whereas `Chainable` is fully functional from Java 8 on.
+The `Chainable` API surface also exposes various additional convenience methods for sequential chain processing with functional programming, and not so much oriented toward the parallelism that was a key guiding design principle behind Java's `Stream`. Also, some of the overlapping APIs are only available in Java streams starting with Java 9, whereas `Chainable` is fully functional starting with Java 8.
 
 Having said that, a level of interoperability between `Stream` and `Chainable` exists: a chain can be created from a stream (see `Chainable#from(Stream)`, and vice-versa (see `Chainable#stream()`).
 
@@ -41,6 +41,7 @@ Having said that, a level of interoperability between `Stream` and `Chainable` e
 
 Besides the part of the API overlapping with streams, current highlights of `Chainable` include:
 
+#### Sequence processing
 > :warning: Section under construction as the API is under active development/at pre-release stage.
 
 - **interleaving** (see `Chainable#interleave`) - two or more chains that have their own evaluation logic can be interleaved,
@@ -64,6 +65,10 @@ so that subsequent chain can apply to their outputs in a quasi-parallel (or sequ
 - **equality and sub-array containment** checks, but evaluated lazily, i.e. chains failing the equality (`Chainable#equals`) or sub-array containment (`Chainable#containsSubarray`) tests return quickly, without traversing/evaluating the rest of the chain.
 
 - chainable **string joining/splitting** operations - you can quickly get a chain of tokens or characters out of a string (see `Chainables#split()`, process it using `Chainable` APIs and go back to a string (see `Chainable#join()`).
+
+#### Tree processing
+
+> :triangular_flag_on_post: To do...
 
 ### Performance Considerations
 

@@ -5,6 +5,7 @@
 package com.github.martinsawicki.chainable;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -43,12 +44,25 @@ public class ChainableTreeTest {
     }
 
     @Test
+    public void testAncestors() {
+        // Given
+        String expected = "1.1, 1";
+        ChainableTree<String> node = testTree.firstWhere(t -> "1.1.1".equals(t.value()));
+
+        // When
+        String actual = node.ancestors().join(", ");
+
+        // Then
+        assertEquals(expected, actual);
+    }
+
+    @Test
     public void testBreadthFirst() {
         // Given
         String expected = "1, 1.1, 1.2, 1.1.1, 1.1.2, 1.2.1, 1.2.2";
 
         // When
-        String actual = ChainableTree.values(testTree.breadthFirst()).join(", ");
+        String actual = testTree.breadthFirst().join(", ");
 
         // Then
         assertEquals(expected, actual);
@@ -60,7 +74,9 @@ public class ChainableTreeTest {
         String expected = "1, 1.1, 1.2, 1.2.1, 1.2.2";
 
         // When
-        String actual = ChainableTree.values(testTree.breadthFirstNotBelow(t -> "1.1".equals(t.value()))).join(", ");
+        String actual = testTree
+                .breadthFirstNotBelow(t -> "1.1".equals(t.value()))
+                .join(", ");
 
         // Then
         assertEquals(expected, actual);
@@ -91,12 +107,24 @@ public class ChainableTreeTest {
             .withChildren(children1)
             .withChildren(children2);
 
-        String actual1 = ChainableTrees.values(root.children()).join();
-        String actual2 = ChainableTrees.values(root.children()).join();
+        String actual1 = root.children().join();
+        String actual2 = root.children().join();
 
         // Then
         assertEquals(firstRunLength + secondRunLength, root.children().count());
         assertEquals(actual1, actual2); // Ensure children are evaluated only once and cached from thereon
+    }
+
+    @Test
+    public void testDecendants() {
+        // Given
+        String expected = "1.1, 1.2, 1.1.1, 1.1.2, 1.2.1, 1.2.2";
+
+        // When
+        String actual = testTree.descendants().join(", ");
+
+        // Then
+        assertEquals(expected, actual);
     }
 
     @Test
@@ -105,7 +133,7 @@ public class ChainableTreeTest {
         String expected = "1, 1.1, 1.1.1, 1.1.2, 1.2, 1.2.1, 1.2.2";
 
         // When
-        String actual = ChainableTrees.values(testTree.depthFirst()).join(", ");
+        String actual = testTree.depthFirst().join(", ");
 
         // Then
         assertEquals(expected, actual);
@@ -124,11 +152,37 @@ public class ChainableTreeTest {
                         .cast(String.class)); // Limit the number, otherwise infinite
 
         // When
-        String actual = ChainableTree.values(tree.depthFirstNotBelow(t -> t.value().length() == 5))
+        String actual = tree
+                .depthFirstNotBelow(t -> t.value().length() == 5)
                 .join(", ");
 
         // Then
         assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testFirstWhere() {
+        // Given
+        String expected = "1.2";
+
+        // When
+        String actual = testTree.firstWhere(t -> expected.equals(t.value())).value();
+
+        // Then
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testIsUnder() {
+        // Given
+        ChainableTree<String> startTree = testTree.firstWhere(t -> "1.1.2".equals(t.value()));
+
+        // Then
+        assertTrue(startTree.isUnder(t -> "1.1".equals(t.value())));
+        assertTrue(startTree.isUnder(t -> "1".equals(t.value())));
+        assertFalse(startTree.isUnder(t -> "1.1.2".equals(t.value())));
+        assertFalse(startTree.isUnder(t -> "1.1.1".equals(t.value())));
+        assertFalse(startTree.isUnder(t -> "1.2.1".equals(t.value())));
     }
 
     @Test
@@ -139,9 +193,7 @@ public class ChainableTreeTest {
             { { "1" }, { "1.1", "1.2", "1.3", "1.4" } }
         });
 
-        ChainableTree<String> treeNode = tree
-                .depthFirst()
-                .firstWhere(t -> "1.3".equals(t.value()));
+        ChainableTree<String> treeNode = tree.firstWhere(t -> "1.3".equals(t.value()));
 
         // When
         String actual = treeNode
@@ -154,12 +206,32 @@ public class ChainableTreeTest {
     }
 
     @Test
+    public void testSiblings() {
+        // Given
+        ChainableTree<String> node12 = testTree.firstWhere(t -> "1.2".equals(t.value()));
+        ChainableTree<String> node11 = testTree.firstWhere(t -> "1.1".equals(t.value()));
+
+        // When
+        String actualSiblings = node12.siblings().join();
+        String actualPredecessors = node12.predecessors().join();
+        String actualSuccessors = node11.successors().join();
+
+        // Then
+        assertEquals("1.1", actualSiblings);
+        assertEquals("1.1", actualPredecessors);
+        assertEquals("1.2", actualSuccessors);
+    }
+
+    @Test
     public void testSkipping() {
         // Given
         String expected = "1.1.2, 1.2, 1.2.1, 1.2.2";
 
         // When
-        String actual = ChainableTrees.values(testTree.depthFirst()).notBeforeEquals("1.1.2").join(", ");
+        String actual = ChainableTrees
+                .values(testTree.depthFirst())
+                .notBeforeEquals("1.1.2")
+                .join(", ");
 
         // Then
         assertEquals(expected, actual);        
@@ -171,12 +243,58 @@ public class ChainableTreeTest {
         String expected = "1.2";
 
         // When
-        String actual = ChainableTree.values(testTree.children().first().successors()).join(", ");
+        String actual = testTree
+                        .children()
+                        .first()
+                        .successors()
+                        .join(", ");
 
         // Then
         assertEquals(expected, actual);
     }
-    
+
+    @Test
+    public void testTerminals() {
+        // Given
+        String expected = "1.1.1, 1.1.2, 1.2.1, 1.2.2";
+
+        // When
+        String actual = testTree.terminals().join(", ");
+
+        // Then
+        assertEquals(expected, actual);        
+    }
+
+    @Test
+    public void testUpAsLongAs() {
+        // Given
+        String startValue = "1.1.1", expectedValue = "1.1", conditionValue = "1";
+
+        // When
+        ChainableTree<String> start = testTree.firstWhere(t -> startValue.equals(t.value()));
+        assertNotNull(start);
+        ChainableTree<String> found = start.upAsLongAs(t -> !conditionValue.equals(t.value()));
+
+        // Then
+        assertNotNull(found);
+        assertEquals(expectedValue, found.value());
+    }
+
+    @Test
+    public void testUpUntil() {
+        // Given
+        String startValue = "1.1.1", expectedValue = "1";
+
+        // When
+        ChainableTree<String> start = testTree.firstWhere(t -> startValue.equals(t.value()));
+        assertNotNull(start);
+        ChainableTree<String> found = start.upUntil(t -> expectedValue.equals(t.value()));
+
+        // Then
+        assertNotNull(found);
+        assertEquals(expectedValue, found.value());
+    }
+
     @SuppressWarnings("unchecked")
     @Test
     // TODO: Make this richer
