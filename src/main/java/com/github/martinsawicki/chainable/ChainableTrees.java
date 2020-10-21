@@ -260,6 +260,20 @@ public abstract class ChainableTrees {
     }
 
     /**
+     * @param tree
+     * @param condition
+     * @return
+     * @see ChainableTree#
+     */
+    public static <T> ChainableTree<T> upAsLongAs(ChainableTree<T> tree, Predicate<ChainableTree<T>> condition) {
+        return (tree == null || condition == null) ? tree : Chainable
+                .from(tree)
+                .concat(tree.ancestors())
+                .before(t -> !condition.test(t))
+                .last();
+    }
+
+    /**
      * Returns the inner wrapped values of the specified {@code trees}.
      * @param trees the tree nodes to extract wrapped values from
      * @return the wrapper inner values of the specified tree nodes

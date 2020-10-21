@@ -57,6 +57,20 @@ public class ChainableTreeTest {
     }
 
     @Test
+    public void testUpAsLongAs() {
+        // Given
+        ChainableTree<String> start = testTree.firstWhere(t -> "1.1.1".equals(t.value()));
+        String expected = "1.1";
+
+        // When
+        ChainableTree<String> found = start.upAsLongAs(t -> !"1".equals(t.value()));
+
+        // Then
+        assertNotNull(found);
+        assertEquals(expected, found.value());
+    }
+
+    @Test
     public void testBreadthFirst() {
         // Given
         String expected = "1, 1.1, 1.2, 1.1.1, 1.1.2, 1.2.1, 1.2.2";
