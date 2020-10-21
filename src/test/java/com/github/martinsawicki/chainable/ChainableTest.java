@@ -12,6 +12,8 @@ import com.github.martinsawicki.chainable.Chainables;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.io.File;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -262,7 +264,7 @@ public class ChainableTest {
     }
 
     @Test
-    public void testBreadthFirstUntil() {
+    public void testBreadthFirstNotBelow() {
         // Given
         Chainable<String> roots = Chainable.from("a", "b", "c");
         String expected = Chainable
@@ -270,7 +272,7 @@ public class ChainableTest {
                 .join(",");
 
         // When
-        String actual = roots.breadthFirstUntil(
+        String actual = roots.breadthFirstNotBelow(
                 s -> roots.transform(o -> s + o),
                 s -> s.length() == 2)
                 .join(",");
@@ -280,14 +282,14 @@ public class ChainableTest {
     }
 
     @Test
-    public void testBreadthFirstWhile() {
+    public void testBreadthFirstAsLongAs() {
         // Given
         Chainable<String> roots = Chainable.from("a", "b", "c");
         Chainable<String> expectedResults = Chainable.from("a", "b", "c", "aa", "ab", "ac", "ba", "bb", "bc", "ca", "cb", "cc");
         String expected = String.join(",", expectedResults);
 
         // When
-        String actual = roots.breadthFirstWhile(
+        String actual = roots.breadthFirstAsLongAs(
                 s -> roots.transform(o -> s + o),
                 s -> s.length() < 3)
                 .join(",");
@@ -317,6 +319,22 @@ public class ChainableTest {
     }
 
     @Test
+    public void testChainIndexed() {
+        // Given
+        String expected = "01234";
+
+        // When
+        String actual = Chainable
+                .empty()
+                .chainIndexed((v, i) -> Long.toString(i))
+                .first(5)
+                .join();
+
+        // Then
+        assertEquals(expected, actual);
+    }
+
+    @Test
     public void testChain() {
         // Given
         Iterable<String> items = Arrays.asList("a", "b", "c", "d");
@@ -327,16 +345,58 @@ public class ChainableTest {
         final Iterator<String> iter2 = items.iterator();
         String expected2 = String.join("", Chainables.concat(initial, items));
 
-        // When
-        Chainable<String> chain = Chainables.chain(iter1.next(), s -> (iter1.hasNext()) ? iter1.next() : null);
-        String actual = String.join("", chain);
+        long length = 10, expected3 = length;
+        int unseededChainLength = 5;
 
-        Chainable<String> chain2 = initial.chain(i -> (iter2.hasNext()) ? iter2.next() : null);
-        String actual2 = String.join("", chain2);
+        // When
+        String actual = Chainables
+                .chain(iter1.next(), s -> (iter1.hasNext()) ? iter1.next() : null)
+                .join();
+
+        String actual2 = initial
+                .chain(i -> (iter2.hasNext()) ? iter2.next() : null)
+                .join();
+
+        Long actual3 = Chainable
+                .from(1l)
+                .chain(i -> i + 1)
+                .first(length)
+                .last();
+
+        Chainable<Long> unseededChain = Chainable
+                .empty() // Test chaining without a seed
+                .chain(o -> Math.round(Math.random() * 10))
+                .first(5)
+                .cast(Long.class);
+
+        Chainable<String> trulyEmptyChain = Chainable
+                .empty()
+                .chain(i -> (i == null) ? null : "A")
+                .first(5)
+                .cast(String.class);
 
         // Then
         assertEquals(expected, actual);
         assertEquals(expected2, actual2);
+        assertEquals(unseededChainLength, unseededChain.count());
+        assertTrue(trulyEmptyChain.isEmpty());
+        assertEquals(expected3, actual3);
+    }
+
+    // Note this is a test case for a README example
+    @Test void testChainLastTwo() {
+        // Given
+        String expected = "0, 1, 1, 2, 3, 5, 8, 13";
+
+        // When
+        String actual = Chainable
+                .from(0l, 1l)
+                .chain((i0, i1) -> i0 + i1) // Fibonacci sequence
+                .first(8)
+                .join(", ");
+
+        // Then
+        assertEquals(expected, actual);
     }
 
     @Test
@@ -499,6 +559,36 @@ public class ChainableTest {
     }
 
     @Test
+    public void testDepthFirstNotBelow() {
+        // Given
+        final int depth = 4;
+        Chainable<String> initial = Chainable.from("1");
+        Function<String, Iterable<String>> childExtractor = (s) -> (s.length() < (depth - 1)  * 2) ? Chainable.from(s + ".1", s + ".2") : null;
+        String expected = "1, 1.1, 1.1.1, 1.1.2, 1.2, 1.2.1, 1.2.2";
+
+        // When
+        String actual = initial.depthFirstNotBelow(childExtractor, i -> i.length() == 5).join(", ");
+
+        // Then
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testDirectoryList() {
+        File currentDir = Paths.get("").toAbsolutePath().toFile();
+        Chainable<File> directories = Chainables.directoriesFromPath(currentDir);
+        for (File dir : directories) {
+            assertNotNull(dir);
+            assertTrue(dir.isDirectory());
+        }
+
+        currentDir = new File("nonexistentDir");
+        directories = Chainables.directoriesFromPath(currentDir);
+        assertNotNull(directories);
+        assertFalse(directories.any());
+    }
+
+    @Test
     public void testDistinct() {
         // Given
         Chainable<String> items = Chainable.from("a", "b", "c", "a", "d", "b");
@@ -632,19 +722,24 @@ public class ChainableTest {
     @Test
     public void testInterleave() {
         // Given
-        final Chainable<Integer> odds = Chainable.from(1, 3, 5, 7);
-        final Chainable<Integer> evens = Chainable.from(2, 4, 6, 8, 10, 12);
-        final Chainable<Integer> zeros = Chainable.from(0, 0, 0);
+        final Chainable<Long> odds = Chainable.from(1l).chain(o -> o + 2);
+        final Chainable<Long> oddsFirst4 = odds.first(4);
+        final Chainable<Long> evens = Chainable.from(2l).chain(o -> o + 2);
+        final Chainable<Long> evensFirst6 = evens.first(6);
+        final Chainable<Long> zeros = Chainable.from(0l, 0l, 0l);
         String expected = "123456781012";
         String expected2 = "102304506781012";
+        String expectedNaturals = "1, 2, 3, 4, 5, 6, 7, 8, 9, 10";
 
         // When
-        String actual = odds.interleave(evens).join();
-        String actual2 = Chainables.interleave(odds, zeros, evens).join();
+        String actual = oddsFirst4.interleave(evensFirst6).join();
+        String actual2 = Chainables.interleave(oddsFirst4, zeros, evensFirst6).join();
+        String actualNaturals = odds.interleave(evens).first(10).join(", ");
 
         // Then
         assertEquals(expected, actual);
         assertEquals(expected2, actual2);
+        assertEquals(expectedNaturals, actualNaturals);
     }
 
     @Test
