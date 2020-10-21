@@ -290,7 +290,7 @@ public abstract class ChainableTrees {
      * @param tree
      * @param conditions
      * @return
-     * @see ChainableTree#
+     * @see ChainableTree#upUntilEither(Predicate...)
      */
     @SafeVarargs
     public static <T> ChainableTree<T> upUntilEither(ChainableTree<T> tree, Predicate<ChainableTree<T>>...conditions) {
