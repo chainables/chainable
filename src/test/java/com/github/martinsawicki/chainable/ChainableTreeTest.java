@@ -5,6 +5,7 @@
 package com.github.martinsawicki.chainable;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -169,6 +170,19 @@ public class ChainableTreeTest {
 
         // Then
         assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testIsUnder() {
+        // Given
+        ChainableTree<String> startTree = testTree.firstWhere(t -> "1.1.2".equals(t.value()));
+
+        // Then
+        assertTrue(startTree.isUnder(t -> "1.1".equals(t.value())));
+        assertTrue(startTree.isUnder(t -> "1".equals(t.value())));
+        assertFalse(startTree.isUnder(t -> "1.1.2".equals(t.value())));
+        assertFalse(startTree.isUnder(t -> "1.1.1".equals(t.value())));
+        assertFalse(startTree.isUnder(t -> "1.2.1".equals(t.value())));
     }
 
     @Test

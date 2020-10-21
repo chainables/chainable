@@ -200,6 +200,22 @@ public abstract class ChainableTrees {
 
     /**
      * @param tree
+     * @param ancestorCondition
+     * @return
+     * @see ChainableTree#isUnder(Predicate)
+     */
+    public static <T> boolean isUnder(ChainableTree<T> tree, Predicate<ChainableTree<T>> ancestorCondition) {
+        if (tree == null) {
+            return false;
+        } else if (ancestorCondition == null) {
+            return tree.parent() != null;
+        }
+
+        return tree.ancestors().anyWhere(ancestorCondition);
+    }
+
+    /**
+     * @param tree
      * @return
      * @see ChainableTree#predecessors()
      */

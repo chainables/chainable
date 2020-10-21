@@ -105,6 +105,15 @@ public interface ChainableTree<T> {
     } 
 
     /**
+     * Checks whether this tree node is a descendant of a tree node satisfying the specified ancestor condition.
+     * @param ancestorCondition the condition that this node's ancestor has to meet for this node to be under it
+     * @return true if the tree node is a descendant of the tree node satisfying the specified ancestor condition.
+     */
+    default boolean isUnder(Predicate<ChainableTree<T>> ancestorCondition) {
+        return ChainableTrees.isUnder(this, ancestorCondition);
+    }
+
+    /**
      * Returns the parent of this tree, or {@code null} if this is the root node.
      * @return the parent of this tree
      */
