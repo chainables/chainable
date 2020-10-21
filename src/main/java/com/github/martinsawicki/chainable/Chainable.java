@@ -454,8 +454,8 @@ public interface Chainable<T> extends Iterable<T> {
      * check against an item already seen before.
      * @param childExtractor
      * @return resulting chain
-     * @see #breadthFirstNotBelow(Function, Function)
-     * @see #breadthFirstAsLongAs(Function, Function)
+     * @see #breadthFirstNotBelow(Function, Predicate)
+     * @see #breadthFirstAsLongAs(Function, Predicate)
      * @see #depthFirst(Function)
      */
     default Chainable<T> breadthFirst(Function<T, Iterable<T>> childExtractor) {
@@ -476,7 +476,7 @@ public interface Chainable<T> extends Iterable<T> {
      * @param childExtractor
      * @param condition
      * @return resulting chain
-     * @see #breadthFirstAsLongAs(Function, Function)
+     * @see #breadthFirstAsLongAs(Function, Predicate)
      * @see #breadthFirst(Function)
      * @see #depthFirst(Function)
      */
@@ -493,7 +493,7 @@ public interface Chainable<T> extends Iterable<T> {
      * @param childExtractor
      * @param condition
      * @return resulting chain
-     * @see #breadthFirstNotBelow(Function, Function)
+     * @see #breadthFirstNotBelow(Function, Predicate)
      * @see #breadthFirst(Function)
      * @see #depthFirst(Function)
      */
