@@ -4,11 +4,6 @@
  */
 package com.github.martinsawicki.chainable;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.text.StringCharacterIterator;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,11 +21,9 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.function.BiFunction;
-import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 import java.util.function.ToDoubleFunction;
 import java.util.function.ToLongFunction;
 import java.util.function.UnaryOperator;
@@ -67,15 +60,6 @@ public final class Chainables {
             } else {
                 return new Chain<>(iterable);
             }
-        }
-
-        static <T> Chain<T> from(Supplier<Iterator<T>> iteratorSupplier) {
-            return (iteratorSupplier == null) ? Chain.empty() : Chain.from(new Iterable<T>() {
-                @Override
-                public Iterator<T> iterator() {
-                    return iteratorSupplier.get();
-                }
-            });
         }
 
         @SuppressWarnings("unchecked")
@@ -184,29 +168,38 @@ public final class Chainables {
      * @return
      */
     public static <V> Chainable<V> afterFirst(Iterable<V> items, long number) {
-        return (items == null) ? Chainable.empty() : Chainable.fromIterator(() -> new Iterator<V>() {
-            final Iterator<V> iter = items.iterator();
-            long skippedNum = 0;
+        if (items == null) {
+            return Chainable.empty();
+        }
 
+        return Chainable.from(new Iterable<V>() {
             @Override
-            public boolean hasNext() {
-                if (!this.iter.hasNext()) {
-                    return false;
-                } else if (this.skippedNum >= number) {
-                    return this.iter.hasNext();
-                } else {
-                    while (skippedNum < number && this.iter.hasNext()) {
-                        this.iter.next(); // Skip the next item
-                        this.skippedNum++;
+            public Iterator<V> iterator() {
+                return new Iterator<V>() {
+                    final Iterator<V> iter = items.iterator();
+                    long skippedNum = 0;
+
+                    @Override
+                    public boolean hasNext() {
+                        if (!this.iter.hasNext()) {
+                            return false;
+                        } else if (this.skippedNum >= number) {
+                            return this.iter.hasNext();
+                        } else {
+                            while (skippedNum < number && this.iter.hasNext()) {
+                                this.iter.next(); // Skip the next item
+                                this.skippedNum++;
+                            }
+
+                            return this.skippedNum >= number && this.iter.hasNext();
+                        }
                     }
 
-                    return this.skippedNum >= number && this.iter.hasNext();
-                }
-            }
-
-            @Override
-            public V next() {
-                return this.iter.next();
+                    @Override
+                    public V next() {
+                        return this.iter.next();
+                    }
+                };
             }
         });
     }
@@ -327,23 +320,28 @@ public final class Chainables {
         } else if (action == null) {
             return Chainable.from(items);
         } else {
-            return Chainable.fromIterator(() -> new Iterator<T>() {
-                final private Iterator<T> itemIter = items.iterator();
-
+            return Chainable.from(new Iterable<T>() {
                 @Override
-                public boolean hasNext() {
-                    return this.itemIter.hasNext();
-                }
+                public Iterator<T> iterator() {
+                    return new Iterator<T>() {
+                        final private Iterator<T> itemIter = items.iterator();
 
-                @Override
-                public T next() {
-                    if (this.hasNext()) {
-                        T item = this.itemIter.next();
-                        action.accept(item);
-                        return item;
-                    } else {
-                        return null;
-                    }
+                        @Override
+                        public boolean hasNext() {
+                            return this.itemIter.hasNext();
+                        }
+
+                        @Override
+                        public T next() {
+                            if (this.hasNext()) {
+                                T item = this.itemIter.next();
+                                action.accept(item);
+                                return item;
+                            } else {
+                                return null;
+                            }
+                        }
+                    };
                 }
             });
         }
@@ -482,39 +480,45 @@ public final class Chainables {
             return Chainable.from(items);
         }
 
-        return Chainable.fromIterator(() -> new Iterator<T>() {
-            private final Iterator<T> iterator = items.iterator();
-            private T nextItem = null;
-            boolean stopped = false;
+        return Chainable.from(new Iterable<T>() {
 
             @Override
-            public boolean hasNext() {
-                if (this.stopped) {
-                    return false;
-                } else if (this.nextItem != null) {
-                    return true;
-                } else if (!this.iterator.hasNext()) {
-                    return false;
-                } else {
-                    this.nextItem = this.iterator.next();
-                    if (condition.test(this.nextItem)) {
-                        this.stopped = true;
-                        return false;
-                    } else {
-                        return true;
+            public Iterator<T> iterator() {
+                return new Iterator<T>() {
+                    private final Iterator<T> iterator = items.iterator();
+                    private T nextItem = null;
+                    boolean stopped = false;
+
+                    @Override
+                    public boolean hasNext() {
+                        if (this.stopped) {
+                            return false;
+                        } else if (this.nextItem != null) {
+                            return true;
+                        } else if (!this.iterator.hasNext()) {
+                            return false;
+                        } else {
+                            this.nextItem = this.iterator.next();
+                            if (condition.test(this.nextItem)) {
+                                this.stopped = true;
+                                return false;
+                            } else {
+                                return true;
+                            }
+                        }
                     }
-                }
-            }
 
-            @Override
-            public T next() {
-                if (this.hasNext()) {
-                    T item = this.nextItem;
-                    this.nextItem = null;
-                    return item;
-                } else {
-                    return null;
-                }
+                    @Override
+                    public T next() {
+                        if (this.hasNext()) {
+                            T item = this.nextItem;
+                            this.nextItem = null;
+                            return item;
+                        } else {
+                            return null;
+                        }
+                    }
+                };
             }
         });
     }
@@ -545,13 +549,14 @@ public final class Chainables {
      * @param childTraverser
      * @param condition
      * @return
-     * @see Chainable#breadthFirstNotBelow(Function, Function)
+     * @see Chainable#breadthFirstUntil(Function, Function)
      */
-    public static <T> Chainable<T> breadthFirstNotBelow(
+    public static <T> Chainable<T> breadthFirstUntil(
             Iterable<T> items,
             Function<T, Iterable<T>> childTraverser,
-            Predicate<T> condition) {
-        return notBelow(items, childTraverser, condition, true);
+            Function<T, Boolean> condition) {
+        final Function<T, Boolean> appliedCondition = (condition != null) ? condition : (o -> false);
+        return breadthFirst(items, o -> Boolean.FALSE.equals(appliedCondition.apply(o)) ? childTraverser.apply(o) : Chainable.empty());
     }
 
     /**
@@ -559,14 +564,14 @@ public final class Chainables {
      * @param childTraverser
      * @param condition
      * @return
-     * @see Chainable#breadthFirstAsLongAs(Function, Function)
+     * @see Chainable#breadthFirstWhile(Function, Function)
      */
-    public static <T> Chainable<T> breadthFirstAsLongAs(
+    public static <T> Chainable<T> breadthFirstWhile(
             Iterable<T> items,
             Function<T, Iterable<T>> childTraverser,
-            Predicate<T> condition) {
-        final Predicate<T> appliedCondition = (condition != null) ? condition : (o -> true);
-        return breadthFirst(items, o -> Chainables.whereEither(childTraverser.apply(o), c -> Boolean.TRUE.equals(appliedCondition.test(c))));
+            Function<T, Boolean> condition) {
+        final Function<T, Boolean> appliedCondition = (condition != null) ? condition : (o -> true);
+        return breadthFirst(items, o -> Chainables.whereEither(childTraverser.apply(o), c -> Boolean.TRUE.equals(appliedCondition.apply(c))));
     }
 
     /**
@@ -575,7 +580,12 @@ public final class Chainables {
      * @see Chainable#cached()
      */
     public static <T> Chainable<T> cached(Iterable<T> items) {
-        return (items == null) ? Chainable.empty() : Chainable.from(new Iterable<T>() {
+        if (items == null) {
+            return Chainable.empty();
+        }
+
+        return Chainable.from(new Iterable<T>() {
+
             List<T> cache = null;
 
             @Override
@@ -635,160 +645,55 @@ public final class Chainables {
     }
 
     /**
-     * @param item
-     * @param nextItemExtractor
-     * @return
-     * @see Chainable#chainIndexed(BiFunction)
-     */
-    public static <T> Chainable<T> chain(T item, BiFunction<T, Long, T> nextItemExtractor) {
-        return chainIndexed(Chainable.from(item), nextItemExtractor);
-    }
-
-    /**
-     * @param items
-     * @param nextItemExtractorFromLastTwo
-     * @return
-     */
-    public static <T> Chainable<T> chain(Iterable<T> items, BinaryOperator<T> nextItemExtractorFromLastTwo) {
-        return (items == null || nextItemExtractorFromLastTwo == null) ? Chainable.from(items) : Chainable.fromIterator(() -> new Iterator<T>() {
-            Iterator<T> iter = items.iterator();
-            T next = null;
-            T prev = null;
-            boolean isFetched = false; // If iter is empty, pretend it starts with null
-            boolean isStopped = false;
-
-            @Override
-            public boolean hasNext() {
-                if (isStopped) {
-                    return false;
-                } else if (isFetched) {
-                    return true;
-                } else if (Chainables.isNullOrEmpty(this.iter)) {
-                    // Seed iterator already finished so start the chaining
-                    this.iter = null;
-                    T temp = this.next;
-                    this.next = nextItemExtractorFromLastTwo.apply(this.prev, this.next);
-                    this.prev = temp;
-                    if (this.next == null) {
-                        isStopped = true;
-                        isFetched = false;
-                        return false;
-                    } else {
-                        isFetched = true;
-                        return true;
-                    }
-                } else {
-                    this.prev = this.next;
-                    this.next = iter.next();
-                    isFetched = true;
-                    return true;
-                }
-            }
-
-            @Override
-            public T next() {
-                T temp = this.next;
-                isFetched = false;
-                return temp;
-            }
-        });
-    }
-
-    /**
-     * @param items
-     * @param nextItemExtractor
-     * @return
-     * @see Chainable#chainIndexed(BiFunction)
-     */
-    public static <T> Chainable<T> chainIndexed(Iterable<T> items, BiFunction<T, Long, T> nextItemExtractor) {
-        return (items == null || nextItemExtractor == null) ? Chainable.from(items) : Chainable.fromIterator(() -> new Iterator<T>() {
-            Iterator<T> iter = items.iterator();
-            T next = null;
-            boolean isFetched = false; // If iter is empty, pretend it starts with null
-            boolean isStopped = false;
-            long index = 0;
-
-            @Override
-            public boolean hasNext() {
-                if (isStopped) {
-                    return false;
-                } else if (isFetched) {
-                    return true;
-                } else if (Chainables.isNullOrEmpty(this.iter)) {
-                    // Seed iterator already finished so start the chaining
-                    this.iter = null;
-                    this.next = nextItemExtractor.apply(this.next, index);
-                    if (this.next == null) {
-                        isStopped = true;
-                        isFetched = false;
-                        return false;
-                    } else {
-                        isFetched = true;
-                        return true;
-                    }
-                } else {
-                    this.next = iter.next();
-                    isFetched = true;
-                    return true;
-                }
-            }
-
-            @Override
-            public T next() {
-                T temp = this.next;
-                this.next = null;
-                isFetched = false;
-                index++;
-                return temp;
-            }
-        });
-    }
-
-    /**
      * @param items
      * @param nextItemExtractor
      * @return
      * @see Chainable#chain(UnaryOperator)
      */
     public static <T> Chainable<T> chain(Iterable<T> items, UnaryOperator<T> nextItemExtractor) {
-        return (items == null || nextItemExtractor == null) ? Chainable.from(items) : Chainable.fromIterator(() -> new Iterator<T>() {
-            Iterator<T> iter = items.iterator();
-            T next = null;
-            boolean isFetched = false; // If iter is empty, pretend it starts with null
-            boolean isStopped = false;
+        if (items == null || nextItemExtractor == null) {
+            return Chainable.from(items);
+        } else {
+            return Chainable.from(new Iterable<T>() {
+                @Override
+                public Iterator<T> iterator() {
+                    return new Iterator<T>() {
+                        Iterator<T> iter = items.iterator();
+                        T next = null;
+                        boolean isStopped = false;
 
-            @Override
-            public boolean hasNext() {
-                if (isStopped) {
-                    return false;
-                } else if (isFetched) {
-                    return true;
-                } else if (Chainables.isNullOrEmpty(this.iter)) {
-                    // Seed iterator already finished so start the chaining
-                    this.iter = null;
-                    this.next = nextItemExtractor.apply(this.next);
-                    if (this.next == null) {
-                        isStopped = true;
-                        isFetched = false;
-                        return false;
-                    } else {
-                        isFetched = true;
-                        return true;
-                    }
-                } else {
-                    this.next = iter.next();
-                    isFetched = true;
-                    return true;
+                        @Override
+                        public boolean hasNext() {
+                            if (isStopped) {
+                                return false;
+                            } else if (this.next != null) {
+                                return true;
+                            } else if (Chainables.isNullOrEmpty(this.iter)) {
+                                // Seed iterator already finished so start the chaining
+                                this.iter = null;
+                                this.next = nextItemExtractor.apply(this.next);
+                                if (this.next == null) {
+                                    isStopped = true;
+                                    return false;
+                                } else {
+                                    return true;
+                                }
+                            } else {
+                                this.next = iter.next();
+                                return true;
+                            }
+                        }
+
+                        @Override
+                        public T next() {
+                            T temp = this.next;
+                            this.next = null;
+                            return temp;
+                        }
+                    };
                 }
-            }
-
-            @Override
-            public T next() {
-                T temp = this.next;
-                isFetched = false;
-                return temp;
-            }
-        });
+            });
+        }
     }
 
     /**
@@ -798,45 +703,54 @@ public final class Chainables {
      * @return {@link Chainable#chainIf(Predicate, UnaryOperator)}
      */
     public static <T> Chainable<T> chainIf(Iterable<T> items, Predicate<T> condition, UnaryOperator<T> nextItemExtractor) {
-        return (items == null || nextItemExtractor == null) ? Chainable.from(items) : Chainable.fromIterator(() -> new Iterator<T>() {
-            final Iterator<T> iter = items.iterator();
-            private T next = null;
-            private boolean nextReady = false;
+        if (items == null || nextItemExtractor == null) {
+            return Chainable.from(items);
+        } else {
+            return Chainable.from(new Iterable<T>() {
+                @Override
+                public Iterator<T> iterator() {
+                    return new Iterator<T>() {
+                        final Iterator<T> iter = items.iterator();
+                        private T next = null;
+                        private boolean nextReady = false;
 
-            @Override
-            public boolean hasNext() {
-                if (this.nextReady) {
-                    return this.nextReady;
-                } else if (this.iter.hasNext()) {
-                    this.next = this.iter.next();
-                    this.nextReady = true;
-                    return this.nextReady;
-                } else if (condition == null) {
-                    // At end of current iterator but no condition specified
-                    this.next = nextItemExtractor.apply(this.next);
-                    this.nextReady = this.next != null;
-                    return this.nextReady;
-                } else if (condition.test(this.next)) {
-                    // At end of current iterator and condition for the chaining is met
-                    this.next = nextItemExtractor.apply(this.next);
-                    this.nextReady = true;
-                    return this.nextReady;
-                } else {
-                    // At end of current iterator and condition for chaining is not met
-                    return this.nextReady = false;
-                }
-            }
+                        @Override
+                        public boolean hasNext() {
+                            if (this.nextReady) {
+                                return this.nextReady;
+                            } else if (this.iter.hasNext()) {
+                                this.next = this.iter.next();
+                                this.nextReady = true;
+                                return this.nextReady;
+                            } else if (condition == null) {
+                                // At end of current iterator but no condition specified
+                                this.next = nextItemExtractor.apply(this.next);
+                                this.nextReady = this.next != null;
+                                return this.nextReady;
+                            } else if (condition.test(this.next)) {
+                                // At end of current iterator and condition for the chaining is met
+                                this.next = nextItemExtractor.apply(this.next);
+                                this.nextReady = true;
+                                return this.nextReady;
+                            } else {
+                                // At end of current iterator and condition for chaining is not met
+                                return this.nextReady = false;
+                            }
+                        }
 
-            @Override
-            public T next() {
-                if (this.hasNext()) {
-                    this.nextReady = false;
-                    return this.next;
-                } else {
-                    return null;
+                        @Override
+                        public T next() {
+                            if (this.hasNext()) {
+                                this.nextReady = false;
+                                return this.next;
+                            } else {
+                                return null;
+                            }
+                        }
+                    };
                 }
-            }
-        });
+            });
+        }
     }
 
     /**
@@ -846,7 +760,11 @@ public final class Chainables {
      * @see Chainable#collectInto(Collection)
      */
     public static <T> Chainable<T> collectInto(Iterable<T> items, Collection<T> targetCollection) {
-        return (items == null || targetCollection == null) ? Chainable.from(items) : Chainables.applyAsYouGo(items, o -> targetCollection.add(o));
+        if (items == null || targetCollection == null) {
+            return Chainable.from(items);
+        } else {
+            return Chainables.applyAsYouGo(items, o -> targetCollection.add(o));
+        }
     }
 
     /**
@@ -856,27 +774,39 @@ public final class Chainables {
      * @see Chainable#concat(Function)
      */
     public static <T> Chainable<T> concat(Iterable<T> items, Function<T, Iterable<T>> lister) {
-        return (lister == null || items == null) ? Chainable.from(items) : Chainable.fromIterator(() -> new Iterator<T>() {
-            private final Iterator<T> iter1 = items.iterator();
-            private Iterator<T> iter2 = null;
+        if (lister == null) {
+            return Chainable.from(items);
+        } else if (items == null) {
+            return null;
+        }
 
+        return Chainable.from(new Iterable<T>() {
             @Override
-            public boolean hasNext() {
-                return this.iter1.hasNext() || !Chainables.isNullOrEmpty(this.iter2);
-            }
+            public Iterator<T> iterator() {
 
-            @Override
-            public T next() {
-                if (!this.hasNext()) {
-                    return null;
-                } else if (Chainables.isNullOrEmpty(this.iter2)) {
-                    T item = this.iter1.next();
-                    Iterable<T> items2 = lister.apply(item);
-                    this.iter2 = (Chainables.isNullOrEmpty(items2)) ? null : items2.iterator();
-                    return item;
-                } else {
-                    return this.iter2.next();
-                }
+                return new Iterator<T>() {
+                    private final Iterator<T> iter1 = items.iterator();
+                    private Iterator<T> iter2 = null;
+
+                    @Override
+                    public boolean hasNext() {
+                        return this.iter1.hasNext() || !Chainables.isNullOrEmpty(this.iter2);
+                    }
+
+                    @Override
+                    public T next() {
+                        if (!this.hasNext()) {
+                            return null;
+                        } else if (Chainables.isNullOrEmpty(this.iter2)) {
+                            T item = this.iter1.next();
+                            Iterable<T> items2 = lister.apply(item);
+                            this.iter2 = (Chainables.isNullOrEmpty(items2)) ? null : items2.iterator();
+                            return item;
+                        } else {
+                            return this.iter2.next();
+                        }
+                    }
+                };
             }
         });
     }
@@ -897,24 +827,30 @@ public final class Chainables {
         } else if (Chainables.isNullOrEmpty(items2)) {
             return Chainable.from(items1);
         } else {
-            return Chainable.fromIterator(() -> new Iterator<T>() {
-                private final Iterator<T> iter1 = items1.iterator();
-                private final Iterator<T> iter2 = items2.iterator();
+            return Chainable.from(new Iterable<T>() {
 
                 @Override
-                public boolean hasNext() {
-                    return this.iter1.hasNext() || this.iter2.hasNext();
-                }
+                public Iterator<T> iterator() {
+                    return new Iterator<T>() {
+                        private final Iterator<T> iter1 = items1.iterator();
+                        private final Iterator<T> iter2 = items2.iterator();
 
-                @Override
-                public T next() {
-                    if (this.iter1.hasNext()) {
-                        return this.iter1.next();
-                    } else if (this.iter2.hasNext()) {
-                        return this.iter2.next();
-                    } else {
-                        return null;
-                    }
+                        @Override
+                        public boolean hasNext() {
+                            return this.iter1.hasNext() || this.iter2.hasNext();
+                        }
+
+                        @Override
+                        public T next() {
+                            if (this.iter1.hasNext()) {
+                                return this.iter1.next();
+                            } else if (this.iter2.hasNext()) {
+                                return this.iter2.next();
+                            } else {
+                                return null;
+                            }
+                        }
+                    };
                 }
             });
         }
@@ -940,26 +876,35 @@ public final class Chainables {
      */
     @SafeVarargs
     public static <T> Chainable<T> concat(Iterable<T>...itemSequences) {
-        return (Chainables.isNullOrEmpty(itemSequences)) ? Chainable.empty() : Chainable.fromIterator(() -> new Iterator<T>() {
-            private int i = 0;
-            private Iterator<T> curIter = null;
+        if (Chainables.isNullOrEmpty(itemSequences)) {
+            return Chainable.empty();
+        } else {
+            return Chainable.from(new Iterable<T>() {
+                @Override
+                public Iterator<T> iterator() {
+                    return new Iterator<T>() {
+                        private int i = 0;
+                        private Iterator<T> curIter = null;
 
-            @Override
-            public boolean hasNext() {
-                // Get the next non-empty iterator
-                while (Chainables.isNullOrEmpty(this.curIter) && i < itemSequences.length) {
-                    this.curIter = (itemSequences[i] != null) ? itemSequences[i].iterator() : null;
-                    i++;
+                        @Override
+                        public boolean hasNext() {
+                            // Get the next non-empty iterator
+                            while (Chainables.isNullOrEmpty(this.curIter) && i < itemSequences.length) {
+                                this.curIter = (itemSequences[i] != null) ? itemSequences[i].iterator() : null;
+                                i++;
+                            }
+
+                            return (this.curIter != null) ? this.curIter.hasNext() : false;
+                        }
+
+                        @Override
+                        public T next() {
+                            return (this.hasNext()) ? this.curIter.next() : null;
+                        }
+                    };
                 }
-
-                return (this.curIter != null) ? this.curIter.hasNext() : false;
-            }
-
-            @Override
-            public T next() {
-                return (this.hasNext()) ? this.curIter.next() : null;
-            }
-        });
+            });
+        }
     }
 
     /**
@@ -1133,20 +1078,6 @@ public final class Chainables {
     }
 
     /**
-     * @param items
-     * @param childTraverser
-     * @param condition
-     * @return
-     * @see Chainable#depthFirstNotBelow(Function, Predicate)
-     */
-    public static <T> Chainable<T> depthFirstNotBelow(
-            Iterable<T> items,
-            Function<T, Iterable<T>> childTraverser,
-            Predicate<T> condition) {
-        return notBelow(items, childTraverser, condition, false);
-    }
-
-    /**
      * @param items items to sort
      * @return sorted items
      * @see Chainable#descending()
@@ -1163,70 +1094,6 @@ public final class Chainables {
      */
     public static <T> Chainable<T> descending(Iterable<T> items, ToStringFunction<T> keyExtractor) {
         return sortedBy(items, keyExtractor, false);
-    }
-
-    /**
-     * Lists directories under the specified {@code directory}.
-     * @param directory the root directory to list the sub-directories of
-     * @return a chain of {@link java.io.File} references to sub-directories
-     */
-    public static Chainable<File> directoriesFromPath(File directory) {
-        return (directory == null) ? Chainable.empty() : Chainable.from(new Iterable<File>() {
-            @Override
-            public Iterator<File> iterator() {
-                try {
-                    return new Iterator<File>() {
-                        final Path path = directory.toPath();
-                        final DirectoryStream<Path> stream = (directory.isDirectory()) ? Files.newDirectoryStream(path) : null;
-                        final Iterator<Path> pathIter = (stream != null) ? stream.iterator() : null;
-                        File nextDirFile = null;
-
-                        @Override
-                        public boolean hasNext() {
-                            if (this.pathIter == null) {
-                                return false;
-                            } else if (this.nextDirFile != null) {
-                                return true;
-                            }
-
-                            while(pathIter.hasNext()) {
-                                Path path = pathIter.next();
-                                if (path == null) {
-                                    continue;
-                                }
-
-                                this.nextDirFile = new File(path.toUri());
-                                if (this.nextDirFile.isDirectory()) {
-                                    return true;
-                                } else {
-                                    this.nextDirFile = null;
-                                }
-                            }
-
-                            try {
-                                this.stream.close();
-                            } catch (IOException e) {
-                            }
-                            
-                            return false;
-                        }
-
-                        @Override
-                        public File next() {
-                            if (this.hasNext()) {
-                                File next = this.nextDirFile;
-                                this.nextDirFile = null;
-                                return next;
-                            } else {
-                                return null;
-                            }
-                        }
-                    };
-                } catch (IOException e) {
-                    return null;
-                }
-            }
-        });
     }
 
     /**
@@ -1256,42 +1123,46 @@ public final class Chainables {
      * @see Chainable#distinct(Function)
      */
     public static <T, V> Chainable<T> distinct(Iterable<T> items, Function<T, V> keyExtractor) {
-        return (keyExtractor == null) ? distinct(items) : Chainable.fromIterator(() -> new Iterator<T>() {
-            final Map<V, T> seen = new HashMap<>();
-            final Iterator<T> iter = items.iterator();
-            T next = null;
-            V value = null;
-            boolean hasNext = false;
-
+        return (keyExtractor == null) ? distinct(items) : Chainable.from(new Iterable<T>() {
             @Override
-            public boolean hasNext() {
-                if (this.hasNext) {
-                    return true;
-                }
+            public Iterator<T> iterator() {
+                return new Iterator<T>() {
+                    final Map<V, T> seen = new HashMap<>();
+                    final Iterator<T> iter = items.iterator();
+                    T next = null;
+                    V value = null;
+                    boolean hasNext = false;
 
-                while (this.iter.hasNext()) {
-                    this.next = this.iter.next();
-                    this.value = keyExtractor.apply(this.next);
-                    if (!seen.containsKey(this.value)) {
-                        this.hasNext = true;
-                        return true;
+                    @Override
+                    public boolean hasNext() {
+                        if (this.hasNext) {
+                            return true;
+                        }
+
+                        while (this.iter.hasNext()) {
+                            this.next = this.iter.next();
+                            this.value = keyExtractor.apply(this.next);
+                            if (!seen.containsKey(this.value)) {
+                                this.hasNext = true;
+                                return true;
+                            }
+                        }
+
+                        return this.hasNext = false;
                     }
-                }
 
-                return this.hasNext = false;
-            }
-
-            @Override
-            public T next() {
-                if (this.hasNext()) {
-                    this.seen.put(this.value, this.next);
-                    this.hasNext = false;
-                    return this.next;
-                } else {
-                    return null;
-                }
-            }
-        });
+                    @Override
+                    public T next() {
+                        if (this.hasNext()) {
+                            this.seen.put(this.value, this.next);
+                            this.hasNext = false;
+                            return this.next;
+                        } else {
+                            return null;
+                        }
+                    }
+                };
+            }});
     }
 
     /**
@@ -1300,42 +1171,47 @@ public final class Chainables {
      * @see Chainable#distinct()
      */
     public static <T> Chainable<T> distinct(Iterable<T> items) {
-        return Chainable.fromIterator(() -> new Iterator<T>() {
-            final Set<T> seen = new HashSet<>();
-            final Iterator<T> iter = items.iterator();
-            T next = null;
-
+        return Chainable.from(new Iterable<T>() {
             @Override
-            public boolean hasNext() {
-                if (this.next != null) {
-                    return true;
-                }
+            public Iterator<T> iterator() {
+                return new Iterator<T>() {
+                    final Set<T> seen = new HashSet<>();
+                    final Iterator<T> iter = items.iterator();
+                    T next = null;
 
-                while (this.iter.hasNext()) {
-                    this.next = this.iter.next();
-                    if (seen.contains(this.next)) {
+                    @Override
+                    public boolean hasNext() {
+                        if (this.next != null) {
+                            return true;
+                        }
+
+                        while (this.iter.hasNext()) {
+                            this.next = this.iter.next();
+                            if (seen.contains(this.next)) {
+                                this.next = null;
+                            } else {
+                                return true;
+                            }
+                        }
+
                         this.next = null;
-                    } else {
-                        return true;
+                        return false;
                     }
-                }
 
-                this.next = null;
-                return false;
-            }
-
-            @Override
-            public T next() {
-                if (!this.hasNext()) {
-                    return null;
-                } else if (this.next != null) {
-                    T item = this.next;
-                    this.seen.add(item);
-                    this.next = null;
-                    return item;
-                } else {
-                    return null;
-                }
+                    @Override
+                    public T next() {
+                        if (!this.hasNext()) {
+                            return null;
+                        } else if (this.next != null) {
+                            T item = this.next;
+                            this.seen.add(item);
+                            this.next = null;
+                            return item;
+                        } else {
+                            return null;
+                        }
+                    }
+                };
             }
         });
     }
@@ -1459,26 +1335,34 @@ public final class Chainables {
      * @return the first number of items
      * @see Chainable#first(int)
      */
-    public static <T> Chainable<T> first(Iterable<T> items, long number) {
-        return (items == null) ? Chainable.empty() : Chainable.fromIterator(() -> new Iterator<T>() {
-            Iterator<T> iter = items.iterator();
-            long returnedCount = 0;
+    public static <T> Chainable<T> first(Iterable<T> items, int number) {
+        if (items == null) {
+            return null;
+        } else {
+            return Chainable.from(new Iterable<T>() {
+                @Override
+                public Iterator<T> iterator() {
+                    return new Iterator<T>() {
+                        Iterator<T> iter = items.iterator();
+                        int returnedCount = 0;
 
-            @Override
-            public boolean hasNext() {
-                if (returnedCount >= number) {
-                    return false;
-                } else {
-                    return this.iter.hasNext();
-                }
-            }
+                        @Override
+                        public boolean hasNext() {
+                            if (returnedCount >= number) {
+                                return false;
+                            } else {
+                                return this.iter.hasNext();
+                            }
+                        }
 
-            @Override
-            public T next() {
-                this.returnedCount++;
-                return this.iter.next();
-            }
-        });
+                        @Override
+                        public T next() {
+                            this.returnedCount++;
+                            return this.iter.next();
+                        }
+                    };
+                }});
+        }
     }
 
     /**
@@ -1515,30 +1399,40 @@ public final class Chainables {
      */
     @SafeVarargs
     public static <T> Chainable<T> interleave(Iterable<T> items1, Iterable<T>...items2) {
-        return (items1 == null || items2 == null) ? Chainable.empty() : Chainable.fromIterator(() -> new Iterator<T>() {
-            Deque<Iterator<T>> iters = new LinkedList<Iterator<T>>(Chainable
-                    .from(items1.iterator())
-                    .concat(Chainable.from(items2).transform(i -> i.iterator()))
-                    .toList());
+        if (items1 == null || items2 == null) {
+            return Chainable.empty();
+        }
 
+        return Chainable.from(new Iterable<T>() {
             @Override
-            public boolean hasNext() {
-                while (!this.iters.isEmpty() && !this.iters.peek().hasNext()) {
-                    this.iters.removeFirst();
-                }
+            public Iterator<T> iterator() {
+                return new Iterator<T>() {
+                    Deque<Iterator<T>> iters = new LinkedList<Iterator<T>>(
+                            Chainable
+                                .from(items1.iterator())
+                                .concat(Chainable.from(items2).transform(i -> i.iterator()))
+                                .toList());
 
-                return !this.iters.isEmpty();
-            }
+                    @Override
+                    public boolean hasNext() {
+                        while (!this.iters.isEmpty() && !this.iters.peek().hasNext()) {
+                            this.iters.removeFirst();
+                        }
 
-            @Override
-            public T next() {
-                Iterator<T> iter = this.iters.removeFirst();
-                if (iter != null) {
-                    this.iters.addLast(iter);
-                    return iter.next();
-                } else {
-                    return null;
-                }
+                        return !this.iters.isEmpty();
+                    }
+
+                    @Override
+                    public T next() {
+                        Iterator<T> iter = this.iters.removeFirst();
+                        if (iter != null) {
+                            this.iters.addLast(iter);
+                            return iter.next();
+                        } else {
+                            return null;
+                        }
+                    }
+                };
             }
         });
     }
@@ -1684,19 +1578,28 @@ public final class Chainables {
      * @see Chainable#last(int)
      */
     public static <T> Chainable<T> last(Iterable<T> items, long count) {
-        return (items == null) ? Chainable.empty() : Chainable.fromIterator(() -> new Iterator<T>() {
-            final List<T> list = Chainables.toList(items);
-            final int size = this.list.size();
-            long next = this.size - count;
+        if (items == null) {
+            return null;
+        }
 
+        return Chainable.from(new Iterable<T>() {
             @Override
-            public boolean hasNext() {
-                return (this.list != null) ? this.next >= 0 && this.next < this.size : false;
-            }
+            public Iterator<T> iterator() {
+                return new Iterator<T>() {
+                    final List<T> list = Chainables.toList(items);
+                    final int size = this.list.size();
+                    long next = this.size - count;
 
-            @Override
-            public T next() {
-                return this.list.get((int) this.next++);
+                    @Override
+                    public boolean hasNext() {
+                        return (this.list != null) ? this.next >= 0 && this.next < this.size : false;
+                    }
+
+                    @Override
+                    public T next() {
+                        return this.list.get((int) this.next++);
+                    }
+                };
             }
         });
     }
@@ -1791,41 +1694,47 @@ public final class Chainables {
             return Chainable.from(items);
         }
 
-        return Chainable.fromIterator(() -> new Iterator<T>() {
-            private final Iterator<T> iterator = items.iterator();
-            private T nextItem = null;
-            boolean stopped = false;
+        return Chainable.from(new Iterable<T>() {
 
             @Override
-            public boolean hasNext() {
-                if (this.stopped) {
-                    // Last item if any
-                    return this.nextItem != null;
-                } else if (this.nextItem != null) {
-                    return true;
-                } else if (!this.iterator.hasNext()) {
-                    this.stopped = true;
-                    this.nextItem = null;
-                    return false;
-                } else {
-                    this.nextItem = this.iterator.next();
-                    if (condition.test(this.nextItem)) {
-                        this.stopped = true;
+            public Iterator<T> iterator() {
+                return new Iterator<T>() {
+                    private final Iterator<T> iterator = items.iterator();
+                    private T nextItem = null;
+                    boolean stopped = false;
+
+                    @Override
+                    public boolean hasNext() {
+                        if (this.stopped) {
+                            // Last item if any
+                            return this.nextItem != null;
+                        } else if (this.nextItem != null) {
+                            return true;
+                        } else if (!this.iterator.hasNext()) {
+                            this.stopped = true;
+                            this.nextItem = null;
+                            return false;
+                        } else {
+                            this.nextItem = this.iterator.next();
+                            if (condition.test(this.nextItem)) {
+                                this.stopped = true;
+                            }
+
+                            return true;
+                        }
                     }
 
-                    return true;
-                }
-            }
-
-            @Override
-            public T next() {
-                if (this.hasNext()) {
-                    T item = this.nextItem;
-                    this.nextItem = null;
-                    return item;
-                } else {
-                    return null;
-                }
+                    @Override
+                    public T next() {
+                        if (this.hasNext()) {
+                            T item = this.nextItem;
+                            this.nextItem = null;
+                            return item;
+                        } else {
+                            return null;
+                        }
+                    }
+                };
             }
         });
     }
@@ -1863,45 +1772,50 @@ public final class Chainables {
         } else if (condition == null) {
             return Chainable.from(items);
         } else {
-            return Chainable.fromIterator(() -> new Iterator<T>() {
-                final Iterator<T> iterator = items.iterator();
-                T nextItem = null;
-                boolean start = false;
-
+            return Chainable.from(new Iterable<T>() {
                 @Override
-                public boolean hasNext() {
-                    if (this.nextItem != null) {
-                        return true;
-                    } else if (!this.iterator.hasNext()) {
-                        this.nextItem = null;
-                        return false;
-                    } else if (this.start) {
-                        this.nextItem = this.iterator.next();
-                        return true;
-                    } else {
-                        while (this.iterator.hasNext()) {
-                            this.nextItem = this.iterator.next();
-                            if (condition.test(this.nextItem)) {
-                                this.start = true;
-                                break;
-                            } else {
+                public Iterator<T> iterator() {
+                    return new Iterator<T>() {
+                        final Iterator<T> iterator = items.iterator();
+                        T nextItem = null;
+                        boolean start = false;
+
+                        @Override
+                        public boolean hasNext() {
+                            if (this.nextItem != null) {
+                                return true;
+                            } else if (!this.iterator.hasNext()) {
                                 this.nextItem = null;
+                                return false;
+                            } else if (this.start) {
+                                this.nextItem = this.iterator.next();
+                                return true;
+                            } else {
+                                while (this.iterator.hasNext()) {
+                                    this.nextItem = this.iterator.next();
+                                    if (condition.test(this.nextItem)) {
+                                        this.start = true;
+                                        break;
+                                    } else {
+                                        this.nextItem = null;
+                                    }
+                                }
+
+                                return this.nextItem != null;
                             }
                         }
 
-                        return this.nextItem != null;
-                    }
-                }
+                        @Override
+                        public T next() {
+                            if (!this.hasNext()) {
+                                return null;
+                            }
 
-                @Override
-                public T next() {
-                    if (!this.hasNext()) {
-                        return null;
-                    }
-
-                    T item = this.nextItem;
-                    this.nextItem = null;
-                    return item;
+                            T item = this.nextItem;
+                            this.nextItem = null;
+                            return item;
+                        }
+                    };
                 }
             });
         }
@@ -1916,15 +1830,6 @@ public final class Chainables {
      */
     public static <T> Chainable<T> notBeforeEquals(Iterable<T> items, T item) {
         return notBefore(items, (Predicate<T>)(o -> o == item));
-    }
-
-    private static <T> Chainable<T> notBelow(
-            Iterable<T> items,
-            Function<T, Iterable<T>> childTraverser,
-            Predicate<T> condition,
-            boolean breadthFirst) {
-        final Predicate<T> appliedCondition = (condition != null) ? condition : (o -> false);
-        return traverse(items, o -> Boolean.FALSE.equals(appliedCondition.test(o)) ? childTraverser.apply(o) : Chainable.empty(), breadthFirst);
     }
 
     /**
@@ -2019,20 +1924,29 @@ public final class Chainables {
      * @see Chainable#reverse()
      */
     public static <T> Chainable<T> reverse(Iterable<T> items) {
-        return (items == null) ? Chainable.empty() : Chainable.fromIterator(() -> new Iterator<T>() {
-            List<T> list = Chainables.toList(items);
-            int nextIndex = list.size() - 1;
+        if (items == null) {
+            return Chainable.from(Arrays.asList());
+        } else {
+            return Chainable.from(new Iterable<T>() {
+                @Override
+                public Iterator<T> iterator() {
+                    return new Iterator<T>() {
+                        List<T> list = Chainables.toList(items);
+                        int nextIndex = list.size() - 1;
 
-            @Override
-            public boolean hasNext() {
-                return (nextIndex >= 0);
-            }
+                        @Override
+                        public boolean hasNext() {
+                            return (nextIndex >= 0);
+                        }
 
-            @Override
-            public T next() {
-                return (this.hasNext()) ? list.get(this.nextIndex--) : null;
-            }
-        });
+                        @Override
+                        public T next() {
+                            return (this.hasNext()) ? list.get(this.nextIndex--) : null;
+                        }
+                    };
+                }
+            });
+        }
     }
 
     /**
@@ -2041,40 +1955,49 @@ public final class Chainables {
      * @return a chain of characters
      */
     public static Chainable<String> split(String text) {
-        return (text == null || text.isEmpty()) ? Chainable.empty() : Chainable.fromIterator(() -> new Iterator<String>() {
-            StringCharacterIterator iter = new StringCharacterIterator(text);
-            String next = null;
-            boolean stopped = false;
+        if (text == null || text.isEmpty()) {
+            return Chainable.empty();
+        }
 
+        return Chainable.from(new Iterable<String>() {
             @Override
-            public boolean hasNext() {
-                if (this.stopped) {
-                    return false;
-                } else if (this.next != null) {
-                    return true;
-                } else {
-                    char c = iter.current();
-                    iter.next();
-                    if (c == StringCharacterIterator.DONE) {
-                        this.stopped = true;
-                        this.next = null;
-                        return false;
-                    } else {
-                        this.next = String.valueOf(c);
-                        return true;
+            public Iterator<String> iterator() {
+                return new Iterator<String>() {
+                    StringCharacterIterator iter = new StringCharacterIterator(text);
+                    String next = null;
+                    boolean stopped = false;
+
+                    @Override
+                    public boolean hasNext() {
+                        if (this.stopped) {
+                            return false;
+                        } else if (this.next != null) {
+                            return true;
+                        } else {
+                            char c = iter.current();
+                            iter.next();
+                            if (c == StringCharacterIterator.DONE) {
+                                this.stopped = true;
+                                this.next = null;
+                                return false;
+                            } else {
+                                this.next = String.valueOf(c);
+                                return true;
+                            }
+                        }
                     }
-                }
-            }
 
-            @Override
-            public String next() {
-                if (!this.stopped && this.hasNext()) {
-                    String temp = this.next;
-                    this.next = null;
-                    return temp;
-                } else {
-                    return null;
-                }
+                    @Override
+                    public String next() {
+                        if (!this.stopped && this.hasNext()) {
+                            String temp = this.next;
+                            this.next = null;
+                            return temp;
+                        } else {
+                            return null;
+                        }
+                    }
+                };
             }
         });
     }
@@ -2097,19 +2020,28 @@ public final class Chainables {
      * @return the split strings
      */
     public static Chainable<String> split(String text, String delimiterCharacters, boolean includeDelimiters) {
-        return (text == null || delimiterCharacters == null) ? Chainable.empty() : Chainable.fromIterator(() -> new Iterator<String>() {
-            StringTokenizer tokenizer = new StringTokenizer(text, delimiterCharacters, includeDelimiters);
+        if (text == null || delimiterCharacters == null) {
+            return null;
+        } else {
+            return Chainable.from(new Iterable<String>() {
+                @Override
+                public Iterator<String> iterator() {
+                    return new Iterator<String>() {
+                        StringTokenizer tokenizer = new StringTokenizer(text, delimiterCharacters, includeDelimiters);
 
-            @Override
-            public boolean hasNext() {
-                return this.tokenizer.hasMoreTokens();
-            }
+                        @Override
+                        public boolean hasNext() {
+                            return this.tokenizer.hasMoreTokens();
+                        }
 
-            @Override
-            public String next() {
-                return this.tokenizer.nextToken();
-            }
-        });
+                        @Override
+                        public String next() {
+                            return this.tokenizer.nextToken();
+                        }
+                    };
+                }
+            });
+        }
     }
 
     /**
@@ -2257,22 +2189,32 @@ public final class Chainables {
      * @see Chainable#transform(Function)
      */
     public static <I, O> Chainable<O> transform(Iterable<I> items, Function<I, O> transformer) {
-        return (items == null || transformer == null) ? Chainable.empty() : Chainable.fromIterator(() -> new Iterator<O>() {
-            Iterator<I> iterator = items.iterator();
+        if (items == null || transformer == null) {
+            return null;
+        }
 
+        // TODO: transform should perhaps ignore NULL?
+        return Chainable.from(new Iterable<O>() {
             @Override
-            public boolean hasNext() {
-                if (Chainables.isNullOrEmpty(this.iterator)) {
-                    this.iterator = null;
-                    return false;
-                } else {
-                    return this.iterator.hasNext();
-                }
-            }
+            public Iterator<O> iterator() {
+                return new Iterator<O>() {
+                    Iterator<I> iterator = items.iterator();
 
-            @Override
-            public O next() {
-                return transformer.apply(this.iterator.next());
+                    @Override
+                    public boolean hasNext() {
+                        if (Chainables.isNullOrEmpty(this.iterator)) {
+                            this.iterator = null;
+                            return false;
+                        } else {
+                            return this.iterator.hasNext();
+                        }
+                    }
+
+                    @Override
+                    public O next() {
+                        return transformer.apply(this.iterator.next());
+                    }
+                };
             }
         });
     }
@@ -2284,35 +2226,44 @@ public final class Chainables {
      * @see Chainable#transformAndFlatten(Function)
      */
     public static <I, O> Chainable<O> transformAndFlatten(Iterable<I> items, Function<I, Iterable<O>> transformer) {
-        return (items == null || transformer == null) ? Chainable.empty() : Chainable.fromIterator(() -> new Iterator<O>() {
-            private final Iterator<I> iterIn = items.iterator();
-            private Iterator<O> iterOut = null;
-            private boolean stopped = false;
+        if (items == null || transformer == null) {
+            return null;
+        }
 
+        return Chainable.from(new Iterable<O>() {
             @Override
-            public boolean hasNext() {
-                if (stopped) {
-                    return false;
-                } else if (!Chainables.isNullOrEmpty(this.iterOut)) {
-                    return true;
-                } else {
-                    while (this.iterIn.hasNext()) {
-                        I itemIn = this.iterIn.next();
-                        Iterable<O> results = transformer.apply(itemIn);
-                        if (!Chainables.isNullOrEmpty(results)) {
-                            this.iterOut = results.iterator();
+            public Iterator<O> iterator() {
+                return new Iterator<O>() {
+                    private final Iterator<I> iterIn = items.iterator();
+                    private Iterator<O> iterOut = null;
+                    private boolean stopped = false;
+
+                    @Override
+                    public boolean hasNext() {
+                        if (stopped) {
+                            return false;
+                        } else if (!Chainables.isNullOrEmpty(this.iterOut)) {
                             return true;
+                        } else {
+                            while (this.iterIn.hasNext()) {
+                                I itemIn = this.iterIn.next();
+                                Iterable<O> results = transformer.apply(itemIn);
+                                if (!Chainables.isNullOrEmpty(results)) {
+                                    this.iterOut = results.iterator();
+                                    return true;
+                                }
+                            }
+
+                            this.stopped = true;
+                            return false;
                         }
                     }
 
-                    this.stopped = true;
-                    return false;
-                }
-            }
-
-            @Override
-            public O next() {
-                return this.hasNext() ? this.iterOut.next() : null;
+                    @Override
+                    public O next() {
+                        return this.hasNext() ? this.iterOut.next() : null;
+                    }
+                };
             }
         });
     }
@@ -2321,55 +2272,64 @@ public final class Chainables {
             Iterable<T> initials,
             Function<T, Iterable<T>> childTraverser,
             boolean breadthFirst) {
-        return (initials == null || childTraverser == null) ? Chainable.empty() : Chainable.fromIterator(() -> new Iterator<T>() {
-            Deque<Iterator<T>> iterators = new LinkedList<>(Arrays.asList(initials.iterator()));
-            T nextItem = null;
-            Set<T> seenValues = new HashSet<>();
+        if (initials == null || childTraverser == null) {
+            return Chainable.from(Collections.emptyList());
+        }
 
+        return Chainable.from(new Iterable<T> () {
             @Override
-            public boolean hasNext() {
-                // TODO Trips up on NULL values "by design" - should it?
-                while (this.nextItem == null && !iterators.isEmpty()) {
-                    Iterator<T> currentIterator = iterators.peekFirst();
-                    if (Chainables.isNullOrEmpty(currentIterator)) {
-                        iterators.pollFirst();
-                        continue;
-                    }
+            public Iterator<T> iterator() {
+                return new Iterator<T>() {
+                    Deque<Iterator<T>> iterators = new LinkedList<>(Arrays.asList(initials.iterator()));
+                    T nextItem = null;
+                    Set<T> seenValues = new HashSet<>();
 
-                    do {
-                        this.nextItem = currentIterator.next();
-                        if (this.seenValues.contains(this.nextItem)) {
-                            this.nextItem = null; // Protect against infinite loops
+                    @Override
+                    public boolean hasNext() {
+                        // TODO Trips up on NULL values "by design" - should it?
+                        while (this.nextItem == null && !iterators.isEmpty()) {
+                            Iterator<T> currentIterator = iterators.peekFirst();
+                            if (Chainables.isNullOrEmpty(currentIterator)) {
+                                iterators.pollFirst();
+                                continue;
+                            }
+
+                            do {
+                                this.nextItem = currentIterator.next();
+                                if (this.seenValues.contains(this.nextItem)) {
+                                    this.nextItem = null; // Protect against infinite loops
+                                }
+                            } while (this.nextItem == null && currentIterator.hasNext());
+
+                            if (this.nextItem != null) {
+                                // Protect against cycles based on inner
+                                this.seenValues.add(this.nextItem);
+                            }
                         }
-                    } while (this.nextItem == null && currentIterator.hasNext());
 
-                    if (this.nextItem != null) {
-                        // Protect against cycles based on inner
-                        this.seenValues.add(this.nextItem);
+                        return null != this.nextItem;
                     }
-                }
 
-                return null != this.nextItem;
-            }
+                    @Override
+                    public T next() {
+                        if (!this.hasNext()) {
+                            return null;
+                        }
 
-            @Override
-            public T next() {
-                if (!this.hasNext()) {
-                    return null;
-                }
+                        Iterable<T> nextChildren = childTraverser.apply(this.nextItem);
+                        if (!Chainables.isNullOrEmpty(nextChildren)) {
+                            if (breadthFirst) {
+                                this.iterators.addLast(nextChildren.iterator());
+                            } else {
+                                this.iterators.addFirst(nextChildren.iterator());
+                            }
+                        }
 
-                Iterable<T> nextChildren = childTraverser.apply(this.nextItem);
-                if (!Chainables.isNullOrEmpty(nextChildren)) {
-                    if (breadthFirst) {
-                        this.iterators.addLast(nextChildren.iterator());
-                    } else {
-                        this.iterators.addFirst(nextChildren.iterator());
+                        T returnValue = this.nextItem;
+                        this.nextItem = null;
+                        return returnValue;
                     }
-                }
-
-                T returnValue = this.nextItem;
-                this.nextItem = null;
-                return returnValue;
+                };
             }
         });
     }
@@ -2383,53 +2343,59 @@ public final class Chainables {
     @SafeVarargs
     public static final <T> Chainable<T> whereEither(Iterable<T> items, Predicate<T>... predicates) {
         if (items == null) {
-            return Chainable.empty();
+            return null;
         } else if (predicates == null || predicates.length == 0) {
             return Chainable.from(items);
         }
 
-        return Chainable.fromIterator(() -> new Iterator<T>() {
-            final Iterator<T> innerIterator = items.iterator();
-            T nextItem = null;
-            boolean stopped = false;
+        return Chainable.from(new Iterable<T>() {
 
             @Override
-            public boolean hasNext() {
-                if (this.stopped) {
-                    return false;
-                } else if (this.nextItem != null) {
-                    return true;
-                }
+            public Iterator<T> iterator() {
+                return new Iterator<T>() {
+                    final Iterator<T> innerIterator = items.iterator();
+                    T nextItem = null;
+                    boolean stopped = false;
 
-                while (this.innerIterator.hasNext()) {
-                    this.nextItem = this.innerIterator.next();
-
-                    // Skip over null items TODO: really?
-                    if (this.nextItem == null) {
-                        continue;
-                    }
-
-                    for (Predicate<T> predicate : predicates) {
-                        if (predicate.test(this.nextItem)) {
+                    @Override
+                    public boolean hasNext() {
+                        if (this.stopped) {
+                            return false;
+                        } else if (this.nextItem != null) {
                             return true;
                         }
+
+                        while (this.innerIterator.hasNext()) {
+                            this.nextItem = this.innerIterator.next();
+
+                            // Skip over null items TODO: really?
+                            if (this.nextItem == null) {
+                                continue;
+                            }
+
+                            for (Predicate<T> predicate : predicates) {
+                                if (predicate.test(this.nextItem)) {
+                                    return true;
+                                }
+                            }
+                        }
+
+                        this.nextItem = null;
+                        this.stopped = true;
+                        return false;
                     }
-                }
 
-                this.nextItem = null;
-                this.stopped = true;
-                return false;
-            }
-
-            @Override
-            public T next() {
-                if (this.hasNext()) {
-                    T item = this.nextItem;
-                    this.nextItem = null;
-                    return item;
-                } else {
-                    return null;
-                }
+                    @Override
+                    public T next() {
+                        if (this.hasNext()) {
+                            T item = this.nextItem;
+                            this.nextItem = null;
+                            return item;
+                        } else {
+                            return null;
+                        }
+                    }
+                };
             }
         });
     }

@@ -10,12 +10,9 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiFunction;
-import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 import java.util.function.ToDoubleFunction;
 import java.util.function.ToLongFunction;
 import java.util.function.UnaryOperator;
@@ -48,12 +45,12 @@ import com.github.martinsawicki.function.ToStringFunction;
  *
  * @author Martin Sawicki
  *
- * @param <T> the type of items in the chain
+ * @param <T>
  */
 public interface Chainable<T> extends Iterable<T> {
     /**
      * Returns an empty chain.
-     * @return an empty chain
+     * @return an empty {@link Chainable}
      * @sawicki.similar
      * <table summary="Similar to:">
      * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#empty()}</td></tr>
@@ -63,15 +60,6 @@ public interface Chainable<T> extends Iterable<T> {
      */
     static <T> Chainable<T> empty() {
         return Chain.empty();
-    }
-
-    /**
-     * Returns an empty chain whose items are expected to be of the specified {@code clazz} type.
-     * @param clazz the expected type of the items in the chain
-     * @return an empty chain expected to contain items of the specified {@code clazz} type.
-     */
-    static <T> Chainable<T> empty(Class<T> clazz) {
-        return empty().cast(clazz);
     }
 
     /**
@@ -90,16 +78,8 @@ public interface Chainable<T> extends Iterable<T> {
     }
 
     /**
-     * Creates a new chain such that its iterator is a new iterator instance created by the specified {@code iteratorSupplier}
-     * @param iteratorSupplier an iterator supplying function
-     * @return the resulting chain
-     */
-    static <T> Chainable<T> fromIterator(Supplier<Iterator<T>> iteratorSupplier) {
-        return Chain.from(iteratorSupplier);
-    }
-
-    /**
-     * Creates a new chain from the specified {@code items} array,
+     * Creates a new chain from the specified {@code items} in a "lazy" fashion, not traversing/evaluating/copying the items,
+     * just holding internal references to them.
      * @param items the items to create a chain from
      * @return an {@link Chainable} wrapper for the specified {@code items}
      * @sawicki.similar
@@ -454,8 +434,8 @@ public interface Chainable<T> extends Iterable<T> {
      * check against an item already seen before.
      * @param childExtractor
      * @return resulting chain
-     * @see #breadthFirstNotBelow(Function, Function)
-     * @see #breadthFirstAsLongAs(Function, Function)
+     * @see #breadthFirstUntil(Function, Function)
+     * @see #breadthFirstWhile(Function, Function)
      * @see #depthFirst(Function)
      */
     default Chainable<T> breadthFirst(Function<T, Iterable<T>> childExtractor) {
@@ -476,29 +456,29 @@ public interface Chainable<T> extends Iterable<T> {
      * @param childExtractor
      * @param condition
      * @return resulting chain
-     * @see #breadthFirstAsLongAs(Function, Function)
+     * @see #breadthFirstWhile(Function, Function)
      * @see #breadthFirst(Function)
      * @see #depthFirst(Function)
      */
-    default Chainable<T> breadthFirstNotBelow(Function<T, Iterable<T>> childExtractor, Predicate<T> condition) {
-        return Chainables.breadthFirstNotBelow(this, childExtractor, condition);
+    default Chainable<T> breadthFirstUntil(Function<T, Iterable<T>> childExtractor, Function<T, Boolean> condition) {
+        return Chainables.breadthFirstUntil(this, childExtractor, condition);
     }
 
     /**
-     * Traverses the items in this chain in a breadth-first order as if it's a tree, where for each item, only those of its children returned by
-     * the specified {@code childTraverser} are appended to the end of the chain that satisfy the specified {@code condition}.
+     * Traverses the items in this chain in a breadth-first order as if it's a tree, where for each item, those of its children returned by the specified
+     * {@code childTraverser} are appended to the end of the chain that satisfy the specified {@code condition}.
      * <p>
      * It can be thought of trimming the breadth-first traversal of a hypothetical tree right above the level of each item satisfying
      * the {@code condition}, but continuing with other items in the chain.
      * @param childExtractor
      * @param condition
      * @return resulting chain
-     * @see #breadthFirstNotBelow(Function, Function)
+     * @see #breadthFirstUntil(Function, Function)
      * @see #breadthFirst(Function)
      * @see #depthFirst(Function)
      */
-    default Chainable<T> breadthFirstAsLongAs(Function<T, Iterable<T>> childExtractor, Predicate<T> condition) {
-        return Chainables.breadthFirstAsLongAs(this, childExtractor, condition);
+    default Chainable<T> breadthFirstWhile(Function<T, Iterable<T>> childExtractor, Function<T, Boolean> condition) {
+        return Chainables.breadthFirstWhile(this, childExtractor, condition);
     }
 
     /**
@@ -535,50 +515,15 @@ public interface Chainable<T> extends Iterable<T> {
      * Appends to the chain the result of the specified {@code nextItemExtractor} applied to the last item, unless the last item is null.
      * <p>
      * If the {@code nextItemExtractor} returns {@code null}, that is considered as the end of the chain and is not included in the resulting chain.
-     * <p>
-     * If applied to an empty chain, the behavior is the same as if applied to a chain where the last value is {@code null}, which means that if
-     * the extractor returns null as a result as well, then the resulting chain is still de-facto empty. But the extractor can use this {@code null} as
-     * an opportunity to create a non-empty chain out of an empty one.
-     * @param nextItemExtractor a function returning the next item given the item it is fed, or null if it is the first item
-     * @return resulting chain
+     * @param nextItemExtractor
+     * @return resulting {@link Chainable}
      * @sawicki.similar
      * <table summary="Similar to:">
-     * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#iterate(Object, java.util.function.UnaryOperator)}, except that
-     * the "seed" is just the last item of the underlying chain, or {@code null} if empty.</td></tr>
+     * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#iterate(Object, java.util.function.UnaryOperator)}, except that the "seed" is just the last item of the underlying {@link Chainable}</td></tr>
      * </table>
      */
     default Chainable<T> chain(UnaryOperator<T> nextItemExtractor) {
         return Chainables.chain(this, nextItemExtractor);
-    }
-
-    /**
-     * Appends to the chain the result of the specified {@code nextItemExtractorFromLastTwo} applied to the last two items, passed to the function
-     * chronological order.
-     * <p>
-     * If the {@code nextItemExtractorFromLastTwi} returns {@code null}, that is considered as the end of the chain and is not included in the resulting chain.
-     * <p>
-     * If applied to an empty chain, the behavior is the same as if applied to a chain where the last two values are {@code null}, which means that if
-     * the extractor returns {@code null} as a result as well, then the resulting chain is still de-facto empty. But the extractor can use this {@code null} as
-     * an opportunity to create a non-empty chain out of an empty one.
-     * <p>
-     * If applied to a chain that contains only one item, then the first argument to the {@code nextItemExtractorFromLastTwo}, which represents the earlier of
-     * the last two items, will be passed as {@code null}.
-     * @param nextItemExtractorFromLastTwo
-     * @return the resulting chain
-     */
-    default Chainable<T> chain(BinaryOperator<T> nextItemExtractorFromLastTwo) {
-        return Chainables.chain(this, nextItemExtractorFromLastTwo);
-    }
-
-    /**
-     * Works the same way as {@link #chain(UnaryOperator)}, except that the specified {@code nextItemExtractor} will also be fed its index in the chain,
-     * starting with 0.
-     * @param nextItemExtractor a function returning the next item given the item it is fed or null if it is the first item, and its index in the chain,
-     * startint with 0
-     * @return the resulting chain
-     */
-    default Chainable<T> chainIndexed(BiFunction<T, Long, T> nextItemExtractor) {
-        return Chainables.chainIndexed(this, nextItemExtractor);
     }
 
     /**
@@ -727,7 +672,7 @@ public interface Chainable<T> extends Iterable<T> {
     }
 
     /**
-     * Traverses the items in a depth-first (pre-order) manner, by visiting the children of each item in the chain, as returned by the
+     * Traverses the items in a depth-first manner, by visiting the children of each item in the chain, as returned by the
      * specified {@code childExtractor} before visting its siblings, in a de-facto recursive manner.
      * <p>
      * For items that do not have children, the {@code childExtractor} may return {@code null}.
@@ -739,26 +684,6 @@ public interface Chainable<T> extends Iterable<T> {
      */
     default Chainable<T> depthFirst(Function<T, Iterable<T>> childExtractor) {
         return Chainables.depthFirst(this, childExtractor);
-    }
-
-    /**
-     * Traverses the items in this chain in a depth-first (pre-order) order as if it were a tree, where for each item, the items output by the specified
-     * {@code childExtractor} applied to it are inserted at the beginning of the chain, <i>up to and including</i> the parent item that satisfies
-     * the specified {@code condition}, but not its descendants that would be otherwise returned by the {@code childExtractor}.
-     * <p>
-     * It can be thought of trimming the depth-first traversal of a hypothetical tree right below the level of the item satisfying
-     * the {@code condition}, but continuing with other items in the chain.
-     * <p>
-     * To indicate the absence of children for an item, the child extractor may output {@code null}.
-     * <p>
-     * The traversal protects against potential cycles by not visiting items that satisfy the equality ({@code equals()}) check against
-     * an item already seen before.
-     * @param childExtractor
-     * @param condition
-     * @return resulting chain
-     */
-    default Chainable<T> depthFirstNotBelow(Function<T, Iterable<T>> childExtractor, Predicate<T> condition) {
-        return Chainables.depthFirstNotBelow(this, childExtractor, condition);
     }
 
     /**
@@ -944,7 +869,7 @@ public interface Chainable<T> extends Iterable<T> {
      * <tr><td><i>C#:</i></td><td>{@code Enumerable.Take()}</td></tr>
      * </table>
      */
-    default Chainable<T> first(long count) {
+    default Chainable<T> first(int count) {
         return Chainables.first(this, count);
     }
 
