@@ -163,19 +163,39 @@ public interface ChainableTree<T> {
      * If the entire ancestor chain satisfies the specified condition, the topmost tree node (root) is returned.
      * @param condition the condition that the last ancestor up the chain of ancestors is to satisfy
      * @return the last ancestor up the ancestor chain starting with this tree itself, that satisfies the specified condition
+     * @see #upUntil(Predicate)
+     * @see #upUntilEither(Predicate...)
+     * @see #ancestors()
      */
     default ChainableTree<T> upAsLongAs(Predicate<ChainableTree<T>> condition) {
         return ChainableTrees.upAsLongAs(this, condition);
     }
 
     /**
-     * Returns the first ancestor up the chain of ancestors, but starting with this tree, that does satisfies the specified {@code condition}.
+     * Returns the first ancestor up the chain of ancestors, but starting with this tree, that satisfies the specified {@code condition}.
      * @param condition the condition that the first ancestor up the chain of ancestors is to satisfy
      * @return the first ancestor up the ancestor chain starting with this tree itself, that satisfies the specified condition, or {@code null} if
-     * no such ancestor is found.
+     * no such ancestor is found
+     * @see #upUntilEither(Predicate...)
+     * @see #upAsLongAs(Predicate)
+     * @see #ancestors()
      */
     default ChainableTree<T> upUntil(Predicate<ChainableTree<T>> condition) {
         return ChainableTrees.upUntil(this, condition);
+    }
+
+    /**
+     * Returns the first ancestor up the chain of ancestors, but starting with this tree, that satisfies any of the specified {@code conditions}.
+     * @param conditions a set of conditions for the sought ancestor to satisfy any of
+     * @return the first ancestor up the ancestor chain starting with this tree itself, that satisfies any of the specified conditions, or {@code null} if
+     * no such ancestor is found
+     * @see #upUntil(Predicate)
+     * @see #upAsLongAs(Predicate)
+     * @see #ancestors()
+     */
+    @SuppressWarnings("unchecked")
+    default ChainableTree<T> upUntilEither(Predicate<ChainableTree<T>>...conditions) {
+        return ChainableTrees.upUntilEither(this, conditions);
     }
 
     /**

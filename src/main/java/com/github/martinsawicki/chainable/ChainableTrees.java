@@ -287,6 +287,20 @@ public abstract class ChainableTrees {
     }
 
     /**
+     * @param tree
+     * @param conditions
+     * @return
+     * @see ChainableTree#
+     */
+    @SafeVarargs
+    public static <T> ChainableTree<T> upUntilEither(ChainableTree<T> tree, Predicate<ChainableTree<T>>...conditions) {
+        return (tree == null || conditions == null) ? tree : Chainable
+                .from(tree)
+                .concat(tree.ancestors())
+                .firstWhereEither(conditions);
+    }
+
+    /**
      * Returns the inner wrapped values of the specified {@code trees}.
      * @param trees the tree nodes to extract wrapped values from
      * @return the wrapper inner values of the specified tree nodes
