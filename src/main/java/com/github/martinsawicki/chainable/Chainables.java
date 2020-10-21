@@ -545,7 +545,7 @@ public final class Chainables {
      * @param childTraverser
      * @param condition
      * @return
-     * @see Chainable#breadthFirstNotBelow(Function, Function)
+     * @see Chainable#breadthFirstNotBelow(Function, Predicate)
      */
     public static <T> Chainable<T> breadthFirstNotBelow(
             Iterable<T> items,
@@ -559,7 +559,7 @@ public final class Chainables {
      * @param childTraverser
      * @param condition
      * @return
-     * @see Chainable#breadthFirstAsLongAs(Function, Function)
+     * @see Chainable#breadthFirstAsLongAs(Function, Predicate)
      */
     public static <T> Chainable<T> breadthFirstAsLongAs(
             Iterable<T> items,
@@ -1457,7 +1457,7 @@ public final class Chainables {
      * @param items
      * @param number
      * @return the first number of items
-     * @see Chainable#first(int)
+     * @see Chainable#first(long)
      */
     public static <T> Chainable<T> first(Iterable<T> items, long number) {
         return (items == null) ? Chainable.empty() : Chainable.fromIterator(() -> new Iterator<T>() {

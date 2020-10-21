@@ -127,6 +127,17 @@ public abstract class ChainableTrees {
     }
 
     /**
+     * @param tree
+     * @return
+     * @see ChainableTree#ancestors()
+     */
+    public static <T> Chainable<ChainableTree<T>> ancestors(ChainableTree<T> tree) {
+        return (tree == null || tree.parent() == null) ? Chainable.empty() : Chainable
+                .from(tree.parent())
+                .chain(t -> t.parent());
+    }
+
+    /**
      * @param root
      * @return
      * @see ChainableTree#breadthFirst()
@@ -143,6 +154,15 @@ public abstract class ChainableTrees {
      */
     public static <T> Chainable<ChainableTree<T>> breadthFirstNotBelow(ChainableTree<T> tree, Predicate<ChainableTree<T>> condition) {
         return Chainable.from(tree).breadthFirstNotBelow(t -> t.children(), condition);
+    }
+
+    /**
+     * @param root
+     * @return
+     * @see ChainableTree#descendants()
+     */
+    public static <T> Chainable<ChainableTree<T>> descendants(ChainableTree<T> root) {
+        return (root == null) ? Chainable.empty() : breadthFirst(root).afterFirst();
     }
 
     /**
@@ -168,6 +188,34 @@ public abstract class ChainableTrees {
 
     /**
      * @param tree
+     * @param condition
+     * @return
+     * @see ChainableTree#firstWhere(Predicate)
+     */
+    public static <T> ChainableTree<T> firstWhere(ChainableTree<T> tree, Predicate<ChainableTree<T>> condition) {
+        return (tree == null || condition == null) ? null : tree
+                .breadthFirst()
+                .firstWhere(condition);
+    }
+
+    /**
+     * @param tree
+     * @param ancestorCondition
+     * @return
+     * @see ChainableTree#isUnder(Predicate)
+     */
+    public static <T> boolean isUnder(ChainableTree<T> tree, Predicate<ChainableTree<T>> ancestorCondition) {
+        if (tree == null) {
+            return false;
+        } else if (ancestorCondition == null) {
+            return tree.parent() != null;
+        }
+
+        return tree.ancestors().anyWhere(ancestorCondition);
+    }
+
+    /**
+     * @param tree
      * @return
      * @see ChainableTree#predecessors()
      */
@@ -180,6 +228,17 @@ public abstract class ChainableTrees {
     /**
      * @param tree
      * @return
+     * @see ChainableTree#siblings()
+     */
+    public static <T> Chainable<ChainableTree<T>> siblings(ChainableTree<T> tree) {
+        return (tree == null || tree.parent() == null) ? Chainable.empty() : Chainable
+                .from(tree.parent().children())
+                .where(c -> c != tree);
+    }
+
+    /**
+     * @param tree
+     * @return
      * @see ChainableTree#successors()
      */
     public static <T> Chainable<ChainableTree<T>> successors(ChainableTree<T> tree) {
@@ -187,6 +246,58 @@ public abstract class ChainableTrees {
                 .from(tree.parent().children())
                 .notBefore(c -> tree.equals(c))
                 .afterFirst();
+    }
+
+    /**
+     * @param root
+     * @return
+     * @see ChainableTree#terminals()
+     */
+    public static <T> Chainable<ChainableTree<T>> terminals(ChainableTree<T> root) {
+        return (root != null) ? root
+                .depthFirst()
+                .where(t -> Chainables.isNullOrEmpty(t.children())) : null;
+    }
+
+    /**
+     * @param tree
+     * @param condition
+     * @return
+     * @see ChainableTree#upAsLongAs(Predicate)
+     */
+    public static <T> ChainableTree<T> upAsLongAs(ChainableTree<T> tree, Predicate<ChainableTree<T>> condition) {
+        return (tree == null || condition == null) ? tree : Chainable
+                .from(tree)
+                .concat(tree.ancestors())
+                .before(t -> !condition.test(t))
+                .last();
+    }
+
+    /**
+     * @param tree
+     * @param condition
+     * @return
+     * @see ChainableTree#upUntil(Predicate)
+     */
+    public static <T> ChainableTree<T> upUntil(ChainableTree<T> tree, Predicate<ChainableTree<T>> condition) {
+        return (tree == null || condition == null) ? tree : Chainable
+                .from(tree)
+                .concat(tree.ancestors())
+                .firstWhere(condition);
+    }
+
+    /**
+     * @param tree
+     * @param conditions
+     * @return
+     * @see ChainableTree#upUntilEither(Predicate...)
+     */
+    @SafeVarargs
+    public static <T> ChainableTree<T> upUntilEither(ChainableTree<T> tree, Predicate<ChainableTree<T>>...conditions) {
+        return (tree == null || conditions == null) ? tree : Chainable
+                .from(tree)
+                .concat(tree.ancestors())
+                .firstWhereEither(conditions);
     }
 
     /**

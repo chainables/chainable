@@ -454,8 +454,8 @@ public interface Chainable<T> extends Iterable<T> {
      * check against an item already seen before.
      * @param childExtractor
      * @return resulting chain
-     * @see #breadthFirstNotBelow(Function, Function)
-     * @see #breadthFirstAsLongAs(Function, Function)
+     * @see #breadthFirstNotBelow(Function, Predicate)
+     * @see #breadthFirstAsLongAs(Function, Predicate)
      * @see #depthFirst(Function)
      */
     default Chainable<T> breadthFirst(Function<T, Iterable<T>> childExtractor) {
@@ -476,7 +476,7 @@ public interface Chainable<T> extends Iterable<T> {
      * @param childExtractor
      * @param condition
      * @return resulting chain
-     * @see #breadthFirstAsLongAs(Function, Function)
+     * @see #breadthFirstAsLongAs(Function, Predicate)
      * @see #breadthFirst(Function)
      * @see #depthFirst(Function)
      */
@@ -493,7 +493,7 @@ public interface Chainable<T> extends Iterable<T> {
      * @param childExtractor
      * @param condition
      * @return resulting chain
-     * @see #breadthFirstNotBelow(Function, Function)
+     * @see #breadthFirstNotBelow(Function, Predicate)
      * @see #breadthFirst(Function)
      * @see #depthFirst(Function)
      */
@@ -727,7 +727,7 @@ public interface Chainable<T> extends Iterable<T> {
     }
 
     /**
-     * Traverses the items in a depth-first manner, by visiting the children of each item in the chain, as returned by the
+     * Traverses the items in a depth-first (pre-order) manner, by visiting the children of each item in the chain, as returned by the
      * specified {@code childExtractor} before visting its siblings, in a de-facto recursive manner.
      * <p>
      * For items that do not have children, the {@code childExtractor} may return {@code null}.
@@ -742,7 +742,7 @@ public interface Chainable<T> extends Iterable<T> {
     }
 
     /**
-     * Traverses the items in this chain in a depth-first order as if it were a tree, where for each item, the items output by the specified
+     * Traverses the items in this chain in a depth-first (pre-order) order as if it were a tree, where for each item, the items output by the specified
      * {@code childExtractor} applied to it are inserted at the beginning of the chain, <i>up to and including</i> the parent item that satisfies
      * the specified {@code condition}, but not its descendants that would be otherwise returned by the {@code childExtractor}.
      * <p>
