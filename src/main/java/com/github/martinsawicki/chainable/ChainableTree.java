@@ -96,7 +96,6 @@ public interface ChainableTree<T> {
 
     /**
      * Finds the first tree node that satisfies the specified {@code condition}, based on a breadth-first traversal.
-     * @param tree the root of the tree to search
      * @param condition the condition for the sought tree node to satisfy
      * @return the first tree node satisfying the specified {@code condition}
      */
