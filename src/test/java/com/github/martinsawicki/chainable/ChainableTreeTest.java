@@ -253,6 +253,18 @@ public class ChainableTreeTest {
         assertEquals(expected, actual);
     }
 
+    @Test
+    public void testTerminals() {
+        // Given
+        String expected = "1.1.1, 1.1.2, 1.2.1, 1.2.2";
+
+        // When
+        String actual = testTree.terminals().join(", ");
+
+        // Then
+        assertEquals(expected, actual);        
+    }
+
     @SuppressWarnings("unchecked")
     @Test
     // TODO: Make this richer

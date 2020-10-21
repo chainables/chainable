@@ -150,6 +150,14 @@ public interface ChainableTree<T> {
     }
 
     /**
+     * Returns the terminal nodes of this tree, that is nodes that do not have any children.
+     * @return terminal nodes of this tree
+     */
+    default Chainable<ChainableTree<T>> terminals() {
+        return ChainableTrees.terminals(this);
+    }
+
+    /**
      * Returns the wrapped value.
      * @return the wrapped value
      */

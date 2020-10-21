@@ -249,6 +249,17 @@ public abstract class ChainableTrees {
     }
 
     /**
+     * @param root
+     * @return
+     * @see ChainableTree#terminals()
+     */
+    public static <T> Chainable<ChainableTree<T>> terminals(ChainableTree<T> root) {
+        return (root != null) ? root
+                .depthFirst()
+                .where(t -> Chainables.isNullOrEmpty(t.children())) : null;
+    }
+
+    /**
      * Returns the inner wrapped values of the specified {@code trees}.
      * @param trees the tree nodes to extract wrapped values from
      * @return the wrapper inner values of the specified tree nodes
