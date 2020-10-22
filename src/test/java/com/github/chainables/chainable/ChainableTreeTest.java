@@ -2,7 +2,7 @@
  * Copyright (c) Martin Sawicki. All rights reserved.
  * Licensed under the MIT License. See LICENSE in the project root for license information.
  */
-package com.github.martinsawicki.chainable;
+package com.github.chainables.chainable;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -13,6 +13,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
+
+import com.github.chainables.chainable.Chainable;
+import com.github.chainables.chainable.ChainableTree;
+import com.github.chainables.chainable.ChainableTrees;
 
 /**
  * Unit tests

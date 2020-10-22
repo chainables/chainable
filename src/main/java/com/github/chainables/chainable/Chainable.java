@@ -2,7 +2,7 @@
  * Copyright (c) Martin Sawicki. All rights reserved.
  * Licensed under the MIT License. See LICENSE in the project root for license information.
  */
-package com.github.martinsawicki.chainable;
+package com.github.chainables.chainable;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -21,9 +21,9 @@ import java.util.function.ToLongFunction;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
-import com.github.martinsawicki.annotation.Experimental;
-import com.github.martinsawicki.chainable.Chainables.Chain;
-import com.github.martinsawicki.function.ToStringFunction;
+import com.github.chainables.annotation.Experimental;
+import com.github.chainables.chainable.Chainables.Chain;
+import com.github.chainables.function.ToStringFunction;
 
 /**
  * {@link Chainable} is a fluent interface-style sub type of {@link java.lang.Iterable} with additional methods facilitating the use of the
@@ -54,7 +54,7 @@ public interface Chainable<T> extends Iterable<T> {
     /**
      * Returns an empty chain.
      * @return an empty chain
-     * @sawicki.similar
+     * @chainables.similar
      * <table summary="Similar to:">
      * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#empty()}</td></tr>
      * <tr><td><i>C#:</i></td><td>{@code Enumerable.Empty()}</td></tr>
@@ -79,7 +79,7 @@ public interface Chainable<T> extends Iterable<T> {
      * just holding internal references to them.
      * @param items the items to create the chain from
      * @return a chain for the specified {@code items}
-     * @sawicki.similar
+     * @chainables.similar
      * <table summary="Similar to:">
      * <tr><td><i>Java:</i></td><td>{@link Collection#stream()} but operating on {@link Iterable}, so not requiring a {@link Collection} as its starting point</td></tr>
      * <tr><td><i>C#:</i></td><td>{@code Enumerable.AsEnumerable()}</td></tr>
@@ -102,7 +102,7 @@ public interface Chainable<T> extends Iterable<T> {
      * Creates a new chain from the specified {@code items} array,
      * @param items the items to create a chain from
      * @return an {@link Chainable} wrapper for the specified {@code items}
-     * @sawicki.similar
+     * @chainables.similar
      * <table summary="Similar to:">
      * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#of(Object...)}</td></tr>
      * <tr><td><i>C#:</i></td><td>{@code Enumerable.AsEnumerable()}</td></tr>
@@ -163,7 +163,7 @@ public interface Chainable<T> extends Iterable<T> {
     /**
      * Returns a chain of items after the first one in this chain.
      * @return items following the first one
-     * @sawicki.similar
+     * @chainables.similar
      * <table summary="Similar to:">
      * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#skip(long)} with 1 as the number to skip</td></tr>
      * <tr><td><i>C#:</i></td><td>{@code Enumerable.Skip()}</td></tr>
@@ -177,7 +177,7 @@ public interface Chainable<T> extends Iterable<T> {
      * Returns a chain after skipping the first specified number of items.
      * @param number the number of initial items to skip
      * @return the remaining chain
-     * @sawicki.similar
+     * @chainables.similar
      * <table summary="Similar to:">
      * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#skip(long)}</td></tr>
      * <tr><td><i>C#:</i></td><td>{@code Enumerable.Skip()}</td></tr>
@@ -191,7 +191,7 @@ public interface Chainable<T> extends Iterable<T> {
      * Determines whether all the items in this chain satisfy the specified {@code condition}.
      * @param condition
      * @return {@code true} if all items satisfy the specified {@code condition}, otherwise {@code false}
-     * @sawicki.similar
+     * @chainables.similar
      * <table summary="Similar to:">
      * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#allMatch(Predicate)}</td></tr>
      * <tr><td><i>C#:</i></td><td>{@code Enumerable.All()}</td></tr>
@@ -215,7 +215,7 @@ public interface Chainable<T> extends Iterable<T> {
     /**
      * Determines whether this chain contains any items.
      * @return {@code true} if not empty (i.e. the opposite of {@link #isEmpty()})
-     * @sawicki.similar
+     * @chainables.similar
      * <table summary="Similar to:">
      * <tr><td><i>C#:</i></td><td>{@code Enumerable.Any()}</td></tr>
      * </table>
@@ -228,7 +228,7 @@ public interface Chainable<T> extends Iterable<T> {
      * Determines whether any of the items in this chain satisfy the specified {@code condition}.
      * @param condition the condition to satisfy
      * @return {@code true} if there are any items that satisfy the specified {@code condition}
-     * @sawicki.similar
+     * @chainables.similar
      * <table summary="Similar to:">
      * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#anyMatch(Predicate)}</td></tr>
      * <tr><td><i>C#:</i></td><td>{@code Enumerable.Any(Func)}</td></tr>
@@ -262,7 +262,7 @@ public interface Chainable<T> extends Iterable<T> {
      * Applies the specified {@code action} to all the items in this chain, triggering a full evaluation of all the items.
      * @param action
      * @return self
-     * @sawicki.similar
+     * @chainables.similar
      * <table summary="Similar to:">
      * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#forEach(Consumer)}</td></tr>
      * </table>
@@ -276,7 +276,7 @@ public interface Chainable<T> extends Iterable<T> {
      * evaluation of the entire chain, but only to the extent that the returned chain is evaluated using another function.
      * @param action
      * @return self
-     * @sawicki.similar
+     * @chainables.similar
      * <table summary="Similar to:">
      * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#peek(Consumer)}</td></tr>
      * <tr><td><i>C#:</i></td><td>{@code Enumerable.Select()}</td></tr>
@@ -309,7 +309,7 @@ public interface Chainable<T> extends Iterable<T> {
      * Note this triggers a full traversal/evaluation of the chain.
      * @param keyExtractor
      * @return sorted items
-     * @sawicki.similar
+     * @chainables.similar
      * <table summary="Similar to:">
      * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#sorted(Comparator)}, but specific to {@link String} outputs</td></tr>
      * <tr><td><i>C#:</i></td><td>{@code Enumerable.ThenBy()}</td></tr>
@@ -327,7 +327,7 @@ public interface Chainable<T> extends Iterable<T> {
      * Note this triggers a full traversal/evaluation of the chain.
      * @param keyExtractor
      * @return sorted items
-     * @sawicki.similar
+     * @chainables.similar
      * <table summary="Similar to:">
      * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#sorted(Comparator)}, but specific to {@link Long} outputs</td></tr>
      * <tr><td><i>C#:</i></td><td>{@code Enumerable.ThenBy()}</td></tr>
@@ -345,7 +345,7 @@ public interface Chainable<T> extends Iterable<T> {
      * Note this triggers a full traversal/evaluation of the chain.
      * @param keyExtractor
      * @return sorted items
-     * @sawicki.similar
+     * @chainables.similar
      * <table summary="Similar to:">
      * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#sorted(Comparator)}, but specific to {@link Double} outputs</td></tr>
      * <tr><td><i>C#:</i></td><td>{@code Enumerable.ThenBy()}</td></tr>
@@ -363,7 +363,7 @@ public interface Chainable<T> extends Iterable<T> {
      * then the returned chain will consist of only { 1, 3, 5 }
      * @param condition
      * @return items <i>before</i> the first one that fails the specified {@code condition}
-     * @sawicki.similar
+     * @chainables.similar
      * <table summary="Similar to:">
      * <tr><td><i>C#:</i></td><td>{@code Enumerable.TakeWhile()}</td></tr>
      * </table>
@@ -421,7 +421,7 @@ public interface Chainable<T> extends Iterable<T> {
      * will consist of { 1, 3 }.
      * @param condition
      * @return the initial items before and not including the one that meets the specified {@code condition}
-     * @sawicki.similar
+     * @chainables.similar
      * <table summary="Similar to:">
      * <tr><td><i>C#:</i></td><td>{@code Enumerable.TakeWhile(), but with a negated predicate}</td></tr>
      * </table>
@@ -521,7 +521,7 @@ public interface Chainable<T> extends Iterable<T> {
      * Casts the items in this chain to the specified class.
      * @param clazz
      * @return items as cast to the type indicated by the specified {@code clazz}
-     * @sawicki.similar
+     * @chainables.similar
      * <table summary="Similar to:">
      * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#map(Function)}, where the specified function casts each item to the specified type</td></tr>
      * <tr><td><i>C#:</i></td><td>{@code Enumerable.Cast()}</td></tr>
@@ -541,7 +541,7 @@ public interface Chainable<T> extends Iterable<T> {
      * an opportunity to create a non-empty chain out of an empty one.
      * @param nextItemExtractor a function returning the next item given the item it is fed, or null if it is the first item
      * @return resulting chain
-     * @sawicki.similar
+     * @chainables.similar
      * <table summary="Similar to:">
      * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#iterate(Object, java.util.function.UnaryOperator)}, except that
      * the "seed" is just the last item of the underlying chain, or {@code null} if empty.</td></tr>
@@ -597,7 +597,7 @@ public interface Chainable<T> extends Iterable<T> {
      * Collects all the items into the specified collection.
      * @param targetCollection
      * @return self
-     * @sawicki.similar
+     * @chainables.similar
      * <table summary="Similar to:">
      * <tr><td><i>Java:</i></td><td>Note this is NOT like {@link java.util.stream.Stream#collect(java.util.stream.Collector)}</td></tr>
      * <tr><td><i>C#:</i></td><td>{@code Enumerable.ToList()} and the like</td></tr>
@@ -611,7 +611,7 @@ public interface Chainable<T> extends Iterable<T> {
      * Appends the specified {@code items} to this chain.
      * @param items
      * @return the chain resulting from appending the specified {@code items} to this chain
-     * @sawicki.similar
+     * @chainables.similar
      * <table summary="Similar to:">
      * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#concat(Stream, Stream)}, except that this is a chainable method that concatenates the specified {@code items}
      * to the {@link Chainable} it is invoked on)</td></tr>
@@ -638,7 +638,7 @@ public interface Chainable<T> extends Iterable<T> {
      * Appends the specified {@code item} to this chain.
      * @param item
      * @return the chain resulting from appending the specified single {@code item} to this chain
-     * @sawicki.similar
+     * @chainables.similar
      * <table summary="Similar to:">
      * <tr><td><i>C#:</i></td><td>{@code Enumerable.Append()}</td></tr>
      * </table>
@@ -662,7 +662,7 @@ public interface Chainable<T> extends Iterable<T> {
      * Determines whether this chain contains the specified {@code item}.
      * @param item the item to look for
      * @return {@code true} if this contains the specified {@code item}
-     * @sawicki.similar
+     * @chainables.similar
      * <table summary="Similar to:">
      * <tr><td><i>C#:</i></td><td>{@code Enumerable.Contains()}</td></tr>
      * </table>
@@ -716,7 +716,7 @@ public interface Chainable<T> extends Iterable<T> {
      * <p>
      * This triggers a full traversal/evaluation of the items.
      * @return total number of items
-     * @sawicki.similar
+     * @chainables.similar
      * <table summary="Similar to:">
      * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#count()}</td></tr>
      * <tr><td><i>C#:</i></td><td>{@code Enumerable.Count()}</td></tr>
@@ -782,7 +782,7 @@ public interface Chainable<T> extends Iterable<T> {
      * Note this triggers a full traversal/evaluation of the chain.
      * @param keyExtractor
      * @return sorted items
-     * @sawicki.similar
+     * @chainables.similar
      * <table summary="Similar to:">
      * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#sorted(Comparator)}, but specific to {@link Long} outputs</td></tr>
      * <tr><td><i>C#:</i></td><td>{@code Enumerable.ThenByDescending()}</td></tr>
@@ -800,7 +800,7 @@ public interface Chainable<T> extends Iterable<T> {
      * Note this triggers a full traversal/evaluation of the chain.
      * @param keyExtractor
      * @return sorted items
-     * @sawicki.similar
+     * @chainables.similar
      * <table summary="Similar to:">
      * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#sorted(Comparator)}, but specific to {@link Double} outputs</td></tr>
      * <tr><td><i>C#:</i></td><td>{@code Enumerable.ThenByDescending()}</td></tr>
@@ -818,7 +818,7 @@ public interface Chainable<T> extends Iterable<T> {
      * Note this triggers a full traversal/evaluation of the chain.
      * @param keyExtractor
      * @return sorted items
-     * @sawicki.similar
+     * @chainables.similar
      * <table summary="Similar to:">
      * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#sorted(Comparator)}, but specific to {@link String} outputs</td></tr>
      * <tr><td><i>C#:</i></td><td>{@code Enumerable.ThenByDescending()}</td></tr>
@@ -832,7 +832,7 @@ public interface Chainable<T> extends Iterable<T> {
     /**
      * Returns a chain of items from this chain that are not duplicated.
      * @return items that are unique (no duplicates)
-     * @sawicki.similar
+     * @chainables.similar
      * <table summary="Similar to:">
      * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#distinct()}</td></tr>
      * <tr><td><i>C#:</i></td><td>{@code Enumerable.Distinct()}</td></tr>
@@ -848,7 +848,7 @@ public interface Chainable<T> extends Iterable<T> {
      * In case of duplicates, the first item survives.
      * @param keyExtractor
      * @return first items whose keys, as extracted by the specified {@code keyExtractor}, are unique
-     * @sawicki.similar
+     * @chainables.similar
      * <table summary="Similar to:">
      * <tr><td><i>C#:</i></td><td>{@code Enumerable.Distinct()} with a custom comparer</td></tr>
      * </table>
@@ -887,7 +887,7 @@ public interface Chainable<T> extends Iterable<T> {
      * Determines whether this chain consists of the same items, in the same order, as those in the specified {@code items}, triggering a full traversal/evaluation of the chain if needed.
      * @param items
      * @return {@code true} the items match exactly
-     * @sawicki.similar
+     * @chainables.similar
      * <table summary="Similar to:">
      * <tr><td><i>C#:</i></td><td>{@code Enumerable.SequenceEqual()}</td></tr>
      * </table>
@@ -924,7 +924,7 @@ public interface Chainable<T> extends Iterable<T> {
     /**
      * Returns the first item in the chain.
      * @return the first item or {@code null} if none
-     * @sawicki.similar
+     * @chainables.similar
      * <table summary="Similar to:">
      * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#findFirst()}</td></tr>
      * <tr><td><i>C#:</i></td><td>{@code Enumerable.FirstOrDefault()}</td></tr>
@@ -938,7 +938,7 @@ public interface Chainable<T> extends Iterable<T> {
      * Returns the first {@code count} of items in this chain.
      * @param count
      * @return the specified {@code count} of items from the beginning
-     * @sawicki.similar
+     * @chainables.similar
      * <table summary="Similar to:">
      * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#limit(long)}</td></tr>
      * <tr><td><i>C#:</i></td><td>{@code Enumerable.Take()}</td></tr>
@@ -952,7 +952,7 @@ public interface Chainable<T> extends Iterable<T> {
      * Finds the first item satisfying the specified {@code condition}.
      * @param condition
      * @return the first item satisfying the specified {@code condition}
-     * @sawicki.similar
+     * @chainables.similar
      * <table summary="Similar to:">
      * <tr><td><i>Java:</i></td><td>a combination of {@link java.util.stream.Stream#filter(Predicate)} and {@link java.util.stream.Stream#findFirst()}</td></tr>
      * <tr><td><i>C#:</i></td><td>{@code Enumerable.FirstOrDefault()}</td></tr>
@@ -993,7 +993,7 @@ public interface Chainable<T> extends Iterable<T> {
     /**
      * Determines whether this chain contains any items.
      * @return {@code true} if empty, else {@code false}
-     * @sawicki.similar
+     * @chainables.similar
      * <table summary="Similar to:">
      * <tr><td><i>C#:</i></td><td>{@code Enumerable.Any()}, but negated</td></tr>
      * </table>
@@ -1039,7 +1039,7 @@ public interface Chainable<T> extends Iterable<T> {
      * <p>
      * This triggers a full traversal/evaluation of all the items.
      * @return the last item
-     * @sawicki.similar
+     * @chainables.similar
      * <table summary="Similar to:">
      * <tr><td><i>C#:</i></td><td>{@code Enumerable.LastOrDefault()}</td></tr>
      * </table>
@@ -1054,7 +1054,7 @@ public interface Chainable<T> extends Iterable<T> {
      * This triggers a full tarversal/evaluation of all the items.
      * @param count number of items to return from the end
      * @return up to the specified {@code count} of items from the end (or fewer if the chain is shorter than that)
-     * @sawicki.similar
+     * @chainables.similar
      * <table summary="Similar to:">
      * <tr><td><i>C#:</i></td><td>{@code Enumerable.TakeLast()}</td></tr>
      * </table>
@@ -1069,7 +1069,7 @@ public interface Chainable<T> extends Iterable<T> {
      * This triggers a full traversal/evaluation of the items.
      * @param valueExtractor
      * @return the item for which the specified {@code valueExtrator} returns the highest value
-     * @sawicki.similar
+     * @chainables.similar
      * <table summary="Similar to:">
      * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#max(Comparator)}</td></tr>
      * <tr><td><i>C#:</i></td><td>{@code Enumerable.Max()}</td></tr>
@@ -1086,7 +1086,7 @@ public interface Chainable<T> extends Iterable<T> {
      * This triggers a full traversal/evaluation of the items.
      * @param valueExtractor
      * @return the item for which the specified {@code valueExtrator} returns the lowest value
-     * @sawicki.similar
+     * @chainables.similar
      * <table summary="Similar to:">
      * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#min(Comparator)}</td></tr>
      * <tr><td><i>C#:</i></td><td>{@code Enumerable.Min()}</td></tr>
@@ -1101,7 +1101,7 @@ public interface Chainable<T> extends Iterable<T> {
      * Determines whether none of the items in this chain satisfy the specified {@code condition}.
      * @param condition
      * @return {@code true} if there are no items that meet the specified {@code condition}
-     * @sawicki.similar
+     * @chainables.similar
      * <table summary="Similar to:">
      * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#noneMatch(Predicate)}</td></tr>
      * <tr><td><i>C#:</i></td><td>{@code Enumerable.Where()}, but with a negated predicate</td></tr>
@@ -1145,7 +1145,7 @@ public interface Chainable<T> extends Iterable<T> {
      * then the resulting chain will be { 2, 7, 9, ... }.
      * @param condition
      * @return items starting with the first one where the specified {@code condition} is no longer met
-     * @sawicki.similar
+     * @chainables.similar
      * <table summary="Similar to:">
      * <tr><td><i>C#:</i></td><td>{@code Enumerable.SkipWhile()}</td></tr>
      * </table>
@@ -1176,7 +1176,7 @@ public interface Chainable<T> extends Iterable<T> {
      * chain will consist of { 2, 7, 9, ... }.
      * @param condition
      * @return items starting with the one where the specified {@code condition} is met
-     * @sawicki.similar
+     * @chainables.similar
      * <table summary="Similar to:">
      * <tr><td><i>C#:</i></td><td>{@code Enumerable.SkipWhile()}, but with a negated predicate</td></tr>
      * </table>
@@ -1206,7 +1206,7 @@ public interface Chainable<T> extends Iterable<T> {
      * Returns the items from this chain that do not satisy the specified {@code condition}.
      * @param condition
      * @return items that do not meet the specified {@code condition}
-     * @sawicki.similar
+     * @chainables.similar
      * <table summary="Similar to:">
      * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#filter(Predicate)}, but with a negated predicate</td></tr>
      * <tr><td><i>C#:</i></td><td>{@code Enumerable.Where()}, but with a negated predicate</td></tr>
@@ -1223,7 +1223,7 @@ public interface Chainable<T> extends Iterable<T> {
      * Whenever the replacer returns {@code null}, the item is skipped (de-facto removed) from the resulting chain altogether.
      * @param replacer
      * @return replacement items
-     * @sawicki.similar
+     * @chainables.similar
      * <table summary="Similar to:">
      * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#flatMap(Function)}, but with the return type the same as the input type</td></tr>
      * <tr><td><i>C#:</i></td><td>{@code Enumerable.Select()}, but with the return type the same as the input type</td></tr>
@@ -1239,7 +1239,7 @@ public interface Chainable<T> extends Iterable<T> {
      * <p>
      * This triggers a full traversal/evaluation of the items.
      * @return items in the opposite order
-     * @sawicki.similar
+     * @chainables.similar
      * <table summary="Similar to:">
      * <tr><td><i>C#:</i></td><td>{@code Enumerable.Reverse()}</td></tr>
      * </table>
@@ -1284,7 +1284,7 @@ public interface Chainable<T> extends Iterable<T> {
      * This trighers a full traversal/evaluation of the items.
      * @param valueExtractor
      * @return sum of all the values returned by the specified {@code valueExtractor} applied to each item
-     * @sawicki.similar
+     * @chainables.similar
      * <table summary="Similar to:">
      * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#reduce(java.util.function.BinaryOperator)} or {@link java.util.stream.Stream#collect(java.util.stream.Collector)}, but specifically for summation</td></tr>
      * <tr><td><i>C#:</i></td><td>{@code Enumerable.Aggregate()}, but specifically for summation</td></tr>
@@ -1297,7 +1297,7 @@ public interface Chainable<T> extends Iterable<T> {
     /**
      * Transforms this chain into a list, tigerring a full evaluation.
      * @return a new list containing all the items
-     * @sawicki.similar
+     * @chainables.similar
      * <table summary="Similar to:">
      * <tr><td><i>C#:</i></td><td>{@code Enumerable.ToList()}</td></tr>
      * </table>
@@ -1310,7 +1310,7 @@ public interface Chainable<T> extends Iterable<T> {
      * Puts the items from this chain into a map indexed by the specified {@code keyExtractor} applied to each item.
      * @param keyExtractor
      * @return a map of the items indexed by the key produced by the specified {@code keyExtractor}
-     * @sawicki.similar
+     * @chainables.similar
      * <table summary="Similar to:">
      * <tr><td><i>C#:</i></td><td>{@code Enumerable.ToDictionary()}</td></tr>
      * </table>
@@ -1332,7 +1332,7 @@ public interface Chainable<T> extends Iterable<T> {
      * Transforms each item into another item, of a possibly different type, by applying the specified {@code transformer}
      * @param transformer
      * @return the resulting items from the transformation
-     * @sawicki.similar
+     * @chainables.similar
      * <table summary="Similar to:">
      * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#map(Function)}</td></tr>
      * <tr><td><i>C#:</i></td><td>{@code Enumerable.Select()}</td></tr>
@@ -1347,7 +1347,7 @@ public interface Chainable<T> extends Iterable<T> {
      * Transforms each item into several other items, possibly of a different type, using the specified {@code transformer}.
      * @param transformer
      * @return the resulting items from the transformation
-     * @sawicki.similar
+     * @chainables.similar
      * <table summary="Similar to:">
      * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#flatMap(Function)}</td></tr>
      * <tr><td><i>C#:</i></td><td>{@code Enumerable.SelectMany()}</td></tr>
@@ -1362,7 +1362,7 @@ public interface Chainable<T> extends Iterable<T> {
      * Returns a chain of items from this chain that satisfy the specified {@code condition}.
      * @param condition
      * @return matching items
-     * @sawicki.similar
+     * @chainables.similar
      * <table summary="Similar to:">
      * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#filter(Predicate)}</td></tr>
      * <tr><td><i>C#:</i></td><td>{@code Enumerable.Where()}</td></tr>

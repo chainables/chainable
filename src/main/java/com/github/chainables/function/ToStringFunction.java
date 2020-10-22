@@ -2,7 +2,7 @@
  * Copyright (c) Martin Sawicki. All rights reserved.
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
-package com.github.martinsawicki.function;
+package com.github.chainables.function;
 
 import java.util.function.Function;
 

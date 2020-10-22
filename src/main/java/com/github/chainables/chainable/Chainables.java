@@ -2,7 +2,7 @@
  * Copyright (c) Martin Sawicki. All rights reserved.
  * Licensed under the MIT License. See LICENSE in the project root for license information.
  */
-package com.github.martinsawicki.chainable;
+package com.github.chainables.chainable;
 
 import java.io.File;
 import java.io.IOException;
@@ -37,8 +37,8 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import com.github.martinsawicki.annotation.Experimental;
-import com.github.martinsawicki.function.ToStringFunction;
+import com.github.chainables.annotation.Experimental;
+import com.github.chainables.function.ToStringFunction;
 
 /**
  * This is the source of all the static methods underlying the default implementation of {@link Chainable} as well as some other conveniences.
