@@ -2,7 +2,7 @@
  * Copyright (c) Martin Sawicki. All rights reserved.
  * Licensed under the MIT License. See LICENSE in the project root for license information.
  */
-package com.github.martinsawicki.chainable;
+package com.github.chainables.chainable;
 
 import org.openjdk.jmh.Main;
 import org.openjdk.jmh.annotations.Benchmark;
@@ -17,7 +17,7 @@ import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Warmup;
 import org.openjdk.jmh.runner.RunnerException;
 
-import com.github.martinsawicki.chainable.Chainable;
+import com.github.chainables.chainable.Chainable;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;

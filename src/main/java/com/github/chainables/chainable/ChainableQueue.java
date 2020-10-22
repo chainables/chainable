@@ -1,6 +1,6 @@
-package com.github.martinsawicki.chainable;
+package com.github.chainables.chainable;
 
-import com.github.martinsawicki.annotation.Experimental;
+import com.github.chainables.annotation.Experimental;
 
 /**
  * A simple FIFO queue supporting the {@link Chainable} interface.
