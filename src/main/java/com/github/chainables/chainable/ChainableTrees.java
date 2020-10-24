@@ -5,6 +5,7 @@
 package com.github.chainables.chainable;
 
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -183,7 +184,9 @@ public abstract class ChainableTrees {
      * @see ChainableTree#depthFirstNotBelow(Predicate)
      */
     public static <T> Chainable<ChainableTree<T>> depthFirstNotBelow(ChainableTree<T> tree, Predicate<ChainableTree<T>> condition) {
-        return Chainable.from(tree).depthFirstNotBelow(t -> t.children(), condition);
+        return Chainable
+                .from(tree)
+                .depthFirstNotBelow(t -> t.children(), condition);
     }
 
     /**
@@ -196,6 +199,18 @@ public abstract class ChainableTrees {
         return (tree == null || condition == null) ? null : tree
                 .breadthFirst()
                 .firstWhere(condition);
+    }
+
+    /**
+     * @param tree
+     * @param value
+     * @return
+     * @see ChainableTree#firstWithValue(Object)
+     */
+    public static <T> ChainableTree<T> firstWithValue(ChainableTree<T> tree, T value) {
+        return (tree == null) ? null : tree
+                .breadthFirst()
+                .firstWhere(t -> Objects.equals(t.value(), value));
     }
 
     /**

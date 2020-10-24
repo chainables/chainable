@@ -98,10 +98,22 @@ public interface ChainableTree<T> {
      * Finds the first tree node that satisfies the specified {@code condition}, based on a breadth-first traversal.
      * @param condition the condition for the sought tree node to satisfy
      * @return the first tree node satisfying the specified {@code condition}
+     * @see #firstWithValue(Object)
      */
     default ChainableTree<T> firstWhere(Predicate<ChainableTree<T>> condition) {
         return ChainableTrees.firstWhere(this, condition);
-    } 
+    }
+
+    
+    /**
+     * Finds the first tree node with the specified {@code value}, based on a breadth-first traversal.
+     * @param value the value to search for
+     * @return the first found tree node with the specified {@code value}, based on a breadth-first traversal
+     * @see #firstWhere(Predicate)
+     */
+    default ChainableTree<T> firstWithValue(T value) {
+        return ChainableTrees.firstWithValue(this, value);
+    }
 
     /**
      * Checks whether the specified {@code value} is the value of a tree node under this tree.
