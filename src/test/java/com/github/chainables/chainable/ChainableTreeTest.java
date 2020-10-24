@@ -11,6 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import org.junit.jupiter.api.Test;
 
@@ -51,10 +52,10 @@ public class ChainableTreeTest {
     public void testAncestors() {
         // Given
         String expected = "1.1, 1";
-        ChainableTree<String> node = testTree.firstWhere(t -> "1.1.1".equals(t.value()));
+        ChainableTree<String> tree = testTree.firstWithValue("1.1.1");
 
         // When
-        String actual = node.ancestors().join(", ");
+        String actual = tree.ancestors().join(", ");
 
         // Then
         assertEquals(expected, actual);
@@ -165,28 +166,47 @@ public class ChainableTreeTest {
     }
 
     @Test
-    public void testFirstWhere() {
+    public void testFirst() {
         // Given
         String expected = "1.2";
 
         // When
-        String actual = testTree.firstWhere(t -> expected.equals(t.value())).value();
+        String actual1 = testTree.firstWithValue(expected).value();
+        String actual2 = testTree.firstWhere(t -> Objects.equals(expected, t.value())).value();
 
         // Then
-        assertEquals(expected, actual);
+        assertEquals(expected, actual1);
+        assertEquals(expected, actual2);
     }
 
     @Test
-    public void testIsUnder() {
+    public void testIsAbove() {
         // Given
-        ChainableTree<String> startTree = testTree.firstWhere(t -> "1.1.2".equals(t.value()));
+        ChainableTree<String> tree = testTree.firstWithValue("1.2");
 
         // Then
-        assertTrue(startTree.isUnder(t -> "1.1".equals(t.value())));
-        assertTrue(startTree.isUnder(t -> "1".equals(t.value())));
-        assertFalse(startTree.isUnder(t -> "1.1.2".equals(t.value())));
-        assertFalse(startTree.isUnder(t -> "1.1.1".equals(t.value())));
-        assertFalse(startTree.isUnder(t -> "1.2.1".equals(t.value())));
+        assertTrue(testTree.isAbove("1.1"));
+        assertTrue(testTree.isAbove("1.1.2"));
+        assertFalse(testTree.isAbove("1"));
+        assertFalse(testTree.isAbove("2"));
+        assertTrue(testTree.isAbove(t -> t.value().length() > 2));
+        assertFalse(testTree.isAbove(t -> t.value().length() > 10));
+        assertTrue(tree.isAbove("1.2.2"));
+        assertFalse(tree.isAbove("1"));
+        assertFalse(tree.isAbove(tree.value()));
+    }
+
+    @Test
+    public void testIsBelow() {
+        // Given
+        ChainableTree<String> startTree = testTree.firstWithValue("1.1.2");
+
+        // Then
+        assertTrue(startTree.isBelow(t -> "1.1".equals(t.value())));
+        assertTrue(startTree.isBelow(t -> "1".equals(t.value())));
+        assertFalse(startTree.isBelow(t -> "1.1.2".equals(t.value())));
+        assertFalse(startTree.isBelow(t -> "1.1.1".equals(t.value())));
+        assertFalse(startTree.isBelow(t -> "1.2.1".equals(t.value())));
     }
 
     @Test
@@ -197,7 +217,7 @@ public class ChainableTreeTest {
             { { "1" }, { "1.1", "1.2", "1.3", "1.4" } }
         });
 
-        ChainableTree<String> treeNode = tree.firstWhere(t -> "1.3".equals(t.value()));
+        ChainableTree<String> treeNode = tree.firstWithValue("1.3");
 
         // When
         String actual = treeNode
@@ -212,8 +232,8 @@ public class ChainableTreeTest {
     @Test
     public void testSiblings() {
         // Given
-        ChainableTree<String> node12 = testTree.firstWhere(t -> "1.2".equals(t.value()));
-        ChainableTree<String> node11 = testTree.firstWhere(t -> "1.1".equals(t.value()));
+        ChainableTree<String> node12 = testTree.firstWithValue("1.2");
+        ChainableTree<String> node11 = testTree.firstWithValue("1.1");
 
         // When
         String actualSiblings = node12.siblings().join();
@@ -275,7 +295,7 @@ public class ChainableTreeTest {
         String startValue = "1.1.1", expectedValue = "1.1", conditionValue = "1";
 
         // When
-        ChainableTree<String> start = testTree.firstWhere(t -> startValue.equals(t.value()));
+        ChainableTree<String> start = testTree.firstWithValue(startValue);
         assertNotNull(start);
         ChainableTree<String> found = start.upAsLongAs(t -> !conditionValue.equals(t.value()));
 
@@ -290,7 +310,7 @@ public class ChainableTreeTest {
         String startValue = "1.1.1", expectedValue = "1";
 
         // When
-        ChainableTree<String> start = testTree.firstWhere(t -> startValue.equals(t.value()));
+        ChainableTree<String> start = testTree.firstWithValue(startValue);
         assertNotNull(start);
         ChainableTree<String> found = start.upUntil(t -> expectedValue.equals(t.value()));
 
