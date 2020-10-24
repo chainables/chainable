@@ -199,19 +199,43 @@ public abstract class ChainableTrees {
     }
 
     /**
+     * @param ancestor
+     * @param value
+     * @return
+     * @see ChainableTree#isAbove(Object)
+     */
+    public static <T> boolean isAbove(ChainableTree<T> ancestor, T value) {
+        return (ancestor == null) ? false : ChainableTrees.values(ancestor.descendants()).contains(value);
+    }
+
+    /**
+     * @param ancestor
+     * @param descendant
+     * @return
+     * @see ChainableTree#isAbove(ChainableTree)
+     */
+    public static <T> boolean isAbove(ChainableTree<T> tree, Predicate<ChainableTree<T>> descendantCondition) {
+        return (tree == null || descendantCondition == null) ? false : tree.descendants().anyWhere(descendantCondition);
+    }
+
+    /**
      * @param tree
      * @param ancestorCondition
      * @return
      * @see ChainableTree#isUnder(Predicate)
      */
     public static <T> boolean isUnder(ChainableTree<T> tree, Predicate<ChainableTree<T>> ancestorCondition) {
-        if (tree == null) {
-            return false;
-        } else if (ancestorCondition == null) {
-            return tree.parent() != null;
-        }
+        return (tree == null | ancestorCondition == null) ? false : tree.ancestors().anyWhere(ancestorCondition);
+    }
 
-        return tree.ancestors().anyWhere(ancestorCondition);
+    /**
+     * @param tree
+     * @param value
+     * @return
+     * @see ChainableTree#
+     */
+    public static <T> boolean isUnder(ChainableTree<T> tree, T value) {
+        return (tree == null) ? false : ChainableTrees.values(tree.ancestors()).contains(value);
     }
 
     /**

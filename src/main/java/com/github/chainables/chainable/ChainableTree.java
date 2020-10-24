@@ -104,12 +104,39 @@ public interface ChainableTree<T> {
     } 
 
     /**
+     * Checks whether the specified {@code value} is the value of a tree node under this tree.
+     * @param value the value to look for
+     * @return true if the specified {@code value} is the value of a tree node that is under this tree.
+     */
+    default boolean isAbove(T value) {
+        return ChainableTrees.isAbove(this, value);
+    }
+
+    /**
+     * Checks whether a tree node satisfying the specified {@code condition} is under this tree.
+     * @param condition the condition for the tree node under this one to satisfy
+     * @return true if there is a tree node under this tree that satisfies the specified {@code condition}
+     */
+    default boolean isAbove(Predicate<ChainableTree<T>> condition) {
+        return ChainableTrees.isAbove(this, condition);
+    }
+
+    /**
      * Checks whether this tree node is a descendant of a tree node satisfying the specified ancestor condition.
      * @param ancestorCondition the condition that this node's ancestor has to meet for this node to be under it
      * @return true if the tree node is a descendant of the tree node satisfying the specified ancestor condition.
      */
     default boolean isUnder(Predicate<ChainableTree<T>> ancestorCondition) {
         return ChainableTrees.isUnder(this, ancestorCondition);
+    }
+
+    /**
+     * Checks whether this tree node is under (that is a descendant of) of a tree node with the specified {@code value}.
+     * @param value the value for the ancestor tree node to contain
+     * @return true if this tree node is under a tree node with the specified {@code value}
+     */
+    default boolean isUnder(T value) {
+        return ChainableTrees.isUnder(this, value);
     }
 
     /**
