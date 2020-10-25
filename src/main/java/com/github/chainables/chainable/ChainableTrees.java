@@ -370,7 +370,11 @@ public abstract class ChainableTrees {
     /**
      * @param tree
      * @return
+<<<<<<< HEAD
      * @see ChainableTree#successor()
+=======
+     * @see ChainableTree#
+>>>>>>> 2bda821... ChainableTree#predecessor(), #successor()
      */
     public static <T> ChainableTree<T> successor(ChainableTree<T> tree) {
         return successors(tree).first();        
