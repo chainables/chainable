@@ -158,6 +158,14 @@ public interface ChainableTree<T> {
     ChainableTree<T> parent();
 
     /**
+     * Returns the sibling immediately preceding this tree node, or {@code null} if none.
+     * @return the sibling immediately preceding this tree node, or {@code null} if none.
+     */
+    default ChainableTree<T> predecessor() {
+        return ChainableTrees.predecessor(this);
+    }
+
+    /**
      * Returns a chain of siblings preceding this tree node.
      * @return a chain of sibling tree nodes preceding this one
      * @see #successors()
@@ -175,6 +183,14 @@ public interface ChainableTree<T> {
      */
     default Chainable<ChainableTree<T>> siblings() {
         return ChainableTrees.siblings(this);
+    }
+
+    /**
+     * Returns the sibling immediately following this tree node, or {@code null} if none.
+     * @return the sibling immediately following this tree node, or {@code null} if none.
+     */
+    default ChainableTree<T> successor() {
+        return ChainableTrees.successor(this);
     }
 
     /**

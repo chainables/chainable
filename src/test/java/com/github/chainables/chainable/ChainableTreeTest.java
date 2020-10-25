@@ -28,6 +28,14 @@ public class ChainableTreeTest {
             ChainableTree.withValue("1.1").withChildValues("1.1.1", "1.1.2"),
             ChainableTree.withValue("1.2").withChildValues("1.2.1", "1.2.2"));
 
+    ChainableTree<String> infiniteTree = ChainableTree
+            .withValue("1")
+            .withChildValueExtractor(p -> Chainable
+                    .empty()
+                    .chainIndexed((c, i) -> String.format("%s.%s", p, Long.toString(i + 1)))
+                    .first(3) // Limit the number of children
+                    .cast(String.class));
+
     private static ChainableTree<String> treeFrom(String[][][] data) {
         assertNotNull(data);
         assertTrue(data.length >= 1);
@@ -81,6 +89,22 @@ public class ChainableTreeTest {
         // When
         String actual = testTree
                 .breadthFirstNotBelow(t -> "1.1".equals(t.value()))
+                .join(", ");
+
+        // Then
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testChildExtractor() {
+        // Given
+        final String expected = "1, 1.1, 1.2, 1.3, 1.1.1, 1.1.2, 1.1.3, 1.2.1, 1.2.2, 1.2.3";
+
+        // When
+        String actual = ChainableTrees.values(
+                infiniteTree
+                    .breadthFirst()
+                    .first(10))
                 .join(", ");
 
         // Then
@@ -148,16 +172,9 @@ public class ChainableTreeTest {
     public void testDepthFirstNotBelow() {
         // Given
         String expected = "1, 1.1, 1.1.1, 1.1.2, 1.1.3, 1.2, 1.2.1, 1.2.2, 1.2.3, 1.3, 1.3.1, 1.3.2, 1.3.3";
-        ChainableTree<String> tree = ChainableTree
-                .withValue("1")
-                .withChildValueExtractor(p -> Chainable
-                        .empty()
-                        .chainIndexed((c, i) -> String.format("%s.%s", p, Long.toString(i + 1)))
-                        .first(3)
-                        .cast(String.class)); // Limit the number, otherwise infinite
 
         // When
-        String actual = tree
+        String actual = infiniteTree
                 .depthFirstNotBelow(t -> t.value().length() == 5)
                 .join(", ");
 
@@ -210,6 +227,22 @@ public class ChainableTreeTest {
     }
 
     @Test
+    public void testParent() {
+        // Given
+        ChainableTree<String> tree = testTree.firstWithValue("1.1.2");
+        assertNotNull(tree);
+
+        // When
+        ChainableTree<String> parent = tree.parent();
+
+        // Then
+        assertNotNull(parent);
+        assertEquals("1.1", parent.value());
+        assertNotNull(parent.parent());
+        assertEquals("1", parent.parent().value());
+    }
+
+    @Test
     public void testReverseSiblings() {
         // Given
         String expected = "1.2, 1.1";
@@ -232,18 +265,18 @@ public class ChainableTreeTest {
     @Test
     public void testSiblings() {
         // Given
-        ChainableTree<String> node12 = testTree.firstWithValue("1.2");
-        ChainableTree<String> node11 = testTree.firstWithValue("1.1");
+        ChainableTree<String> node12 = infiniteTree.firstWithValue("1.2");
+        ChainableTree<String> node11 = infiniteTree.firstWithValue("1.1");
 
         // When
-        String actualSiblings = node12.siblings().join();
-        String actualPredecessors = node12.predecessors().join();
-        String actualSuccessors = node11.successors().join();
+        String actualSiblings = node12.siblings().join(", ");
+        String actualPredecessors = node12.predecessors().join(", ");
+        String actualSuccessors = node11.successors().join(", ");
 
         // Then
-        assertEquals("1.1", actualSiblings);
         assertEquals("1.1", actualPredecessors);
-        assertEquals("1.2", actualSuccessors);
+        assertEquals("1.2, 1.3", actualSuccessors);
+        assertEquals("1.1, 1.3", actualSiblings);
     }
 
     @Test
