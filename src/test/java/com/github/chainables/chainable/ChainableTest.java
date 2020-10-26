@@ -218,19 +218,19 @@ public class ChainableTest {
         Iterable<Integer> items = Arrays.asList(1, 2, 3);
 
         // When/Then
-        assertTrue(Chainables.atLeast(items, Chainables.count(items)));
-        assertTrue(Chainables.atLeast(items, Chainables.count(items) - 1));
-        assertTrue(Chainables.atLeast(items, 0));
-        assertFalse(Chainables.atLeast(items, Chainables.count(items) + 1));
-        assertFalse(Chainables.atLeast(Collections.emptyList(), 1));
-        assertTrue(Chainables.atLeast(Collections.emptyList(), 0));
+        assertTrue(Chainables.isCountAtLeast(items, Chainables.count(items)));
+        assertTrue(Chainables.isCountAtLeast(items, Chainables.count(items) - 1));
+        assertTrue(Chainables.isCountAtLeast(items, 0));
+        assertFalse(Chainables.isCountAtLeast(items, Chainables.count(items) + 1));
+        assertFalse(Chainables.isCountAtLeast(Collections.emptyList(), 1));
+        assertTrue(Chainables.isCountAtLeast(Collections.emptyList(), 0));
 
-        assertTrue(Chainables.atMost(items, Chainables.count(items)));
-        assertTrue(Chainables.atMost(items, Chainables.count(items) + 1));
-        assertFalse(Chainables.atMost(items, Chainables.count(items) - 1));
-        assertFalse(Chainables.atMost(items, 0));
-        assertTrue(Chainables.atMost(Collections.emptyList(), 0));
-        assertTrue(Chainables.atMost(Collections.emptyList(), 1));
+        assertTrue(Chainables.isCountAtMost(items, Chainables.count(items)));
+        assertTrue(Chainables.isCountAtMost(items, Chainables.count(items) + 1));
+        assertFalse(Chainables.isCountAtMost(items, Chainables.count(items) - 1));
+        assertFalse(Chainables.isCountAtMost(items, 0));
+        assertTrue(Chainables.isCountAtMost(Collections.emptyList(), 0));
+        assertTrue(Chainables.isCountAtMost(Collections.emptyList(), 1));
     }
 
     @Test
@@ -378,7 +378,7 @@ public class ChainableTest {
         // Then
         assertEquals(expected, actual);
         assertEquals(expected2, actual2);
-        assertEquals(unseededChainLength, unseededChain.count());
+        assertTrue(unseededChain.isCountExactly(unseededChainLength));
         assertTrue(trulyEmptyChain.isEmpty());
         assertEquals(expected3, actual3);
     }
@@ -460,7 +460,7 @@ public class ChainableTest {
         String actual = String.join("", collection);
 
         // Then
-        assertEquals(expected.length(), oddsLessThan6.count());
+        assertTrue(oddsLessThan6.isCountExactly(expected.length()));
         assertEquals(expected, actual);
     }
 
@@ -541,6 +541,26 @@ public class ChainableTest {
         assertTrue(items1.containsSubarray(subarray1));
         assertFalse(items1.containsSubarray(notSubarray1));
         //TODO: More tests
+    }
+
+    @Test
+    public void testCount() {
+        // Given
+        List<Integer> items = Arrays.asList(1, 2, 3, 4, 5, 6, 7);
+        int expectedItemsSize = items.size();
+        Chainable<Integer> itemsChain = Chainable.from(items);
+        Chainable<Integer> emptyChain = Chainable.empty();
+        Chainable<String> transformedChain = itemsChain.transform(o -> o.toString());
+
+        // When
+        long actualItemsChainSize = itemsChain.count();
+        long actualEmptyChainSize = emptyChain.count();
+        long actualTransformedChainSize = transformedChain.count();
+
+        // Then
+        assertEquals(expectedItemsSize, actualItemsChainSize);
+        assertEquals(0, actualEmptyChainSize);
+        assertEquals(expectedItemsSize, actualTransformedChainSize);
     }
 
     @Test
@@ -743,6 +763,37 @@ public class ChainableTest {
     }
 
     @Test
+    public void testIsCount() {
+        // Given
+        Chainable<String> chainInfinite = Chainable.empty(String.class).chain(i -> "a");
+        long expected = 10;
+        Chainable<String> chain10 = chainInfinite.first(expected);
+
+        // When / Then
+        assertTrue(chainInfinite.isCountAtLeast(expected));
+        assertFalse(chainInfinite.isCountAtMost(expected));
+        assertFalse(chainInfinite.isCountExactly(expected));
+
+        assertTrue(chain10.isCountAtLeast(expected));
+        assertTrue(chain10.isCountAtLeast(expected - 1));
+        assertFalse(chain10.isCountAtLeast(expected + 1));
+
+        assertTrue(chain10.isCountAtMost(expected));
+        assertFalse(chain10.isCountAtMost(expected - 1));
+        assertTrue(chain10.isCountAtMost(expected + 1));
+
+        assertTrue(chain10.isCountExactly(expected));
+        assertFalse(chain10.isCountExactly(expected - 1));
+        assertFalse(chain10.isCountExactly(expected + 1));
+
+        assertTrue(Chainable.empty().isCountExactly(0));
+        assertTrue(Chainable.empty().isCountAtMost(0));
+        assertTrue(Chainable.empty().isCountAtLeast(0));
+
+        assertEquals(expected, chain10.count());
+    }
+
+    @Test
     public void testIterativeContains() {
         // Given
         Chainable<String> items = Chainable.from("a", "b", "c", "d", "e");
@@ -806,7 +857,7 @@ public class ChainableTest {
         Map<String, String> map = items.toMap(i -> i);
 
         // Then
-        assertEquals(items.count(), map.size());
+        assertTrue(items.isCountExactly(map.size()));
         for (String item : items) {
             String mappedItem = map.get(item);
             assertNotNull(mappedItem);
@@ -898,12 +949,12 @@ public class ChainableTest {
         long expectedACount = 3, expectedBCount = 2;
 
         // When
-        long actualACount = chain.ofType(typeAExample).count();
-        long actualBCount = chain.ofType(typeBExample).count();
+        Chainable<TypeA> aTypes = chain.ofType(typeAExample);
+        Chainable<TypeB> bTypes = chain.ofType(typeBExample);
 
         // Then
-        assertEquals(expectedACount, actualACount);
-        assertEquals(expectedBCount, actualBCount);
+        assertTrue(aTypes.isCountExactly(expectedACount));
+        assertTrue(bTypes.isCountExactly(expectedBCount));
     }
 
     @Test
@@ -930,26 +981,6 @@ public class ChainableTest {
 
         // Then
         assertEquals(expected, actual);
-    }
-
-    @Test
-    public void testSize() {
-        // Given
-        List<Integer> items = Arrays.asList(1, 2, 3, 4, 5, 6, 7);
-        int expectedItemsSize = items.size();
-        Chainable<Integer> itemsChain = Chainable.from(items);
-        Chainable<Integer> emptyChain = Chainable.empty();
-        Chainable<String> transformedChain = itemsChain.transform(o -> o.toString());
-
-        // When
-        long actualItemsChainSize = itemsChain.count();
-        long actualEmptyChainSize = emptyChain.count();
-        long actualTransformedChainSize = transformedChain.count();
-
-        // Then
-        assertEquals(expectedItemsSize, actualItemsChainSize);
-        assertEquals(0, actualEmptyChainSize);
-        assertEquals(expectedItemsSize, actualTransformedChainSize);
     }
 
     @Test
@@ -985,15 +1016,13 @@ public class ChainableTest {
 
         // When
         Chainable<String> tokens = Chainables.split(text, " ,'\"!?.()[]{};:-+=");
-        long actualTokens = tokens.count();
         Chainable<String> chars = Chainables.split(text);
-        long actualChars = chars.count();
         String mergedTokens = tokens.join();
         String mergedChars = chars.join();
 
         // Then
-        assertEquals(expectedTokens, actualTokens);
-        assertEquals(expectedChars, actualChars);
+        assertTrue(tokens.isCountExactly(expectedTokens));
+        assertTrue(chars.isCountExactly(expectedChars));
         assertEquals(text, mergedTokens);
         assertEquals(text, mergedChars);
     }

@@ -98,18 +98,57 @@ public interface ChainableTree<T> {
      * Finds the first tree node that satisfies the specified {@code condition}, based on a breadth-first traversal.
      * @param condition the condition for the sought tree node to satisfy
      * @return the first tree node satisfying the specified {@code condition}
+     * @see #firstWithValue(Object)
      */
     default ChainableTree<T> firstWhere(Predicate<ChainableTree<T>> condition) {
         return ChainableTrees.firstWhere(this, condition);
-    } 
+    }
+
+    
+    /**
+     * Finds the first tree node with the specified {@code value}, based on a breadth-first traversal.
+     * @param value the value to search for
+     * @return the first found tree node with the specified {@code value}, based on a breadth-first traversal
+     * @see #firstWhere(Predicate)
+     */
+    default ChainableTree<T> firstWithValue(T value) {
+        return ChainableTrees.firstWithValue(this, value);
+    }
+
+    /**
+     * Checks whether the specified {@code value} is the value of a tree node under this tree.
+     * @param value the value to look for
+     * @return true if the specified {@code value} is the value of a tree node that is under this tree.
+     */
+    default boolean isAbove(T value) {
+        return ChainableTrees.isAbove(this, value);
+    }
+
+    /**
+     * Checks whether a tree node satisfying the specified {@code condition} is under this tree.
+     * @param condition the condition for the tree node under this one to satisfy
+     * @return true if there is a tree node under this tree that satisfies the specified {@code condition}
+     */
+    default boolean isAbove(Predicate<ChainableTree<T>> condition) {
+        return ChainableTrees.isAbove(this, condition);
+    }
 
     /**
      * Checks whether this tree node is a descendant of a tree node satisfying the specified ancestor condition.
      * @param ancestorCondition the condition that this node's ancestor has to meet for this node to be under it
      * @return true if the tree node is a descendant of the tree node satisfying the specified ancestor condition.
      */
-    default boolean isUnder(Predicate<ChainableTree<T>> ancestorCondition) {
-        return ChainableTrees.isUnder(this, ancestorCondition);
+    default boolean isBelow(Predicate<ChainableTree<T>> ancestorCondition) {
+        return ChainableTrees.isBelow(this, ancestorCondition);
+    }
+
+    /**
+     * Checks whether this tree node is under (that is a descendant of) of a tree node with the specified {@code value}.
+     * @param value the value for the ancestor tree node to contain
+     * @return true if this tree node is under a tree node with the specified {@code value}
+     */
+    default boolean isBelow(T value) {
+        return ChainableTrees.isBelow(this, value);
     }
 
     /**
@@ -117,6 +156,14 @@ public interface ChainableTree<T> {
      * @return the parent of this tree
      */
     ChainableTree<T> parent();
+
+    /**
+     * Returns the sibling immediately preceding this tree node, or {@code null} if none.
+     * @return the sibling immediately preceding this tree node, or {@code null} if none.
+     */
+    default ChainableTree<T> predecessor() {
+        return ChainableTrees.predecessor(this);
+    }
 
     /**
      * Returns a chain of siblings preceding this tree node.
@@ -136,6 +183,14 @@ public interface ChainableTree<T> {
      */
     default Chainable<ChainableTree<T>> siblings() {
         return ChainableTrees.siblings(this);
+    }
+
+    /**
+     * Returns the sibling immediately following this tree node, or {@code null} if none.
+     * @return the sibling immediately following this tree node, or {@code null} if none.
+     */
+    default ChainableTree<T> successor() {
+        return ChainableTrees.successor(this);
     }
 
     /**
