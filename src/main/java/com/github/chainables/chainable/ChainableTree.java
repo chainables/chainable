@@ -4,6 +4,7 @@
  */
 package com.github.chainables.chainable;
 
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -42,18 +43,6 @@ public interface ChainableTree<T> extends Cloneable {
      */
     default Chainable<ChainableTree<T>> breadthFirst() {
         return ChainableTrees.breadthFirst(this);
-    }
-
-    /**
-     * Traverses the tree in a breadth-first fashion returning a chain of encountered nodes, but excluding th edescendants that meet the
-     * specified {@code condition}.
-     * <p>
-     * In other words, the node that satisfies this condition is included in the returned chain, but its descendants are not.
-     * @param condition the condition for a node to satisfy so that its descendants would not be traversed
-     * @return the resulting chain of visited tree nodes
-     */
-    default Chainable<ChainableTree<T>> breadthFirstNotBelow(Predicate<ChainableTree<T>> condition) {
-        return ChainableTrees.breadthFirstNotBelow(this, condition);
     }
 
     /**
@@ -154,6 +143,29 @@ public interface ChainableTree<T> extends Cloneable {
     }
 
     /**
+     * Returns the subset of the specified {@code tree} without the children of the tree nodes that satisfy the specified {@code condition}.
+     * @param tree the tree to search
+     * @param condition the condition to satisfy for a node for its children to be excluded from the returned subset
+     * @return a subset view of the specified tree
+     */
+    default ChainableTree<T> notBelow(Predicate<ChainableTree<T>> condition) {
+        return ChainableTrees.notBelow(this, condition);
+    }
+
+    /**
+     * Returns a tree that is made of only those tree nodes of this tree that do not satisfy the specified {@code condition}, but other than that,
+     * their ancestor-descendant hierarchy is preserved.
+     * <p>
+     * For example, if some children of a given tree node satisfy the specified condition, they are nt included in the resulting tree, but their
+     * children that do not satisfy it are, as siblings of their removed parent node siblings.
+     * @param condition the condition for tree nodes to satisfy to not be included in the tree
+     * @return the resulting tree without the nodes satisfying the specified condition
+     */
+    default ChainableTree<T> notWhere(Predicate<ChainableTree<T>> condition) {
+        return ChainableTrees.notWhere(this, condition);
+    }
+
+    /**
      * Returns the parent of this tree, or {@code null} if this is the root node.
      * @return the parent of this tree
      */
@@ -211,16 +223,6 @@ public interface ChainableTree<T> extends Cloneable {
      */
     default Chainable<ChainableTree<T>> terminals() {
         return ChainableTrees.terminals(this);
-    }
-
-    /**
-     * Returns the subset of the specified {@code tree} without the children of the tree nodes that satisfy the specified {@code condition}.
-     * @param tree the tree to search
-     * @param condition the condition to satisfy for a node for its children to be excluded from the returned subset
-     * @return a subset view of the specified tree
-     */
-    default ChainableTree<T> notBelow(Predicate<ChainableTree<T>> condition) {
-        return ChainableTrees.notBelow(this, condition);
     }
 
     /**
@@ -296,6 +298,14 @@ public interface ChainableTree<T> extends Cloneable {
     ChainableTree<T> withChildValueExtractor(Function<T, Iterable<T>> childExtractor);
 
     /**
+     * Wraps the values generated lazily by the specified {@code childExtractor} into child trees of this tree, appending them to the existing
+     * children of this tree, passing the current depth relative to this tree node to the extractor.
+     * @param childExtractor a function accepting the value of the parent and the children's depth level relative to this tree node and returning child values
+     * @return self
+     */
+    ChainableTree<T> withChildValueExtractor(BiFunction<T, Long, Iterable<T>> childExtractor);
+
+    /**
      * Appends trees with the specified wrapped {@code childValues} to the children of this tree.
      * @param childValues child values to wrap in trees and appends to the children of this tree
      * @return self
@@ -321,8 +331,8 @@ public interface ChainableTree<T> extends Cloneable {
      * @param value the value to wrap in the new tree node
      * @return
      */
-    static <T> ChainableTree<T> withValue(T value) {
-        return new ChainableTreeImpl<T>(value);
+    static <T> ChainableTree<T> withRoot(T value) {
+        return ChainableTreeImpl.withRoot(value);
     }
 
     /**
