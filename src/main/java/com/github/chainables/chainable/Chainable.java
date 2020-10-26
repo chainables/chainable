@@ -189,7 +189,7 @@ public interface Chainable<T> extends Iterable<T> {
 
     /**
      * Determines whether all the items in this chain satisfy the specified {@code condition}.
-     * @param condition
+     * @param condition the condition for all the items to satisfy
      * @return {@code true} if all items satisfy the specified {@code condition}, otherwise {@code false}
      * @chainables.similar
      * <table summary="Similar to:">
@@ -203,7 +203,7 @@ public interface Chainable<T> extends Iterable<T> {
 
     /**
      * Determines whether all the items in this chain satisfy any of the specified {@code conditions}
-     * @param conditions
+     * @param conditions the choice of conditions for the items to satisfy
      * @return {@code true} if all items satisfy at least one of the {@code conditions}, otherwise {@code false}
      * @see #allWhere(Predicate)
      */

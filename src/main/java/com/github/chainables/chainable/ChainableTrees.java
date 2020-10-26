@@ -6,6 +6,8 @@ package com.github.chainables.chainable;
 
 import java.util.ArrayList;
 import java.util.Objects;
+import java.util.function.BiFunction;
+import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -20,13 +22,25 @@ public abstract class ChainableTrees {
         private ChainableTree<T> parent = null;
         private Chainable<ChainableTree<T>> childrenChain = Chainable.from(new ArrayList<>());
 
-        protected ChainableTreeImpl(T inner) {
+        private ChainableTreeImpl(T inner) {
             this.value = inner;
+        }
+
+        static protected <T> ChainableTreeImpl<T> withRoot(T value) {
+            return new ChainableTreeImpl<T>(value);
         }
 
         @Override
         public Chainable<ChainableTree<T>> children() {
             return this.childrenChain;
+        }
+
+        @Override
+        public ChainableTreeImpl<T> clone() {
+            ChainableTreeImpl<T> clone = new ChainableTreeImpl<>(this.value);
+            clone.parent = this.parent;
+            clone.childrenChain = this.childrenChain; //TODO: This breaks stuff - why?
+            return clone;
         }
 
         @Override
@@ -71,7 +85,7 @@ public abstract class ChainableTrees {
 
         @Override
         public ChainableTreeImpl<T> withChildren(Iterable<ChainableTree<T>> children) {
-            if (children != null) {
+            if (Chainables.any(children)) {
                 // Link children to parent
                 Chainable<ChainableTree<T>> newChildren = Chainables
                         .applyAsYouGo(children, c -> ((ChainableTreeImpl<T>)c).withParent(this))
@@ -96,7 +110,7 @@ public abstract class ChainableTrees {
         public ChainableTreeImpl<T> withChildValues(Iterable<T> childValues) {
             return this.withChildren(Chainable
                     .from(childValues)
-                    .transform(c -> ChainableTree.withValue(c)));
+                    .transform(c -> ChainableTree.withRoot(c)));
         }
 
         @SuppressWarnings("unchecked")
@@ -107,13 +121,24 @@ public abstract class ChainableTrees {
 
         @Override
         public ChainableTreeImpl<T> withChildValueExtractor(Function<T, Iterable<T>> childExtractor) {
-            if (childExtractor != null) {
-                return this.withChildren(Chainable
-                        .from(childExtractor.apply(this.value()))
-                        .transform(c -> ChainableTree.withValue(c).withChildValueExtractor(childExtractor)));
-            } else {
-                return this;
-            }
+            return (childExtractor == null) ? this : this.withChildren(Chainable
+                    .from(childExtractor.apply(this.value())) // Generate child values based on parent's value
+                    .transform(c -> ChainableTree
+                            .withRoot(c) // Wrap each child value with tree...
+                            .withChildValueExtractor(childExtractor))); // ... and pass the extractor on to it to generate its own children
+        }
+
+        @Override
+        public ChainableTreeImpl<T> withChildValueExtractor(BiFunction<T, Long, Iterable<T>> childExtractor) {
+            return withChildValueExtractor(childExtractor, 1); // Root is 0, so first level of children is 1
+        }
+
+        private ChainableTreeImpl<T> withChildValueExtractor(BiFunction<T, Long, Iterable<T>> childExtractor, long level) {
+            return childExtractor == null ? this : this.withChildren(Chainable
+                    .from(childExtractor.apply(this.value(), level)) // Generate child values at lower depth
+                    .transform(c -> ChainableTreeImpl
+                            .withRoot(c)
+                            .withChildValueExtractor(childExtractor, level + 1)));
         }
 
         @Override
@@ -147,18 +172,6 @@ public abstract class ChainableTrees {
         return Chainable
                 .from(root)
                 .breadthFirst(t -> t.children());
-    }
-
-    /**
-     * @param tree
-     * @param condition
-     * @return
-     * @see ChainableTree#breadthFirstNotBelow(Predicate)
-     */
-    public static <T> Chainable<ChainableTree<T>> breadthFirstNotBelow(ChainableTree<T> tree, Predicate<ChainableTree<T>> condition) {
-        return Chainable
-                .from(tree)
-                .breadthFirstNotBelow(t -> t.children(), condition);
     }
 
     /**
@@ -247,10 +260,62 @@ public abstract class ChainableTrees {
      * @param tree
      * @param value
      * @return
-     * @see ChainableTree#
+     * @see ChainableTree#isBelow(Object)
      */
     public static <T> boolean isBelow(ChainableTree<T> tree, T value) {
         return (tree == null) ? false : ChainableTrees.values(ancestors(tree)).contains(value);
+    }
+
+    /**
+     * @param tree
+     * @param condition
+     * @return
+     * @see ChainableTree#notBelowWhere(Predicate)
+     */
+    public static <T> ChainableTree<T> notBelowWhere(ChainableTree<T> tree, Predicate<ChainableTree<T>> condition) {
+        return (tree == null || condition == null) ? tree : tree
+                .clone()
+                .withoutChildren()
+                .withChildren(condition.test(tree)
+                    ? Chainable.empty() // No children if condition is satisfied
+                    : Chainables.transform(tree.children(), c -> notBelowWhere(c, condition))); // Otherwise, trim children recursively
+    }
+
+    /**
+     * @param tree
+     * @param depthAwareCondition
+     * @return
+     * @see ChainableTree#notBelowWhere(BiPredicate)
+     */
+    public static <T> ChainableTree<T> notBelowWhere(ChainableTree<T> tree, BiPredicate<ChainableTree<T>, Long> depthAwareCondition) {
+        return notBelowWhere(tree, depthAwareCondition, 0);
+    }
+
+    private static <T> ChainableTree<T> notBelowWhere(ChainableTree<T> tree, BiPredicate<ChainableTree<T>, Long> depthAwareCondition, long curDepth) {
+        return (tree == null || depthAwareCondition == null) ? tree : tree
+                .clone()
+                .withoutChildren()
+                .withChildren(depthAwareCondition.test(tree, curDepth)
+                        ? Chainable.empty() // No children if condition satisfied
+                        : tree.children().transform(c -> notBelowWhere(c, depthAwareCondition, curDepth + 1))); // Grand-children at two levels deeper
+    }
+
+    /**
+     * @param tree
+     * @param condition
+     * @return
+     * @see ChainableTree#notWhere(Predicate)
+     */
+    public static <T> ChainableTree<T> notWhere(ChainableTree<T> tree, Predicate<ChainableTree<T>> condition) {
+        return (tree == null || condition == null) ? tree : tree
+                .clone()
+                .withoutChildren()
+                .withChildren(tree
+                        .children()
+                        .transformAndFlatten(c -> c
+                                .depthFirstNotBelow(cc -> !condition.test(cc))
+                                .notWhere(cc -> condition.test(cc))
+                                .transform(cc -> notWhere(cc, condition))));
     }
 
     /**
