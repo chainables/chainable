@@ -30,6 +30,14 @@ public abstract class ChainableTrees {
         }
 
         @Override
+        public ChainableTreeImpl<T> clone() {
+            ChainableTreeImpl<T> clone = new ChainableTreeImpl<>(this.value);
+            clone.parent = this.parent;
+            clone.childrenChain = this.childrenChain; //TODO: This breaks stuff - why?
+            return clone;
+        }
+
+        @Override
         public boolean equals(Object obj) {
             if (this == obj) {
                 return true;
@@ -312,6 +320,21 @@ public abstract class ChainableTrees {
      */
     public static <T> Chainable<ChainableTree<T>> terminals(ChainableTree<T> root) {
         return (root != null) ? depthFirst(root).where(t -> Chainables.isNullOrEmpty(t.children())) : null;
+    }
+
+    /**
+     * @param tree
+     * @param condition
+     * @return
+     * @see ChainableTree#notBelow(Predicate)
+     */
+    public static <T> ChainableTree<T> notBelow(ChainableTree<T> tree, Predicate<ChainableTree<T>> condition) {
+        return (tree == null || condition == null) ? tree : tree
+                .clone()
+                .withoutChildren()
+                .withChildren(condition.test(tree)
+                    ? Chainable.empty() // No children if condition is satisfied
+                    : Chainables.transform(tree.children(), c -> notBelow(c, condition))); // Otherwise, trim children recursively
     }
 
     /**

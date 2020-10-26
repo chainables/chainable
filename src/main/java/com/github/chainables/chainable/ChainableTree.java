@@ -25,7 +25,7 @@ import com.github.chainables.chainable.ChainableTrees.ChainableTreeImpl;
  *
  * @param <T> type of values to wrap
  */
-public interface ChainableTree<T> {
+public interface ChainableTree<T> extends Cloneable {
 
     /**
      * Returns the chain of ancestors of this tree node starting with its parent.
@@ -64,6 +64,8 @@ public interface ChainableTree<T> {
      * @return direct children of this tree
      */
     Chainable<ChainableTree<T>> children();
+
+    ChainableTree<T> clone();
 
     /**
      * Traverses this tree in a depth-first (pre-order) fashion returning a chain of encountered nodes.
@@ -209,6 +211,16 @@ public interface ChainableTree<T> {
      */
     default Chainable<ChainableTree<T>> terminals() {
         return ChainableTrees.terminals(this);
+    }
+
+    /**
+     * Returns the subset of the specified {@code tree} without the children of the tree nodes that satisfy the specified {@code condition}.
+     * @param tree the tree to search
+     * @param condition the condition to satisfy for a node for its children to be excluded from the returned subset
+     * @return a subset view of the specified tree
+     */
+    default ChainableTree<T> notBelow(Predicate<ChainableTree<T>> condition) {
+        return ChainableTrees.notBelow(this, condition);
     }
 
     /**

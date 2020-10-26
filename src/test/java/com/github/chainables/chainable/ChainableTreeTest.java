@@ -140,7 +140,7 @@ public class ChainableTreeTest {
         String actual2 = root.children().join();
 
         // Then
-        assertEquals(firstRunLength + secondRunLength, root.children().count());
+        assertTrue(root.children().isCountExactly(firstRunLength + secondRunLength));
         assertEquals(actual1, actual2); // Ensure children are evaluated only once and cached from thereon
     }
 
@@ -224,6 +224,30 @@ public class ChainableTreeTest {
         assertFalse(startTree.isBelow(t -> "1.1.2".equals(t.value())));
         assertFalse(startTree.isBelow(t -> "1.1.1".equals(t.value())));
         assertFalse(startTree.isBelow(t -> "1.2.1".equals(t.value())));
+    }
+
+    @Test
+    public void testNotBelow() {
+        // Given
+        final String expected = "1, 1.1, 1.1.1, 1.1.2, 1.1.3, 1.2, 1.2.1, 1.2.2, 1.2.3, 1.3, 1.3.1, 1.3.2, 1.3.3";
+        final String expectedSuccessors = "1.1.2";
+        final String sep = ", ";
+
+        // When
+        ChainableTree<String> tree = infiniteTree.notBelow(o -> o.value().length() >= 5);
+        Chainable<ChainableTree<String>> successors = tree
+                .terminals()
+                .where(t -> t.predecessor() != null)
+                .where(t -> Objects.equals("1.1.1", t.predecessor().value()));
+        String actual = ChainableTrees.values(tree.depthFirst()).join(sep);
+        String actualSuccessors = ChainableTrees.values(successors).join(", ");
+
+        // Then
+        assertTrue(tree.breadthFirst().isCountAtMost(expected.split(sep).length));
+        assertEquals(expected, actual);
+        assertNotNull(successors);
+        assertTrue(successors.isCountExactly(1));
+        assertEquals(expectedSuccessors, actualSuccessors);
     }
 
     @Test
@@ -368,7 +392,7 @@ public class ChainableTreeTest {
                             ChainableTree.withValue("A.2.2")));
 
         // When / Then
-        assertEquals(2, tree.children().count());
-        assertEquals(0, tree.withoutChildren().children().count());
+        assertTrue(tree.children().isCountExactly(2));
+        assertTrue(tree.withoutChildren().children().isCountExactly(0));
     }
 }
