@@ -58,7 +58,7 @@ public final class Chainables {
         }
 
         static <T> Chain<T> empty() {
-            return Chain.from(Collections.emptyList());
+            return Chain.from(new ArrayList<>());
         }
 
         static <T> Chain<T> from(Iterable<T> iterable) {
@@ -337,13 +337,9 @@ public final class Chainables {
 
                 @Override
                 public T next() {
-                    if (this.hasNext()) {
-                        T item = this.itemIter.next();
-                        action.accept(item);
-                        return item;
-                    } else {
-                        return null;
-                    }
+                    T item = this.itemIter.next();
+                    action.accept(item);
+                    return item;
                 }
             });
         }
@@ -1419,11 +1415,7 @@ public final class Chainables {
 
             @Override
             public boolean hasNext() {
-                if (returnedCount >= number) {
-                    return false;
-                } else {
-                    return this.iter.hasNext();
-                }
+                return (returnedCount >= number) ? false : this.iter.hasNext();
             }
 
             @Override
@@ -1654,7 +1646,6 @@ public final class Chainables {
                 info
                     .append(next.toString())
                     .append(delimiter);
-
             }
         }
 
@@ -2289,7 +2280,7 @@ public final class Chainables {
                     this.iterator = null;
                     return false;
                 } else {
-                    return this.iterator.hasNext();
+                    return true;
                 }
             }
 
@@ -2335,7 +2326,7 @@ public final class Chainables {
 
             @Override
             public O next() {
-                return this.hasNext() ? this.iterOut.next() : null;
+                return this.iterOut.next();
             }
         });
     }
@@ -2377,10 +2368,6 @@ public final class Chainables {
 
             @Override
             public T next() {
-                if (!this.hasNext()) {
-                    return null;
-                }
-
                 Iterable<T> nextChildren = childTraverser.apply(this.nextItem);
                 if (!Chainables.isNullOrEmpty(nextChildren)) {
                     if (breadthFirst) {
