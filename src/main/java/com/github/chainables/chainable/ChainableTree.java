@@ -5,6 +5,7 @@
 package com.github.chainables.chainable;
 
 import java.util.function.BiFunction;
+import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -143,13 +144,27 @@ public interface ChainableTree<T> extends Cloneable {
     }
 
     /**
-     * Returns the subset of the specified {@code tree} without the children of the tree nodes that satisfy the specified {@code condition}.
-     * @param tree the tree to search
-     * @param condition the condition to satisfy for a node for its children to be excluded from the returned subset
-     * @return a subset view of the specified tree
+     * Returns the upper portion of the specified {@code tree} stopping before the children of tree nodes that satisfy the specified {@code condition}.
+     * <p>
+     * Besides the current tree node, the {@code condition} function will also be supplied with the current depth that the children would be created
+     * at, relative to this tree's depth of 0.
+     * @param depthAwareCondition the condition to be satisfied by a tree node for its children down to be excluded from the returned subtree
+     * @return the resulting subtree
+     * @see #notBelowWhere(Predicate)
      */
-    default ChainableTree<T> notBelow(Predicate<ChainableTree<T>> condition) {
-        return ChainableTrees.notBelow(this, condition);
+    default ChainableTree<T> notBelowWhere(BiPredicate<ChainableTree<T>, Long> depthAwareCondition) {
+        return ChainableTrees.notBelowWhere(this, depthAwareCondition);
+    }
+
+    /**
+     * Returns the upper portion of the specified {@code tree} stopping before the children of tree nodes that satisfy the specified {@code condition}.
+     * @param tree the tree to search
+     * @param condition the condition to be satisfied by a tree node for its children down to be excluded from the returned subtree
+     * @return the resulting subtree
+     * @see #notBelowWhere(BiPredicate)
+     */
+    default ChainableTree<T> notBelowWhere(Predicate<ChainableTree<T>> condition) {
+        return ChainableTrees.notBelowWhere(this, condition);
     }
 
     /**

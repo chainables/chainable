@@ -30,12 +30,13 @@ public class ChainableTreeTest {
             ChainableTree.withRoot("1.1").withChildValues("1.1.1", "1.1.2"),
             ChainableTree.withRoot("1.2").withChildValues("1.2.1", "1.2.2"));
 
+    final long infiniteTreeChildCount = 3;
     ChainableTree<String> infiniteTree = ChainableTree
             .withRoot("1")
             .withChildValueExtractor(p -> Chainable
                     .empty(String.class)
                     .chainIndexed((c, i) -> String.format("%s.%s", p, Long.toString(i + 1)))
-                    .first(3)); // Limit the number of children
+                    .first(infiniteTreeChildCount)); // Limit the number of children
 
     private static ChainableTree<String> treeFrom(String[][][] data) {
         assertNotNull(data);
@@ -119,7 +120,7 @@ public class ChainableTreeTest {
                         .empty(String.class)
                         .chainIndexed((c, i) -> String.format("%s.%d%s%d", p.split(levelSep)[0], i, levelSep, d))
                         .first(3)) // 3 children each node
-                .notBelow(t -> t.value().length() >= 7) // Stop tree traversal below nodes that have names equal or greater than 7
+                .notBelowWhere(t -> t.value().length() >= 7) // Stop tree traversal below nodes that have names equal or greater than 7
                 .breadthFirst();
 
         Chainable<String> actual = ChainableTree.values(actualTrees);
@@ -251,7 +252,7 @@ public class ChainableTreeTest {
         final String sep = ", ";
 
         // When
-        ChainableTree<String> tree = infiniteTree.notBelow(o -> o.value().length() >= 5);
+        ChainableTree<String> tree = infiniteTree.notBelowWhere(o -> o.value().length() >= 5);
         Chainable<ChainableTree<String>> successors = tree
                 .terminals()
                 .where(t -> t.predecessor() != null)
@@ -267,13 +268,51 @@ public class ChainableTreeTest {
         assertEquals(expectedSuccessors, actualSuccessors);
     }
 
-    //TODO @Test - currently it will hang, because the tree is infinitely deep
-    public void testNotWhere() {
+    @Test
+    public void testNotBelowDepthAware() {
+        // Given
+        long depth = 2;
+
         // When
-        ChainableTree<String> tree = infiniteTree.notWhere(t -> t.value().contains("2"));
+        Chainable<String> actual = ChainableTree.values(infiniteTree
+                .notBelowWhere((o, d) -> d == depth)
+                .terminals());
 
         // Then
-        assertTrue(ChainableTrees.values(tree.breadthFirst().first(6)).noneWhere(i -> i.contains("2")));
+        assertTrue(actual.allWhere(s -> s.split("\\.").length == depth + 1));
+    }
+
+    @Test
+    public void testNotWhere() {
+        // Given
+        final long maxDepth = 3;
+        final String filteredOutSuffix = ".2";
+        final long expectedTotalCount = Chainable
+                .empty(Long.class)
+                .chainIndexed((o, i) -> Math.round(Math.pow(infiniteTreeChildCount, i)))
+                .first(maxDepth + 1)
+                .sum(v -> v);
+
+        final long expectedRemovedCount = Chainable
+                .empty(Long.class)
+                .chainIndexed((o, i) -> Math.round(Math.pow(infiniteTreeChildCount, i)))
+                .first(maxDepth)
+                .sum(v -> v);
+
+        final long expectedRemainingCount = expectedTotalCount - expectedRemovedCount;
+
+        // When
+        Chainable<String> values = ChainableTree.values(infiniteTree
+                .notBelowWhere((o, d) -> d == maxDepth)
+                .notWhere(t -> t.value().endsWith(filteredOutSuffix))
+                .breadthFirst())
+                .cached();
+
+        final long actualRemainingCount = values.count();
+
+        // Then
+        assertEquals(expectedRemainingCount, actualRemainingCount);
+        assertTrue(values.noneWhere(i -> i.endsWith(filteredOutSuffix)));
     }
 
     @Test

@@ -7,6 +7,7 @@ package com.github.chainables.chainable;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.function.BiFunction;
+import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -259,7 +260,7 @@ public abstract class ChainableTrees {
      * @param tree
      * @param value
      * @return
-     * @see ChainableTree#
+     * @see ChainableTree#isBelow(Object)
      */
     public static <T> boolean isBelow(ChainableTree<T> tree, T value) {
         return (tree == null) ? false : ChainableTrees.values(ancestors(tree)).contains(value);
@@ -269,15 +270,34 @@ public abstract class ChainableTrees {
      * @param tree
      * @param condition
      * @return
-     * @see ChainableTree#notBelow(Predicate)
+     * @see ChainableTree#notBelowWhere(Predicate)
      */
-    public static <T> ChainableTree<T> notBelow(ChainableTree<T> tree, Predicate<ChainableTree<T>> condition) {
+    public static <T> ChainableTree<T> notBelowWhere(ChainableTree<T> tree, Predicate<ChainableTree<T>> condition) {
         return (tree == null || condition == null) ? tree : tree
                 .clone()
                 .withoutChildren()
                 .withChildren(condition.test(tree)
                     ? Chainable.empty() // No children if condition is satisfied
-                    : Chainables.transform(tree.children(), c -> notBelow(c, condition))); // Otherwise, trim children recursively
+                    : Chainables.transform(tree.children(), c -> notBelowWhere(c, condition))); // Otherwise, trim children recursively
+    }
+
+    /**
+     * @param tree
+     * @param depthAwareCondition
+     * @return
+     * @see ChainableTree#notBelowWhere(BiPredicate)
+     */
+    public static <T> ChainableTree<T> notBelowWhere(ChainableTree<T> tree, BiPredicate<ChainableTree<T>, Long> depthAwareCondition) {
+        return notBelowWhere(tree, depthAwareCondition, 0);
+    }
+
+    private static <T> ChainableTree<T> notBelowWhere(ChainableTree<T> tree, BiPredicate<ChainableTree<T>, Long> depthAwareCondition, long curDepth) {
+        return (tree == null || depthAwareCondition == null) ? tree : tree
+                .clone()
+                .withoutChildren()
+                .withChildren(depthAwareCondition.test(tree, curDepth)
+                        ? Chainable.empty() // No children if condition satisfied
+                        : tree.children().transform(c -> notBelowWhere(c, depthAwareCondition, curDepth + 1))); // Grand-children at two levels deeper
     }
 
     /**
