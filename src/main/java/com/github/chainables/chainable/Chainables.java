@@ -688,7 +688,6 @@ public final class Chainables {
             @Override
             public T next() {
                 T temp = this.next;
-                this.next = null;
                 isFetched = false;
                 index++;
                 return temp;
