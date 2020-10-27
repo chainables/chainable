@@ -173,8 +173,12 @@ public interface ChainableTree<T> extends Cloneable {
      * <p>
      * For example, if some children of a given tree node satisfy the specified condition, they are nt included in the resulting tree, but their
      * children that do not satisfy it are, as siblings of their removed parent node siblings.
+     * <p>
+     * Note that if the tree is of infinite depth, this may never return. You can use one of tree depth limiting methods,
+     * such as {@link #notBelowWhere(BiPredicate), before this one to limit the depth of the traversal.
      * @param condition the condition for tree nodes to satisfy to not be included in the tree
      * @return the resulting tree without the nodes satisfying the specified condition
+     * @see #where(Predicate)
      */
     default ChainableTree<T> notWhere(Predicate<ChainableTree<T>> condition) {
         return ChainableTrees.notWhere(this, condition);
@@ -286,6 +290,23 @@ public interface ChainableTree<T> extends Cloneable {
      * @return the wrapped value
      */
     T value();
+
+    /**
+     * Returns a tree that is made of only those tree nodes of this tree that satisfy the specified {@code condition}, but other than that,
+     * their ancestor-descendant hierarchy is preserved.
+     * <p>
+     * For example, if some children of a given tree node do not satisfy the specified condition, then they are not included in the resulting tree,
+     * but their children that do satisfy it are as siblings of their removed parent node siblings.
+     * <p>
+     * Note that if the tree is of infinite depth, this may never return. You can use one of tree depth limiting methods,
+     * such as {@link #notBelowWhere(BiPredicate), before this one to limit the depth of the traversal.
+     * @param condition the condition for tree nodes to satisfy to be included in the tree
+     * @return the resulting tree without the nodes not satisfying the specified condition
+     * @see #notWhere(Predicate)
+     */
+    default ChainableTree<T> where(Predicate<ChainableTree<T>> condition) {
+        return ChainableTrees.where(this, condition);
+    }
 
     /**
      * Appends the specified trees to the children of this tree, if any.

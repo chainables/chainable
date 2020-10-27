@@ -441,6 +441,22 @@ public class ChainableTreeTest {
         assertEquals(expectedValue, found.value());
     }
 
+    @Test
+    public void testWhere() {
+        // Given
+        final long maxDepth = 3;
+
+        // When
+        Chainable<String> values = ChainableTree.values(infiniteTree
+                .notBelowWhere((o, d) -> d == maxDepth)
+                .where(t -> Objects.equals(t.value(), "1") || t.value().contains("2"))
+                .breadthFirst())
+                .cached();
+
+        // Then
+        assertTrue(values.allWhere(i -> i.contains("2") || i.equals("1")));
+    }
+
     @SuppressWarnings("unchecked")
     @Test
     // TODO: Make this richer
