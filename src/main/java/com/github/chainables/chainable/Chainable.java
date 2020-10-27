@@ -705,8 +705,8 @@ public interface Chainable<T> extends Iterable<T> {
      * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#count()}</td></tr>
      * <tr><td><i>C#:</i></td><td>{@code Enumerable.Count()}</td></tr>
      * </table>
-     * @see #isCountAtLeast(int)
-     * @see #isCountAtMost(int)
+     * @see #isCountAtLeast(long)
+     * @see #isCountAtMost(long)
      * @see #isCountExactly(long)
      */
     default long count() {
@@ -981,7 +981,7 @@ public interface Chainable<T> extends Iterable<T> {
      * Determines whether this chain contains at least the specified {@code min} number of items, stopping the traversal as soon as that can be determined.
      * @param min
      * @return {@code true} if there are at least the specified {@code min} number of items in this chain
-     * @see #isCountAtMost(int)
+     * @see #isCountAtMost(long)
      * @see #isCountExactly(long)
      * @see #count()
      */
@@ -993,7 +993,7 @@ public interface Chainable<T> extends Iterable<T> {
      * Determines whether this chain contains no more than the specified {@code max} number of items, stopping the traversal as soon as that can be determined.
      * @param max
      * @return {@code true} if there are at most the specified {@code max} number of items
-     * @see #isCountAtLeast(int)
+     * @see #isCountAtLeast(long)
      * @see #isCountExactly(long)
      * @see #count()
      */
@@ -1005,10 +1005,10 @@ public interface Chainable<T> extends Iterable<T> {
      * Checks lazily whether this chain has exactly the specified {@code number} of items.
      * <p>
      * If here are more items than the expecte number, the traversal/evaluation of the chain will stop right after the first item past the expected number.
-     * @param count the expected number of items
+     * @param number the expected number of items
      * @return {@code true} if the number of items in the chain is equal exactly to the specified {@code number}
-     * @see #isCountAtLeast(int)
-     * @see #isCountAtMost(int)
+     * @see #isCountAtLeast(long)
+     * @see #isCountAtMost(long)
      * @see #count()
      */
     default boolean isCountExactly(long number) {

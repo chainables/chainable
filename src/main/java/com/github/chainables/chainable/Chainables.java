@@ -1491,7 +1491,7 @@ public final class Chainables {
      * @param items
      * @param min
      * @return true if there are at least the specified {@code min} number of {@code items}, stopping the traversal as soon as that can be determined
-     * @see Chainable#isCountAtLeast(int)
+     * @see Chainable#isCountAtLeast(long)
      */
     public static <T> boolean isCountAtLeast(Iterable<T> items, long min) {
         if (min <= 0) {
@@ -1513,7 +1513,7 @@ public final class Chainables {
      * @param items
      * @param max
      * @return true if there are at most the specified {@code max} number of {@code items}, stopping the traversal as soon as that can be determined
-     * @see Chainable#isCountAtMost(int)
+     * @see Chainable#isCountAtMost(long)
      */
     public static <T> boolean isCountAtMost(Iterable<T> items, long max) {
         if (items == null && max >= 0) {
