@@ -320,6 +320,24 @@ public abstract class ChainableTrees {
 
     /**
      * @param tree
+     * @param condition
+     * @return
+     * @see ChainableTree#where(Predicate)
+     */
+    public static <T> ChainableTree<T> where(ChainableTree<T> tree, Predicate<ChainableTree<T>> condition) {
+        return (tree == null || condition == null) ? tree : tree
+                .clone()
+                .withoutChildren()
+                .withChildren(tree
+                        .children()
+                        .transformAndFlatten(c -> c
+                                .depthFirstNotBelow(cc -> condition.test(cc))
+                                .where(cc -> condition.test(cc))
+                                .transform(cc -> where(cc, condition))));
+    }
+
+    /**
+     * @param tree
      * @return
      * @see ChainableTree#
      */
