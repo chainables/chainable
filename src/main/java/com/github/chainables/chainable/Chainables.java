@@ -109,7 +109,7 @@ public final class Chainables {
 
         @Override
         public String toString() {
-            return Chainables.join("", this);
+            return Chainables.join(", ", this);
         }
     }
 
@@ -2325,7 +2325,7 @@ public final class Chainables {
 
             @Override
             public O next() {
-                return this.iterOut.next();
+                return this.hasNext() ? this.iterOut.next() : null;
             }
         });
     }
