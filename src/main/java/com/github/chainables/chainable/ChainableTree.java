@@ -144,7 +144,7 @@ public interface ChainableTree<T> extends Cloneable {
     }
 
     /**
-     * Returns the upper portion of the specified {@code tree} stopping before the children of tree nodes that satisfy the specified {@code condition}.
+     * Returns the upper portion of this tree stopping before the children of tree nodes that satisfy the specified {@code condition}.
      * <p>
      * Besides the current tree node, the {@code condition} function will also be supplied with the current depth that the children would be created
      * at, relative to this tree's depth of 0.
@@ -157,8 +157,7 @@ public interface ChainableTree<T> extends Cloneable {
     }
 
     /**
-     * Returns the upper portion of the specified {@code tree} stopping before the children of tree nodes that satisfy the specified {@code condition}.
-     * @param tree the tree to search
+     * Returns the upper portion of this tree stopping before the children of tree nodes that satisfy the specified {@code condition}.
      * @param condition the condition to be satisfied by a tree node for its children down to be excluded from the returned subtree
      * @return the resulting subtree
      * @see #notBelowWhere(BiPredicate)
@@ -175,7 +174,7 @@ public interface ChainableTree<T> extends Cloneable {
      * children that do not satisfy it are, as siblings of their removed parent node siblings.
      * <p>
      * Note that if the tree is of infinite depth, this may never return. You can use one of tree depth limiting methods,
-     * such as {@link #notBelowWhere(BiPredicate), before this one to limit the depth of the traversal.
+     * such as {@link #notBelowWhere(BiPredicate)}, before this one to limit the depth of the traversal.
      * @param condition the condition for tree nodes to satisfy to not be included in the tree
      * @return the resulting tree without the nodes satisfying the specified condition
      * @see #where(Predicate)
@@ -299,7 +298,7 @@ public interface ChainableTree<T> extends Cloneable {
      * but their children that do satisfy it are as siblings of their removed parent node siblings.
      * <p>
      * Note that if the tree is of infinite depth, this may never return. You can use one of tree depth limiting methods,
-     * such as {@link #notBelowWhere(BiPredicate), before this one to limit the depth of the traversal.
+     * such as {@link #notBelowWhere(BiPredicate)}, before this one to limit the depth of the traversal.
      * @param condition the condition for tree nodes to satisfy to be included in the tree
      * @return the resulting tree without the nodes not satisfying the specified condition
      * @see #notWhere(Predicate)

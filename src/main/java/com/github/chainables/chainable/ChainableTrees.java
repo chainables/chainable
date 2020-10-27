@@ -237,10 +237,10 @@ public abstract class ChainableTrees {
     }
 
     /**
-     * @param ancestor
-     * @param descendant
+     * @param tree
+     * @param descendantCondition
      * @return
-     * @see ChainableTree#isAbove(ChainableTree)
+     * @see ChainableTree#isAbove(Predicate)
      */
     public static <T> boolean isAbove(ChainableTree<T> tree, Predicate<ChainableTree<T>> descendantCondition) {
         return (tree == null || descendantCondition == null) ? false : descendants(tree).anyWhere(descendantCondition);
@@ -339,7 +339,7 @@ public abstract class ChainableTrees {
     /**
      * @param tree
      * @return
-     * @see ChainableTree#
+     * @see ChainableTree#predecessor()
      */
     public static <T> ChainableTree<T> predecessor(ChainableTree<T> tree) {
         return predecessors(tree).last();        
@@ -370,7 +370,7 @@ public abstract class ChainableTrees {
     /**
      * @param tree
      * @return
-     * @see ChainableTree#
+     * @see ChainableTree#successor()
      */
     public static <T> ChainableTree<T> successor(ChainableTree<T> tree) {
         return successors(tree).first();        
