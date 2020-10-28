@@ -189,7 +189,7 @@ public interface Chainable<T> extends Iterable<T> {
 
     /**
      * Determines whether all the items in this chain satisfy the specified {@code condition}.
-     * @param condition
+     * @param condition the condition for all the items to satisfy
      * @return {@code true} if all items satisfy the specified {@code condition}, otherwise {@code false}
      * @chainables.similar
      * <table summary="Similar to:">
@@ -203,7 +203,7 @@ public interface Chainable<T> extends Iterable<T> {
 
     /**
      * Determines whether all the items in this chain satisfy any of the specified {@code conditions}
-     * @param conditions
+     * @param conditions the choice of conditions for the items to satisfy
      * @return {@code true} if all items satisfy at least one of the {@code conditions}, otherwise {@code false}
      * @see #allWhere(Predicate)
      */
@@ -394,24 +394,6 @@ public interface Chainable<T> extends Iterable<T> {
      */
     default <O> Chainable<O> ofType(O example) {
         return Chainables.ofType(this, example);
-    }
-
-    /**
-     * Determines whether this chain contains at least the specified {@code min} number of items, stopping the traversal as soon as that can be determined.
-     * @param min
-     * @return {@code true} if there are at least the specified {@code min} number of items in this chain
-     */
-    default boolean atLeast(int min) {
-        return Chainables.atLeast(this, min);
-    }
-
-    /**
-     * Determines whether this chain contains no more than the specified {@code max} number of items, stopping the traversal as soon as that can be determined.
-     * @param max
-     * @return {@code true} if there are at most the specified {@code max} number of items
-     */
-    default boolean atMost(int max) {
-        return Chainables.atMost(this, max);
     }
 
     /**
@@ -714,13 +696,18 @@ public interface Chainable<T> extends Iterable<T> {
     /**
      * Counts the items in this chain.
      * <p>
-     * This triggers a full traversal/evaluation of the items.
+     * This triggers a full traversal/evaluation of the items. If the expected number, maximum or minimum is known and the goal is only to
+     * confirm the expectation, it should be generally more efficient to use {@link #isCountAtLeast(int)}, {@link #isCountAtMost(int)} or {{@link #isCountExactly(long)}
+     * for that purpose, especially if the chain is defined dynamically/functionally and is potentially infinite.
      * @return total number of items
      * @chainables.similar
      * <table summary="Similar to:">
      * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#count()}</td></tr>
      * <tr><td><i>C#:</i></td><td>{@code Enumerable.Count()}</td></tr>
      * </table>
+     * @see #isCountAtLeast(long)
+     * @see #isCountAtMost(long)
+     * @see #isCountExactly(long)
      */
     default long count() {
         return Chainables.count(this);
@@ -988,6 +975,44 @@ public interface Chainable<T> extends Iterable<T> {
     @SuppressWarnings("unchecked")
     default Chainable<T> interleave(Iterable<T>...iterables) {
         return Chainables.interleave(this, iterables);
+    }
+
+    /**
+     * Determines whether this chain contains at least the specified {@code min} number of items, stopping the traversal as soon as that can be determined.
+     * @param min
+     * @return {@code true} if there are at least the specified {@code min} number of items in this chain
+     * @see #isCountAtMost(long)
+     * @see #isCountExactly(long)
+     * @see #count()
+     */
+    default boolean isCountAtLeast(long min) {
+        return Chainables.isCountAtLeast(this, min);
+    }
+
+    /**
+     * Determines whether this chain contains no more than the specified {@code max} number of items, stopping the traversal as soon as that can be determined.
+     * @param max
+     * @return {@code true} if there are at most the specified {@code max} number of items
+     * @see #isCountAtLeast(long)
+     * @see #isCountExactly(long)
+     * @see #count()
+     */
+    default boolean isCountAtMost(long max) {
+        return Chainables.isCountAtMost(this, max);
+    }
+
+    /**
+     * Checks lazily whether this chain has exactly the specified {@code number} of items.
+     * <p>
+     * If here are more items than the expecte number, the traversal/evaluation of the chain will stop right after the first item past the expected number.
+     * @param number the expected number of items
+     * @return {@code true} if the number of items in the chain is equal exactly to the specified {@code number}
+     * @see #isCountAtLeast(long)
+     * @see #isCountAtMost(long)
+     * @see #count()
+     */
+    default boolean isCountExactly(long number) {
+        return Chainables.isCountExactly(this, number);
     }
 
     /**

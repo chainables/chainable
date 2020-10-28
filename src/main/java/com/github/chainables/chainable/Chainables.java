@@ -58,7 +58,7 @@ public final class Chainables {
         }
 
         static <T> Chain<T> empty() {
-            return Chain.from(Collections.emptyList());
+            return Chain.from(new ArrayList<>());
         }
 
         static <T> Chain<T> from(Iterable<T> iterable) {
@@ -109,7 +109,7 @@ public final class Chainables {
 
         @Override
         public String toString() {
-            return Chainables.join("", this);
+            return Chainables.join(", ", this);
         }
     }
 
@@ -337,13 +337,9 @@ public final class Chainables {
 
                 @Override
                 public T next() {
-                    if (this.hasNext()) {
-                        T item = this.itemIter.next();
-                        action.accept(item);
-                        return item;
-                    } else {
-                        return null;
-                    }
+                    T item = this.itemIter.next();
+                    action.accept(item);
+                    return item;
                 }
             });
         }
@@ -422,50 +418,6 @@ public final class Chainables {
                 .withoutNull()
                 .transform(i -> (clazz.isAssignableFrom(i.getClass())) ? clazz.cast(i) : null)
                 .withoutNull();
-    }
-
-    /**
-     * @param items
-     * @param min
-     * @return true if there are at least the specified {@code min} number of {@code items}, stopping the traversal as soon as that can be determined
-     * @see Chainable#atLeast(int)
-     */
-    public static <T> boolean atLeast(Iterable<T> items, long min) {
-        if (min <= 0) {
-            return true;
-        } else if (items == null) {
-            return false;
-        }
-
-        Iterator<T> iter = items.iterator();
-        while (min > 0 && iter.hasNext()) {
-            iter.next();
-            min--;
-        }
-
-        return min == 0;
-    }
-
-    /**
-     * @param items
-     * @param max
-     * @return true if there are at most the specified {@code max} number of {@code items}, stopping the traversal as soon as that can be determined
-     * @see Chainable#atMost(int)
-     */
-    public static <T> boolean atMost(Iterable<T> items, long max) {
-        if (items == null && max >= 0) {
-            return true;
-        } else if (items == null) {
-            return false;
-        }
-
-        Iterator<T> iter = items.iterator();
-        while (max > 0 && iter.hasNext()) {
-            iter.next();
-            max--;
-        }
-
-        return max >= 0 && !iter.hasNext();
     }
 
     /**
@@ -736,7 +688,6 @@ public final class Chainables {
             @Override
             public T next() {
                 T temp = this.next;
-                this.next = null;
                 isFetched = false;
                 index++;
                 return temp;
@@ -1106,20 +1057,17 @@ public final class Chainables {
     public static <T> long count(Iterable<T> items) {
         if (items == null) {
             return 0;
-        }
-
-        if (items instanceof Collection<?>) {
+        } else if (items instanceof Collection<?>) {
             return ((Collection<?>)items).size();
         }
 
         Iterator<T> iter = items.iterator();
-        long size = 0;
-        while (iter.hasNext()) {
+        long i = 0;
+        for (i = 0; iter.hasNext(); i++) {
             iter.next();
-            size++;
         }
 
-        return size;
+        return i;
     }
 
     /**
@@ -1466,11 +1414,7 @@ public final class Chainables {
 
             @Override
             public boolean hasNext() {
-                if (returnedCount >= number) {
-                    return false;
-                } else {
-                    return this.iter.hasNext();
-                }
+                return (returnedCount >= number) ? false : this.iter.hasNext();
             }
 
             @Override
@@ -1541,6 +1485,76 @@ public final class Chainables {
                 }
             }
         });
+    }
+
+    /**
+     * @param items
+     * @param min
+     * @return true if there are at least the specified {@code min} number of {@code items}, stopping the traversal as soon as that can be determined
+     * @see Chainable#isCountAtLeast(long)
+     */
+    public static <T> boolean isCountAtLeast(Iterable<T> items, long min) {
+        if (min <= 0) {
+            return true;
+        } else if (items == null) {
+            return false;
+        }
+
+        Iterator<T> iter = items.iterator();
+        while (min > 0 && iter.hasNext()) {
+            iter.next();
+            min--;
+        }
+
+        return min == 0;
+    }
+
+    /**
+     * @param items
+     * @param max
+     * @return true if there are at most the specified {@code max} number of {@code items}, stopping the traversal as soon as that can be determined
+     * @see Chainable#isCountAtMost(long)
+     */
+    public static <T> boolean isCountAtMost(Iterable<T> items, long max) {
+        if (items == null && max >= 0) {
+            return true;
+        } else if (items == null) {
+            return false;
+        }
+
+        Iterator<T> iter = items.iterator();
+        while (max > 0 && iter.hasNext()) {
+            iter.next();
+            max--;
+        }
+
+        return max >= 0 && !iter.hasNext();
+    }
+
+    /**
+     * @param items
+     * @param count
+     * @return
+     * @see Chainable#isCountExactly(long)
+     */
+    public static <T> boolean isCountExactly(Iterable<T> items, long count) {
+        if (items == null) {
+            return count == 0;
+        } else if (items instanceof Collection<?>) {
+            return ((Collection<?>)items).size() == count;
+        }
+
+        Iterator<T> iter = items.iterator();
+        long i = 0;
+        while (iter.hasNext()) {
+            iter.next();
+            i++;
+            if (i == count) {
+                return !iter.hasNext();
+            }
+        }
+
+        return i == count;
     }
 
     /**
@@ -1631,7 +1645,6 @@ public final class Chainables {
                 info
                     .append(next.toString())
                     .append(delimiter);
-
             }
         }
 
@@ -2266,7 +2279,7 @@ public final class Chainables {
                     this.iterator = null;
                     return false;
                 } else {
-                    return this.iterator.hasNext();
+                    return true;
                 }
             }
 
@@ -2354,10 +2367,6 @@ public final class Chainables {
 
             @Override
             public T next() {
-                if (!this.hasNext()) {
-                    return null;
-                }
-
                 Iterable<T> nextChildren = childTraverser.apply(this.nextItem);
                 if (!Chainables.isNullOrEmpty(nextChildren)) {
                     if (breadthFirst) {

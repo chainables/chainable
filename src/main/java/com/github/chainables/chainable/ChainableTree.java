@@ -4,6 +4,8 @@
  */
 package com.github.chainables.chainable;
 
+import java.util.function.BiFunction;
+import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -25,7 +27,7 @@ import com.github.chainables.chainable.ChainableTrees.ChainableTreeImpl;
  *
  * @param <T> type of values to wrap
  */
-public interface ChainableTree<T> {
+public interface ChainableTree<T> extends Cloneable {
 
     /**
      * Returns the chain of ancestors of this tree node starting with its parent.
@@ -45,18 +47,6 @@ public interface ChainableTree<T> {
     }
 
     /**
-     * Traverses the tree in a breadth-first fashion returning a chain of encountered nodes, but excluding th edescendants that meet the
-     * specified {@code condition}.
-     * <p>
-     * In other words, the node that satisfies this condition is included in the returned chain, but its descendants are not.
-     * @param condition the condition for a node to satisfy so that its descendants would not be traversed
-     * @return the resulting chain of visited tree nodes
-     */
-    default Chainable<ChainableTree<T>> breadthFirstNotBelow(Predicate<ChainableTree<T>> condition) {
-        return ChainableTrees.breadthFirstNotBelow(this, condition);
-    }
-
-    /**
      * Returns the direct children of this tree.
      * <p>
      * The values of the children are lazily evaluated on each incomplete traversal, but once a complete traversal occurs, the values of the children
@@ -64,6 +54,8 @@ public interface ChainableTree<T> {
      * @return direct children of this tree
      */
     Chainable<ChainableTree<T>> children();
+
+    ChainableTree<T> clone();
 
     /**
      * Traverses this tree in a depth-first (pre-order) fashion returning a chain of encountered nodes.
@@ -98,18 +90,97 @@ public interface ChainableTree<T> {
      * Finds the first tree node that satisfies the specified {@code condition}, based on a breadth-first traversal.
      * @param condition the condition for the sought tree node to satisfy
      * @return the first tree node satisfying the specified {@code condition}
+     * @see #firstWithValue(Object)
      */
     default ChainableTree<T> firstWhere(Predicate<ChainableTree<T>> condition) {
         return ChainableTrees.firstWhere(this, condition);
-    } 
+    }
+
+    
+    /**
+     * Finds the first tree node with the specified {@code value}, based on a breadth-first traversal.
+     * @param value the value to search for
+     * @return the first found tree node with the specified {@code value}, based on a breadth-first traversal
+     * @see #firstWhere(Predicate)
+     */
+    default ChainableTree<T> firstWithValue(T value) {
+        return ChainableTrees.firstWithValue(this, value);
+    }
+
+    /**
+     * Checks whether the specified {@code value} is the value of a tree node under this tree.
+     * @param value the value to look for
+     * @return true if the specified {@code value} is the value of a tree node that is under this tree.
+     */
+    default boolean isAbove(T value) {
+        return ChainableTrees.isAbove(this, value);
+    }
+
+    /**
+     * Checks whether a tree node satisfying the specified {@code condition} is under this tree.
+     * @param condition the condition for the tree node under this one to satisfy
+     * @return true if there is a tree node under this tree that satisfies the specified {@code condition}
+     */
+    default boolean isAbove(Predicate<ChainableTree<T>> condition) {
+        return ChainableTrees.isAbove(this, condition);
+    }
 
     /**
      * Checks whether this tree node is a descendant of a tree node satisfying the specified ancestor condition.
      * @param ancestorCondition the condition that this node's ancestor has to meet for this node to be under it
      * @return true if the tree node is a descendant of the tree node satisfying the specified ancestor condition.
      */
-    default boolean isUnder(Predicate<ChainableTree<T>> ancestorCondition) {
-        return ChainableTrees.isUnder(this, ancestorCondition);
+    default boolean isBelow(Predicate<ChainableTree<T>> ancestorCondition) {
+        return ChainableTrees.isBelow(this, ancestorCondition);
+    }
+
+    /**
+     * Checks whether this tree node is under (that is a descendant of) of a tree node with the specified {@code value}.
+     * @param value the value for the ancestor tree node to contain
+     * @return true if this tree node is under a tree node with the specified {@code value}
+     */
+    default boolean isBelow(T value) {
+        return ChainableTrees.isBelow(this, value);
+    }
+
+    /**
+     * Returns the upper portion of this tree stopping before the children of tree nodes that satisfy the specified {@code condition}.
+     * <p>
+     * Besides the current tree node, the {@code condition} function will also be supplied with the current depth that the children would be created
+     * at, relative to this tree's depth of 0.
+     * @param depthAwareCondition the condition to be satisfied by a tree node for its children down to be excluded from the returned subtree
+     * @return the resulting subtree
+     * @see #notBelowWhere(Predicate)
+     */
+    default ChainableTree<T> notBelowWhere(BiPredicate<ChainableTree<T>, Long> depthAwareCondition) {
+        return ChainableTrees.notBelowWhere(this, depthAwareCondition);
+    }
+
+    /**
+     * Returns the upper portion of this tree stopping before the children of tree nodes that satisfy the specified {@code condition}.
+     * @param condition the condition to be satisfied by a tree node for its children down to be excluded from the returned subtree
+     * @return the resulting subtree
+     * @see #notBelowWhere(BiPredicate)
+     */
+    default ChainableTree<T> notBelowWhere(Predicate<ChainableTree<T>> condition) {
+        return ChainableTrees.notBelowWhere(this, condition);
+    }
+
+    /**
+     * Returns a tree that is made of only those tree nodes of this tree that do not satisfy the specified {@code condition}, but other than that,
+     * their ancestor-descendant hierarchy is preserved.
+     * <p>
+     * For example, if some children of a given tree node satisfy the specified condition, they are nt included in the resulting tree, but their
+     * children that do not satisfy it are, as siblings of their removed parent node siblings.
+     * <p>
+     * Note that if the tree is of infinite depth, this may never return. You can use one of tree depth limiting methods,
+     * such as {@link #notBelowWhere(BiPredicate)}, before this one to limit the depth of the traversal.
+     * @param condition the condition for tree nodes to satisfy to not be included in the tree
+     * @return the resulting tree without the nodes satisfying the specified condition
+     * @see #where(Predicate)
+     */
+    default ChainableTree<T> notWhere(Predicate<ChainableTree<T>> condition) {
+        return ChainableTrees.notWhere(this, condition);
     }
 
     /**
@@ -117,6 +188,14 @@ public interface ChainableTree<T> {
      * @return the parent of this tree
      */
     ChainableTree<T> parent();
+
+    /**
+     * Returns the sibling immediately preceding this tree node, or {@code null} if none.
+     * @return the sibling immediately preceding this tree node, or {@code null} if none.
+     */
+    default ChainableTree<T> predecessor() {
+        return ChainableTrees.predecessor(this);
+    }
 
     /**
      * Returns a chain of siblings preceding this tree node.
@@ -136,6 +215,14 @@ public interface ChainableTree<T> {
      */
     default Chainable<ChainableTree<T>> siblings() {
         return ChainableTrees.siblings(this);
+    }
+
+    /**
+     * Returns the sibling immediately following this tree node, or {@code null} if none.
+     * @return the sibling immediately following this tree node, or {@code null} if none.
+     */
+    default ChainableTree<T> successor() {
+        return ChainableTrees.successor(this);
     }
 
     /**
@@ -204,6 +291,23 @@ public interface ChainableTree<T> {
     T value();
 
     /**
+     * Returns a tree that is made of only those tree nodes of this tree that satisfy the specified {@code condition}, but other than that,
+     * their ancestor-descendant hierarchy is preserved.
+     * <p>
+     * For example, if some children of a given tree node do not satisfy the specified condition, then they are not included in the resulting tree,
+     * but their children that do satisfy it are as siblings of their removed parent node siblings.
+     * <p>
+     * Note that if the tree is of infinite depth, this may never return. You can use one of tree depth limiting methods,
+     * such as {@link #notBelowWhere(BiPredicate)}, before this one to limit the depth of the traversal.
+     * @param condition the condition for tree nodes to satisfy to be included in the tree
+     * @return the resulting tree without the nodes not satisfying the specified condition
+     * @see #notWhere(Predicate)
+     */
+    default ChainableTree<T> where(Predicate<ChainableTree<T>> condition) {
+        return ChainableTrees.where(this, condition);
+    }
+
+    /**
      * Appends the specified trees to the children of this tree, if any.
      * <p>
      * Passing {@code null} clears the existing children and makes the node childless.
@@ -227,6 +331,14 @@ public interface ChainableTree<T> {
      * @return self
      */
     ChainableTree<T> withChildValueExtractor(Function<T, Iterable<T>> childExtractor);
+
+    /**
+     * Wraps the values generated lazily by the specified {@code childExtractor} into child trees of this tree, appending them to the existing
+     * children of this tree, passing the current depth relative to this tree node to the extractor.
+     * @param childExtractor a function accepting the value of the parent and the children's depth level relative to this tree node and returning child values
+     * @return self
+     */
+    ChainableTree<T> withChildValueExtractor(BiFunction<T, Long, Iterable<T>> childExtractor);
 
     /**
      * Appends trees with the specified wrapped {@code childValues} to the children of this tree.
@@ -254,8 +366,8 @@ public interface ChainableTree<T> {
      * @param value the value to wrap in the new tree node
      * @return
      */
-    static <T> ChainableTree<T> withValue(T value) {
-        return new ChainableTreeImpl<T>(value);
+    static <T> ChainableTree<T> withRoot(T value) {
+        return ChainableTreeImpl.withRoot(value);
     }
 
     /**
