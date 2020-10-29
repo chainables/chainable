@@ -111,6 +111,11 @@ public final class Chainables {
         public String toString() {
             return Chainables.join(", ", this);
         }
+
+        @Override
+        public T get(long index) {
+            return (this.iterable instanceof List<?>) ? ((List<T>) this.iterable).get(Math.toIntExact(index)) : Chainables.get(this, index);
+        }
     }
 
     private static class ChainableQueueImpl<T> extends Chain<T> implements ChainableQueue<T> {
@@ -1485,6 +1490,16 @@ public final class Chainables {
                 }
             }
         });
+    }
+
+    /**
+     * @param items
+     * @param min
+     * @return
+     * @see Chainable#get(long)
+     */
+    public static <T> T get(Iterable<T> items, long index) {
+        return afterFirst(items, index).first();
     }
 
     /**

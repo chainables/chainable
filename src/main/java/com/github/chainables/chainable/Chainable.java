@@ -962,6 +962,15 @@ public interface Chainable<T> extends Iterable<T> {
     }
 
     /**
+     * Fetches the item in the chain at the specified {@code index}, traversing/evaluating the chain as needed until that index is reached.
+     * @param index the index of the item to retrieve from this chain
+     * @return the item at the specified index
+     */
+    default T get(long index) {
+        return Chainables.get(this, index);
+    }
+
+    /**
      * Interleaves the items of the specified {@code iterables}.
      * <p><b>Example:</b>
      * <table summary="Example:">
