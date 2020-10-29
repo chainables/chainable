@@ -50,6 +50,59 @@ public final class Chainables {
         throw new AssertionError("Not instantiable, just stick to the static methods.");
     }
 
+    static class CachedChain<T> extends Chain<T> {
+        List<T> cache = null;
+
+        static <T> Chain<T> from(Iterable<T> iterable) {
+            if (iterable instanceof CachedChain<?>) {
+                return (CachedChain<T>) iterable;
+            } else {
+                return new CachedChain<>(iterable);
+            }
+        }
+
+        private CachedChain(Iterable<T> iterable) {
+            super(iterable);
+        }
+
+        @Override
+        public T get(long index) {
+            return (this.cache != null) ? this.cache.get(Math.toIntExact(index)) : super.get(index);
+        }
+
+        @Override
+        public Iterator<T> iterator() {
+            if (this.cache != null) {
+                // Cache already filled so return from it
+                return this.cache.iterator();
+            } else {
+                return new Iterator<T>() {
+                    Iterator<T> iter = iterable.iterator();
+                    List<T> tempCache = new ArrayList<>();
+
+                    @Override
+                    public boolean hasNext() {
+                        if (iter.hasNext()) {
+                            return true;
+                        } else if (cache == null) {
+                            // The first iterator to fill the cache wins
+                            cache = tempCache;
+                        }
+
+                        return false;
+                    }
+
+                    @Override
+                    public T next() {
+                        T next = iter.next();
+                        tempCache.add(next);
+                        return next;
+                    }
+                };
+            }
+        }
+    }
+
     static class Chain<T> implements Chainable<T> {
         protected Iterable<T> iterable;
 
@@ -64,6 +117,8 @@ public final class Chainables {
         static <T> Chain<T> from(Iterable<T> iterable) {
             if (iterable instanceof Chain<?>) {
                 return (Chain<T>) iterable;
+            } else if (iterable instanceof CachedChain<?>) {
+                return (CachedChain<T>) iterable;
             } else {
                 return new Chain<>(iterable);
             }
@@ -532,43 +587,7 @@ public final class Chainables {
      * @see Chainable#cached()
      */
     public static <T> Chainable<T> cached(Iterable<T> items) {
-        return (items == null) ? Chainable.empty() : Chainable.from(new Iterable<T>() {
-            List<T> cache = null;
-
-            @Override
-            public Iterator<T> iterator() {
-                if (cache != null) {
-                    // Cache already filled so return from it
-                    return this.cache.iterator();
-                } else {
-                    return new Iterator<T>() {
-                        Iterator<T> iter = items.iterator();
-                        List<T> tempCache = new ArrayList<>();
-
-                        @Override
-                        public boolean hasNext() {
-                            if (iter.hasNext()) {
-                                return true;
-                            } else {
-                                if (cache == null) {
-                                    // The first iterator to fill the cache wins
-                                    cache = tempCache;
-                                }
-
-                                return false;
-                            }
-                        }
-
-                        @Override
-                        public T next() {
-                            T next = iter.next();
-                            tempCache.add(next);
-                            return next;
-                        }
-                    };
-                }
-            }
-        });
+        return (items == null) ? Chainable.empty() : CachedChain.from(items);
     }
 
     /**

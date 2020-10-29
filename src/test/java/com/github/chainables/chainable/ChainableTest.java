@@ -741,16 +741,31 @@ public class ChainableTest {
     @Test
     public void testGet() {
         // Given
-        Chainable<Integer> infiniteChain = Chainable.from(0).chain(i -> i + 1);
-        Chainable<Integer> listChain = Chainable.from(Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10));
+        Chainable<Integer> infiniteChain = Chainable
+                .from(0)
+                .chain(i -> i + 1);
+
+        Chainable<Integer> listChain = Chainable
+                .from(Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10));
+
+        Chainable<Long> cachedChain = Chainable
+                .empty(Long.class)
+                .chain(i -> Math.round(Math.random() * 1000))
+                .first(10)
+                .cached();
 
         // When
-        int int5FromInfinite = infiniteChain.get(5);
-        int int5FromList = listChain.get(5);
+        int item5FromInfinite = infiniteChain.get(5);
+        int item5FromList = listChain.get(5);
+        long cachedCount = cachedChain.count();
+        long item5FromCache = cachedChain.get(5);
+        long item5FromCacheAgain = cachedChain.get(5);
 
         // Then
-        assertEquals(5, int5FromInfinite);
-        assertEquals(5, int5FromList);
+        assertEquals(5, item5FromInfinite);
+        assertEquals(5, item5FromList);
+        assertEquals(10, cachedCount);
+        assertEquals(item5FromCache, item5FromCacheAgain);
     }
 
     @SuppressWarnings("unchecked")
