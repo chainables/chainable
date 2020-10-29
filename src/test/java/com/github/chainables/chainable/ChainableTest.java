@@ -738,6 +738,21 @@ public class ChainableTest {
         assertEquals(expectedTransformed, actualTransformed);
     }
 
+    @Test
+    public void testGet() {
+        // Given
+        Chainable<Integer> infiniteChain = Chainable.from(0).chain(i -> i + 1);
+        Chainable<Integer> listChain = Chainable.from(Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10));
+
+        // When
+        int int5FromInfinite = infiniteChain.get(5);
+        int int5FromList = listChain.get(5);
+
+        // Then
+        assertEquals(5, int5FromInfinite);
+        assertEquals(5, int5FromList);
+    }
+
     @SuppressWarnings("unchecked")
     @Test
     public void testInterleave() {
