@@ -278,11 +278,11 @@ public final class Chainables {
      * @see Chainable#allWhereEither(Predicate...)
      */
     @SafeVarargs
-    public static <T> boolean allWhereEither(Iterable<T> items, Predicate<T>... conditions) {
+    public static <T> boolean allWhereEither(Iterable<T> items, Predicate<? super T>... conditions) {
         if (items == null) {
             return false;
         } else {
-            Chainable<Predicate<T>> conds = Chainable.from(conditions);
+            Chainable<Predicate<? super T>> conds = Chainable.from(conditions);
             return Chainables.noneWhere(items, i -> !conds.anyWhere(c -> c.test(i)));
         }
     }
@@ -293,7 +293,7 @@ public final class Chainables {
      * @return
      * @see Chainable#allWhere(Predicate)
      */
-    public static <T> boolean allWhere(Iterable<T> items, Predicate<T> condition) {
+    public static <T> boolean allWhere(Iterable<T> items, Predicate<? super T> condition) {
         return allWhereEither(items, condition);
     }
 
@@ -314,7 +314,7 @@ public final class Chainables {
      * @return
      * @see Chainable#anyWhere(Predicate)
      */
-    public static <T> boolean anyWhere(Iterable<T> items, Predicate<T> condition) {
+    public static <T> boolean anyWhere(Iterable<T> items, Predicate<? super T> condition) {
         return Chainables.anyWhereEither(items, condition);
     }
 
@@ -325,11 +325,11 @@ public final class Chainables {
      * @see Chainable#anyWhereEither(Predicate...)
      */
     @SafeVarargs
-    public static <T> boolean anyWhereEither(Iterable<T> items, Predicate<T>...conditions) {
+    public static <T> boolean anyWhereEither(Iterable<T> items, Predicate<? super T>...conditions) {
         if (conditions == null) {
             return true;
         } else {
-            for (Predicate<T> condition : conditions) {
+            for (Predicate<? super T> condition : conditions) {
                 if (Chainables.firstWhereEither(items, condition) != null) {
                     return true;
                 }
@@ -345,7 +345,7 @@ public final class Chainables {
      * @return
      * @see Chainable#apply(Consumer)
      */
-    public static <T> Chainable<T> apply(Iterable<T> items, Consumer<T> action) {
+    public static <T> Chainable<T> apply(Iterable<T> items, Consumer<? super T> action) {
         if (items == null) {
             return null;
         } else if (action == null) {
@@ -381,7 +381,7 @@ public final class Chainables {
      * @return
      * @see Chainable#applyAsYouGo(Consumer)
      */
-    public static <T> Chainable<T> applyAsYouGo(Iterable<T> items, Consumer<T> action) {
+    public static <T> Chainable<T> applyAsYouGo(Iterable<T> items, Consumer<? super T> action) {
         if (items == null) {
             return null;
         } else if (action == null) {
@@ -420,7 +420,7 @@ public final class Chainables {
      * @return
      * @see Chainable#ascending(ToStringFunction)
      */
-    public static <T> Chainable<T> ascending(Iterable<T> items, ToStringFunction<T> keyExtractor) {
+    public static <T> Chainable<T> ascending(Iterable<T> items, ToStringFunction<? super T> keyExtractor) {
         return sortedBy(items, keyExtractor, true);
     }
 
@@ -430,7 +430,7 @@ public final class Chainables {
      * @return
      * @see Chainable#ascending(ToLongFunction)
      */
-    public static <T> Chainable<T> ascending(Iterable<T> items, ToLongFunction<T> keyExtractor) {
+    public static <T> Chainable<T> ascending(Iterable<T> items, ToLongFunction<? super T> keyExtractor) {
         return sortedBy(items, keyExtractor, true);
     }
 
@@ -440,7 +440,7 @@ public final class Chainables {
      * @return
      * @see Chainable#ascending(ToDoubleFunction)
      */
-    public static <T> Chainable<T> ascending(Iterable<T> items, ToDoubleFunction<T> keyExtractor) {
+    public static <T> Chainable<T> ascending(Iterable<T> items, ToDoubleFunction<? super T> keyExtractor) {
         return sortedBy(items, keyExtractor, true);
     }
 
@@ -450,7 +450,7 @@ public final class Chainables {
      * @param condition the condition for the returned items to satisfy
      * @return items before the first one is encountered taht no longer satisfies the specified condition
      */
-    public static <T> Chainable<T> asLongAs(Iterable<T> items, Predicate<T> condition) {
+    public static <T> Chainable<T> asLongAs(Iterable<T> items, Predicate<? super T> condition) {
         return (condition == null) ? Chainable.from(items) : before(items, condition.negate());
     }
 
@@ -487,7 +487,7 @@ public final class Chainables {
      * @return items before the specified condition is satisfied
      * @see Chainable#before(Predicate)
      */
-    public static <T> Chainable<T> before(Iterable<T> items, Predicate<T> condition) {
+    public static <T> Chainable<T> before(Iterable<T> items, Predicate<? super T> condition) {
         if (items == null) {
             return null;
         } else if (condition == null) {
@@ -548,7 +548,7 @@ public final class Chainables {
      * @return
      * @see Chainable#breadthFirst(Function)
      */
-    public static <T> Chainable<T> breadthFirst(Iterable<T> items, Function<T, Iterable<T>> childTraverser) {
+    public static <T> Chainable<T> breadthFirst(Iterable<T> items, Function<? super T, Iterable<T>> childTraverser) {
         return traverse(items, childTraverser, true);
     }
 
@@ -561,8 +561,8 @@ public final class Chainables {
      */
     public static <T> Chainable<T> breadthFirstNotBelow(
             Iterable<T> items,
-            Function<T, Iterable<T>> childTraverser,
-            Predicate<T> condition) {
+            Function<? super T, Iterable<T>> childTraverser,
+            Predicate<? super T> condition) {
         return notBelow(items, childTraverser, condition, true);
     }
 
@@ -575,9 +575,9 @@ public final class Chainables {
      */
     public static <T> Chainable<T> breadthFirstAsLongAs(
             Iterable<T> items,
-            Function<T, Iterable<T>> childTraverser,
-            Predicate<T> condition) {
-        final Predicate<T> appliedCondition = (condition != null) ? condition : (o -> true);
+            Function<? super T, Iterable<T>> childTraverser,
+            Predicate<? super T> condition) {
+        final Predicate<? super T> appliedCondition = (condition != null) ? condition : (o -> true);
         return breadthFirst(items, o -> Chainables.whereEither(childTraverser.apply(o), c -> Boolean.TRUE.equals(appliedCondition.test(c))));
     }
 
@@ -606,7 +606,7 @@ public final class Chainables {
      * @return
      * @see Chainable#chain(UnaryOperator)
      */
-    public static <T> Chainable<T> chain(T item, UnaryOperator<T> nextItemExtractor) {
+    public static <T> Chainable<? super T> chain(T item, UnaryOperator<? super T> nextItemExtractor) {
         return chain(Chainable.from(item), nextItemExtractor);
     }
 
@@ -616,7 +616,7 @@ public final class Chainables {
      * @return
      * @see Chainable#chainIndexed(BiFunction)
      */
-    public static <T> Chainable<T> chain(T item, BiFunction<T, Long, T> nextItemExtractor) {
+    public static <T> Chainable<T> chain(T item, BiFunction<? super T, Long, T> nextItemExtractor) {
         return chainIndexed(Chainable.from(item), nextItemExtractor);
     }
 
@@ -676,7 +676,7 @@ public final class Chainables {
      * @return
      * @see Chainable#chainIndexed(BiFunction)
      */
-    public static <T> Chainable<T> chainIndexed(Iterable<T> items, BiFunction<T, Long, T> nextItemExtractor) {
+    public static <T> Chainable<T> chainIndexed(Iterable<T> items, BiFunction<? super T, Long, T> nextItemExtractor) {
         return (items == null || nextItemExtractor == null) ? Chainable.from(items) : Chainable.fromIterator(() -> new Iterator<T>() {
             Iterator<T> iter = items.iterator();
             T next = null;
@@ -772,7 +772,7 @@ public final class Chainables {
      * @param nextItemExtractor
      * @return {@link Chainable#chainIf(Predicate, UnaryOperator)}
      */
-    public static <T> Chainable<T> chainIf(Iterable<T> items, Predicate<T> condition, UnaryOperator<T> nextItemExtractor) {
+    public static <T> Chainable<T> chainIf(Iterable<T> items, Predicate<? super T> condition, UnaryOperator<T> nextItemExtractor) {
         return (items == null || nextItemExtractor == null) ? Chainable.from(items) : Chainable.fromIterator(() -> new Iterator<T>() {
             final Iterator<T> iter = items.iterator();
             private T next = null;
@@ -830,7 +830,7 @@ public final class Chainables {
      * @return
      * @see Chainable#concat(Function)
      */
-    public static <T> Chainable<T> concat(Iterable<T> items, Function<T, Iterable<T>> lister) {
+    public static <T> Chainable<T> concat(Iterable<T> items, Function<? super T, Iterable<T>> lister) {
         return (lister == null || items == null) ? Chainable.from(items) : Chainable.fromIterator(() -> new Iterator<T>() {
             private final Iterator<T> iter1 = items.iterator();
             private Iterator<T> iter2 = null;
@@ -1100,7 +1100,7 @@ public final class Chainables {
      * @return
      * @see Chainable#depthFirst(Function)
      */
-    public static <T> Chainable<T> depthFirst(Iterable<T> items, Function<T, Iterable<T>> childTraverser) {
+    public static <T> Chainable<T> depthFirst(Iterable<T> items, Function<? super T, Iterable<T>> childTraverser) {
         return traverse(items, childTraverser, false);
     }
 
@@ -1113,8 +1113,8 @@ public final class Chainables {
      */
     public static <T> Chainable<T> depthFirstNotBelow(
             Iterable<T> items,
-            Function<T, Iterable<T>> childTraverser,
-            Predicate<T> condition) {
+            Function<? super T, Iterable<T>> childTraverser,
+            Predicate<? super T> condition) {
         return notBelow(items, childTraverser, condition, false);
     }
 
@@ -1133,7 +1133,7 @@ public final class Chainables {
      * @return
      * @see Chainable#descending(ToStringFunction)
      */
-    public static <T> Chainable<T> descending(Iterable<T> items, ToStringFunction<T> keyExtractor) {
+    public static <T> Chainable<T> descending(Iterable<T> items, ToStringFunction<? super T> keyExtractor) {
         return sortedBy(items, keyExtractor, false);
     }
 
@@ -1207,7 +1207,7 @@ public final class Chainables {
      * @return
      * @see Chainable#descending(ToLongFunction)
      */
-    public static <T> Chainable<T> descending(Iterable<T> items, ToLongFunction<T> keyExtractor) {
+    public static <T> Chainable<T> descending(Iterable<T> items, ToLongFunction<? super T> keyExtractor) {
         return sortedBy(items, keyExtractor, false);
     }
 
@@ -1217,7 +1217,7 @@ public final class Chainables {
      * @return
      * @see Chainable#descending(ToDoubleFunction)
      */
-    public static <T> Chainable<T> descending(Iterable<T> items, ToDoubleFunction<T> comparable) {
+    public static <T> Chainable<T> descending(Iterable<T> items, ToDoubleFunction<? super T> comparable) {
         return sortedBy(items, comparable, false);
     }
 
@@ -1227,7 +1227,7 @@ public final class Chainables {
      * @return
      * @see Chainable#distinct(Function)
      */
-    public static <T, V> Chainable<T> distinct(Iterable<T> items, Function<T, V> keyExtractor) {
+    public static <T, V> Chainable<T> distinct(Iterable<T> items, Function<? super T, V> keyExtractor) {
         return (keyExtractor == null) ? distinct(items) : Chainable.fromIterator(() -> new Iterator<T>() {
             final Map<V, T> seen = new HashMap<>();
             final Iterator<T> iter = items.iterator();
@@ -1457,14 +1457,14 @@ public final class Chainables {
      * @see Chainable#firstWhereEither(Predicate...)
      */
     @SafeVarargs
-    public static <V> V firstWhereEither(Iterable<V> items, Predicate<V>... conditions) {
+    public static <V> V firstWhereEither(Iterable<V> items, Predicate<? super V>... conditions) {
         if (items == null) {
             return null;
         } else if (conditions == null) {
             return Chainables.first(items);
         } else {
             for (V item : items) {
-                for (Predicate<V> condition : conditions) {
+                for (Predicate<? super V> condition : conditions) {
                     if (condition.test(item)) {
                         return item;
                     }
@@ -1765,7 +1765,7 @@ public final class Chainables {
      * @return
      * @see Chainable#max(Function)
      */
-    public static <T> T max(Iterable<T> items, Function<T, Double> valueExtractor) {
+    public static <T> T max(Iterable<T> items, Function<? super T, Double> valueExtractor) {
         Double max = null;
         T maxItem = null;
         if (!Chainables.isNullOrEmpty(items)) {
@@ -1787,7 +1787,7 @@ public final class Chainables {
      * @return
      * @see Chainable#min(Function)
      */
-    public static <T> T min(Iterable<T> items, Function<T, Double> valueExtractor) {
+    public static <T> T min(Iterable<T> items, Function<? super T, Double> valueExtractor) {
         Double min = null;
         T minItem = null;
         if (!Chainables.isNullOrEmpty(items)) {
@@ -1809,7 +1809,7 @@ public final class Chainables {
      * @return
      * @see Chainable#noneWhere(Predicate)
      */
-    public static <T> boolean noneWhere(Iterable<T> items, Predicate<T> condition) {
+    public static <T> boolean noneWhere(Iterable<T> items, Predicate<? super T> condition) {
         return Chainables.noneWhereEither(items, condition);
     }
 
@@ -1820,7 +1820,7 @@ public final class Chainables {
      * @see Chainable#noneWhereEither(Predicate...)
      */
     @SafeVarargs
-    public static <T> boolean noneWhereEither(Iterable<T> items, Predicate<T>... conditions) {
+    public static <T> boolean noneWhereEither(Iterable<T> items, Predicate<? super T>... conditions) {
         return !Chainables.anyWhereEither(items, conditions);
     }
 
@@ -1831,7 +1831,7 @@ public final class Chainables {
      * @return items before and including the first item where the specified condition is satisfied
      * @see Chainable#notAfter(Predicate)
      */
-    public static <T> Chainable<T> notAfter(Iterable<T> items, Predicate<T> condition) {
+    public static <T> Chainable<T> notAfter(Iterable<T> items, Predicate<? super T> condition) {
         if (items == null) {
             return null;
         } else if (condition == null) {
@@ -1883,8 +1883,8 @@ public final class Chainables {
      * @return
      * @see Chainable#notAsLongAs(Predicate)
      */
-    public static <T> Chainable<T> notAsLongAs(Iterable<T> items, Predicate<T> condition) {
-        return (items != null) ? Chainable.from(items).notBefore(condition.negate()) : null;
+    public static <T> Chainable<T> notAsLongAs(Iterable<T> items, Predicate<? super T> condition) {
+        return (items != null) ? notBefore(items, condition.negate()) : null;
     }
 
     /**
@@ -1904,7 +1904,7 @@ public final class Chainables {
      * @see Chainable#notBefore(Predicate)
      */
     //##
-    static <T> Chainable<T> notBefore(Iterable<T> items, Predicate<T> condition) {
+    static <T> Chainable<T> notBefore(Iterable<T> items, Predicate<? super T> condition) {
         if (items == null) {
             return null;
         } else if (condition == null) {
@@ -1967,10 +1967,10 @@ public final class Chainables {
 
     private static <T> Chainable<T> notBelow(
             Iterable<T> items,
-            Function<T, Iterable<T>> childTraverser,
-            Predicate<T> condition,
+            Function<? super T, Iterable<T>> childTraverser,
+            Predicate<? super T> condition,
             boolean breadthFirst) {
-        final Predicate<T> appliedCondition = (condition != null) ? condition : (o -> false);
+        final Predicate<? super T> appliedCondition = (condition != null) ? condition : (o -> false);
         return traverse(items, o -> Boolean.FALSE.equals(appliedCondition.test(o)) ? childTraverser.apply(o) : Chainable.empty(), breadthFirst);
     }
 
@@ -1980,7 +1980,7 @@ public final class Chainables {
      * @return
      * @see Chainable#notWhere(Predicate)
      */
-    public static final <T> Chainable<T> notWhere(Iterable<T> items, Predicate<T> condition) {
+    public static final <T> Chainable<T> notWhere(Iterable<T> items, Predicate<? super T> condition) {
         return (condition != null) ? Chainables.whereEither(items, condition.negate()) : Chainable.from(items);
     }
 
@@ -1999,7 +1999,7 @@ public final class Chainables {
         }
     }
 
-    private static <T> Chainable<T> sortedBy(Iterable<T> items, BiFunction<T, T, Integer> comparator, boolean ascending) {
+    private static <T> Chainable<T> sortedBy(Iterable<T> items, BiFunction<? super T, ? super T, Integer> comparator, boolean ascending) {
         Chainable<T> i = Chainable.from(items);
         if (items == null || comparator == null) {
             return i;
@@ -2017,7 +2017,7 @@ public final class Chainables {
         return Chainable.from(list);
     }
 
-    private static <T> Chainable<T> sortedBy(Iterable<T> items, ToStringFunction<T> keyExtractor, boolean ascending) {
+    private static <T> Chainable<T> sortedBy(Iterable<T> items, ToStringFunction<? super T> keyExtractor, boolean ascending) {
         Chainable<T> i = Chainable.from(items);
         if (keyExtractor == null) {
             return i;
@@ -2029,7 +2029,7 @@ public final class Chainables {
         }
     }
 
-    private static <T> Chainable<T> sortedBy(Iterable<T> items, ToLongFunction<T> keyExtractor, boolean ascending) {
+    private static <T> Chainable<T> sortedBy(Iterable<T> items, ToLongFunction<? super T> keyExtractor, boolean ascending) {
         Chainable<T> i = Chainable.from(items);
         if (keyExtractor == null) {
             return i;
@@ -2041,7 +2041,7 @@ public final class Chainables {
         }
     }
 
-    private static <T> Chainable<T> sortedBy(Iterable<T> items, ToDoubleFunction<T> keyExtractor, boolean ascending) {
+    private static <T> Chainable<T> sortedBy(Iterable<T> items, ToDoubleFunction<? super T> keyExtractor, boolean ascending) {
         Chainable<T> i = Chainable.from(items);
         if (keyExtractor == null) {
             return i;
@@ -2056,7 +2056,7 @@ public final class Chainables {
      * @return
      * @see Chainable#replace(Function)
      */
-    public static <T> Chainable<T> replace(Iterable<T> items, Function<T, Iterable<T>> replacer) {
+    public static <T> Chainable<T> replace(Iterable<T> items, Function<? super T, Iterable<T>> replacer) {
         return transformAndFlatten(items, replacer).withoutNull();
     }
 
@@ -2205,10 +2205,10 @@ public final class Chainables {
      * @return
      * @see Chainable#sum(Function)
      */
-    public static <T> long sum(Iterable<T> items, Function<T, Long> valueExtractor) {
+    public static <T> long sum(Iterable<T> items, Function<? super T, Long> valueExtractor) {
         int sum = 0;
         if (!Chainables.isNullOrEmpty(items)) {
-            Chainable<Long> numbers = Chainables.withoutNull(items).transform(valueExtractor);
+            Chainable<Long> numbers = withoutNull(items).transform(valueExtractor);
             for (Long number : numbers) {
                 if (number != null) {
                     sum += number;
@@ -2266,7 +2266,7 @@ public final class Chainables {
      * @return
      * @see Chainable#toMap(Function)
      */
-    public static <K, V> Map<K, V> toMap(Iterable<V> items, Function<V, K> keyExtractor) {
+    public static <K, V> Map<K, V> toMap(Iterable<V> items, Function<? super V, K> keyExtractor) {
         if (items == null || keyExtractor == null) {
             return Collections.emptyMap();
         }
@@ -2303,7 +2303,7 @@ public final class Chainables {
      * @return the transformed items
      * @see Chainable#transform(Function)
      */
-    public static <I, O> Chainable<O> transform(Iterable<I> items, Function<I, O> transformer) {
+    public static <I, O> Chainable<O> transform(Iterable<I> items, Function<? super I, O> transformer) {
         return (items == null || transformer == null) ? Chainable.empty() : Chainable.fromIterator(() -> new Iterator<O>() {
             Iterator<I> iterator = items.iterator();
 
@@ -2330,7 +2330,7 @@ public final class Chainables {
      * @return
      * @see Chainable#transformAndFlatten(Function)
      */
-    public static <I, O> Chainable<O> transformAndFlatten(Iterable<I> items, Function<I, Iterable<O>> transformer) {
+    public static <I, O> Chainable<O> transformAndFlatten(Iterable<I> items, Function<? super I, Iterable<O>> transformer) {
         return (items == null || transformer == null) ? Chainable.empty() : Chainable.fromIterator(() -> new Iterator<O>() {
             private final Iterator<I> iterIn = items.iterator();
             private Iterator<O> iterOut = null;
@@ -2366,7 +2366,7 @@ public final class Chainables {
 
     private static <T> Chainable<T> traverse(
             Iterable<T> initials,
-            Function<T, Iterable<T>> childTraverser,
+            Function<? super T, Iterable<T>> childTraverser,
             boolean breadthFirst) {
         return (initials == null || childTraverser == null) ? Chainable.empty() : Chainable.fromIterator(() -> new Iterator<T>() {
             Deque<Iterator<T>> iterators = new LinkedList<>(Arrays.asList(initials.iterator()));
@@ -2424,7 +2424,7 @@ public final class Chainables {
      * @see Chainable#whereEither(Predicate...)
      */
     @SafeVarargs
-    public static final <T> Chainable<T> whereEither(Iterable<T> items, Predicate<T>... predicates) {
+    public static final <T> Chainable<T> whereEither(Iterable<T> items, Predicate<? super T>... predicates) {
         if (items == null) {
             return Chainable.empty();
         } else if (predicates == null || predicates.length == 0) {
@@ -2452,7 +2452,7 @@ public final class Chainables {
                         continue;
                     }
 
-                    for (Predicate<T> predicate : predicates) {
+                    for (Predicate<? super T> predicate : predicates) {
                         if (predicate.test(this.nextItem)) {
                             return true;
                         }
