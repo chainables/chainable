@@ -85,7 +85,7 @@ public interface Chainable<T> extends Iterable<T> {
      * <tr><td><i>C#:</i></td><td>{@code Enumerable.AsEnumerable()}</td></tr>
      * </table>
      */
-    static <T> Chainable<T> from(Iterable<T> items) {
+    static <T> Chainable<T> from(Iterable<? extends T> items) {
         return Chain.from(items);
     }
 
