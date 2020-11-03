@@ -114,15 +114,16 @@ public interface Chainable<T> extends Iterable<T> {
     }
 
     /**
-     * Creates a new chain from the specified {@code stream}, which supports multiple traversals, just like a
+     * Creates a new chain from the specified {@code stream} that supports multiple traversals, just like a
      * standard {@link java.lang.Iterable}, even though the underlying {@link java.util.stream.Stream} does not.
      * <p>
-     * Note that upon subsequent traversals of the chain, the original stream is not recomputed, but rather its values as
-     * obtained during its first traversal are cached internally and used for any subsequent traversals.
+     * Note that upon subsequent traversals of the chain, none of the items in the original stream are evaluated twice,
+     * but rather their values are cached internally and used for any subsequent traversals, even if previous traversals of the chain
+     * were incomplete.
      * @param stream the stream to create a chain from
      * @return a chain based on the specified {@code stream}
      */
-    static <T> Chainable<T> from(Stream<T> stream) {
+    static <T> Chainable<T> from(Stream<? extends T> stream) {
         if (stream == null) {
             return Chainable.empty();
         }
@@ -130,29 +131,40 @@ public interface Chainable<T> extends Iterable<T> {
         return Chainable.from(new Iterable<T>() {
 
             List<T> cache = new ArrayList<>();
-            Iterator<T> iter = stream.iterator();
+            Iterator<? extends T> streamIter = stream.iterator();
 
             @Override
             public Iterator<T> iterator() {
-                if (this.iter == null) {
+                if (this.streamIter == null) {
                     return this.cache.iterator();
                 } else {
                     return new Iterator<T>() {
+                        int nextCacheIndex = 0;
+
                         @Override
                         public boolean hasNext() {
-                            if (iter.hasNext()) {
+                            if (cache.size() > this.nextCacheIndex) {
+                                return true;
+                            } else if (streamIter.hasNext()) {
                                 return true;
                             } else {
-                                iter = null;
+                                streamIter = null;
                                 return false;
                             }
                         }
 
                         @Override
                         public T next() {
-                            T next = iter.next();
-                            cache.add(next);
-                            return next;
+                            if (cache.size() > this.nextCacheIndex) {
+                                return cache.get(this.nextCacheIndex++);
+                            } else if (streamIter == null) {
+                                return null;
+                            } else {
+                                T next = streamIter.next();
+                                cache.add(next);
+                                this.nextCacheIndex++;
+                                return next;
+                            } 
                         }
                     };
                 }

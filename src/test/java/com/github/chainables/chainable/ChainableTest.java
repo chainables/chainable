@@ -1124,6 +1124,33 @@ public class ChainableTest {
         assertEquals(expected, actual);
     }
 
+    @Test void testStreamPartialTraversal() {
+        // Given
+        Integer inputs[] = { 1, 2, 3, 4, 5, 6, 7, 8 };
+        Chainable<Integer> chain = Chainable.from(Stream.of(inputs));
+        String first4Expected = Chainable.from(inputs).first(4).join();
+        String first3Expected = Chainable.from(inputs).first(3).join();
+        String first6Expected = Chainable.from(inputs).first(6).join();
+        String allExpected = Chainable.from(inputs).join();
+
+        // When
+        Chainable<Integer> first4 = chain.first(4);
+        String first4Actual = first4.join();
+        Chainable<Integer> first3 = first4.first(3);
+        String first3Actual = first3.join();
+        Chainable<Integer> first6 = chain.first(6);
+        String first6Actual = first6.join();
+        String allActual = chain.join();
+        String allAgainActual = chain.join();
+
+        // Then
+        assertEquals(first4Expected, first4Actual);
+        assertEquals(first3Expected, first3Actual);
+        assertEquals(first6Expected, first6Actual);
+        assertEquals(allExpected, allActual);
+        assertEquals(allExpected, allAgainActual);
+    }
+
     @Test
     public void testSum() {
         // Given
