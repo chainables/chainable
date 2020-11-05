@@ -72,6 +72,11 @@ public final class Chainables {
         }
 
         @Override
+        public long count() {
+            return (this.cache != null) ? this.cache.size() : Chainables.count(this);
+        }
+
+        @Override
         public Iterator<T> iterator() {
             if (this.cache != null) {
                 // Cache already filled so return from it
