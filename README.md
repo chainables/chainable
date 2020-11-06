@@ -35,15 +35,15 @@ Although `Chainable` overlaps with Java's `Stream` in some areas of functionalit
 
 - Unlike Java's streams, the *chainables* library also provides functional programming-based API for trees (or more specifically, *tries*), seamlessly integrated with the `Chainable` sequence processing API, as well as other (future) basic data structures.
 
-- Since `Chainanable` chains are  re-entrant as mentioned earlier, they support caching of the already evaluated items in the chain, if that is what the programmer chooses to enable (see `Chainable#cached()`). This can be especially useful if the underlying sequence is not expected to change before subsequent traversals, or if it is wrapping a stream (which itself by definition is not re-entrant.)
+- `Chainable` supports caching of the already evaluated items in the chain, if that is what the programmer chooses to enable (see `cached()`). This can be especially useful if the underlying sequence is not expected to change before subsequent traversals, or if it is wrapping a stream (which itself by definition is not re-entrant.)
 
 - Chainables provide various additional convenience methods for sequential processing with functional programming that are not present in streams
 
+- While some of the overlapping APIs in Java's `Stream` are only available starting with Java 9, `Chainable` is fully functional starting with Java 8.
+
 - `Chainable` is not (currently) oriented toward the parallelism that was a key guiding design principle behind Java's `Stream`.
 
-- Some of the overlapping APIs in Java's streams are only available starting with Java 9, whereas `Chainable` is fully functional starting with Java 8.
-
-Having said that, a level of interoperability between `Stream` and `Chainable` exists: a chain can be created from a stream (see `Chainable#from(Stream)`, and vice-versa (see `Chainable#stream()`). A chain wrapping a stream make the stream *appear* reentrant, even though it is traversed only once. That is because the chain wrapper automatically caches the already evaluated stream items and only accesses the underlying stream for not yet visited items.
+Functional and design differences with streams aside, a level of interoperability between `Stream` and `Chainable` exists: a chain can be created from a stream (see `Chainable#from(Stream)`, and vice-versa (see `Chainable#stream()`). A chain wrapping a stream makes the stream *appear* reentrant, even though it is traversed only once. That is because the chain wrapper automatically caches the already evaluated stream items and only accesses the underlying stream for not yet visited items.
 
 ### Highlights
 
@@ -52,13 +52,13 @@ In general, some of the current key highlights of `Chainable` include:
 #### Sequence processing
 > :warning: Section under construction as the API is under active development/at pre-release stage.
 
+- **single pass caching** - by default, each re-iteration over a given chain re-evaluates the specified lambdas. But it is possible to create a chain that is lazy-evaluated only on the first complete pass, that is when it is iterated all the way to the end (see `Chainable#cached()`). From then on, subsequent iterations over the same chain would only navigate through the internally cached outputs of that initial pass, no longer evaluating the provided lambdas. That means the cached chain, upon subsequent traversals, starts behaving like a `List`. 
+
 - **interleaving** (see `Chainable#interleave`) - two or more chains that have their own evaluation logic can be interleaved,
-so that subsequent chain can apply its logic to their outputs in a quasi-parallel (or sequential round-robin) fashion, so as not to have a bias toward one chain first, while still not actually being concurrent.
+so that a subsequent chain can apply its logic to their outputs in a quasi-parallel (or sequential round-robin) fashion, so as not to have a bias toward one chain first, while still not actually being concurrent.
 ![Interleave](./src/main/java/doc-files/img/interleave.png)
 
-- **breadth-first/depth-first traversal** - enabling tree-like traversals of a chain of items, where children of an item are dynamically added by the a specified child extracting lambda and traversed either breadth-first (`Chainable#breadthFirst()`) or pre-order depth-first (`Chainable#depthFirst()`), both in a lazy fashion.
-
-- **single pass caching** - by default, each re-iteration over a given chain re-evaluates the specified lambdas. But it is possible to create a chain that is lazy-evaluated only on the first pass, that is when it is iterated all the way to the end (see `Chainable#cached()`). From then on, subsequent iterations over the same chain would only navigate through the internally cached outputs of that initial pass, no longer evaluating the provided lambdas. That means the cached chain, upon subsequent traversals, starts behaving like a `List`. 
+- **breadth-first/depth-first traversal** - enabling tree-like traversals of a chain of items, where children of an item are dynamically added by the a specified child extracting lambda and lazily traversed either breadth-first (`Chainable#breadthFirst()`) or pre-order depth-first (`Chainable#depthFirst()`).
 
 - **disjunctive filtering** - you can specify one or more filter predicates at the same time (see `Chainable#whereEither`), with disjunctive (logical-OR) semantics. This means you can define specific filtering predicates for specific purposes and then just supply them all as parameters, rather than having to create yet another predicate that's an *OR* of the others.
 
@@ -78,9 +78,9 @@ so that subsequent chain can apply its logic to their outputs in a quasi-paralle
 
 > :warning: Section under construction as the API is under active development/at pre-release stage.
 
-Tightly integrated with `Chainable` chains, the functional programming-based tree (trie) support (`ChainableTree`) is a particularly unique feature of the *chainables* library API. A chainable tree can be defined using a lazily-evaluated lambda that returns the children of a given parent only when requested. A number of capabilities stem from this:
+Tightly integrated with `Chainable`, the functional programming-based tree (trie) support (`ChainableTree`) is a particularly unique feature of the *chainables* library. A chainable tree can be defined using a lazily-evaluated lambda that ddoes not evaluate the children of a given parent until necessary. A number of capabilities stem from this:
 
-- **infinite trees** - that is trees of infinite depth - can be easily defined in terms of children-generating lambdas. For example, the code below defines a lazily-evaluated tree that consists of all the possible permutations of the letters *a*, *b* and *c*, without a length limit:
+- **infinite trees** - that is trees of infinite depth - can be easily defined in terms of children-generating lambdas. For example, the code below defines a lazily-evaluated infinite tree that consists of all the possible permutations of the letters *a*, *b* and *c*, where each layer of the tree consists of nodes of increasingly longer strings:
 
 ```java
         char[] alphabet = { 'a', 'b', 'c' };        // Define alphabet to take letters from
@@ -116,7 +116,7 @@ Tightly integrated with `Chainable` chains, the functional programming-based tre
 
 - ***tree trimming** - (especially useful for infinite trees) a chainable tree can be limited in depth based on either a lazily-evaluated predicate condition that the lowermost descendants are to meet (see `notBelowWhere()`) or a numerical maximum depth of the tree. This enables methods that may result in a full traversal of the tree (such as `firstWhere()`) to eventually return, which they might not if the tree were infinite.
 
-For example, the following code, which builds on the `infinitePermutations` tree from the previous example, results in a view of the previously defined tree that is limited to 3 layers of depth for the purposes of any other logic applied to it.
+For example, the following code, which builds on the `infinitePermutations` tree from the previous example, results in a view of the previously defined tree that is limited to 3 layers of depth for any subsequent logic applied to it:
 
 ```java
         String text = permutationsUptoLength5 = permutations
@@ -193,6 +193,8 @@ In this examples, a chain of odd numbers is interleaved with a chain of even num
 
 #### Infinite tree of permutations of 3 letters
 
+In this example, an infinite tree is defined with a child extracting lambda that generates strings as permutations of letters from the specified alphabet (*a, b, c*) of increasingly greater length. Then, a "view" of the tree is defined limiting its depth to 4 layers (including the empty root) and transformed into a string listing of all the permutations:
+
   ```java
         char[] alphabet = { 'a', 'b', 'c' };        // Define alphabet to take letters from
         ChainableTree<String> permutations = ChainableTree
@@ -201,6 +203,17 @@ In this examples, a chain of odd numbers is interleaved with a chain of even num
                         .empty(String.class)        // Start with empty chain of strings
                         .chainIndexed((s, i) -> p + alphabet[i.intValue()]) // Append each alphabet item to the parent
                         .first(alphabet.length)); // Limit the children chain to the size of the alphabet
+
+        // Prepare a listing of the permutations
+        String text = permutationsUptoLength5 = permutations
+            .notBelowWhere(t -> t.value().length() >= maxLength) // Limit tree depth to 5 levels
+            .breadthFirst()                                      // Create chain from breadth-first traversal
+            .afterFirst()                                        // Skip the empty root
+            .join(", ");
+
+        System.out.println(text);
   ```
+
+The beginning of the output text, which lists all the permutations of *a*, *b*, and *c*, up to 3 letters in length, will be: `a, b, c, aa, ab, ac, ba, bb, bc, ca, cb, cc, aaa, aab, ...`
 
 > :triangular_flag_on_post: To do...
