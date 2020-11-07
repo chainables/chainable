@@ -1507,7 +1507,7 @@ public final class Chainables {
 
     /**
      * @param items
-     * @param min
+     * @param index
      * @return
      * @see Chainable#get(long)
      */
