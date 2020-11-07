@@ -201,6 +201,36 @@ public class ChainableTreeTest {
     }
 
     @Test
+    public void testExamplePermutations() {
+        // Given
+        String expected = "a, b, c, aa, ab, ac, ba, bb, bc, ca, cb, cc, aaa, aab, aac, aba, abb, abc, aca, acb, acc, baa, bab, bac, bba, bbb, bbc, bca, bcb, bcc, caa, cab, cac, cba, cbb, cbc, cca, ccb, ccc";
+        long maxLength = 3;
+        char[] alphabet = { 'a', 'b', 'c' };
+        long expectedCount = Math.round((1 - Math.pow(alphabet.length, maxLength + 1))/(1 - alphabet.length)) - 1;
+
+        // When
+        ChainableTree<String> permutations = ChainableTree
+                .withRoot("") // Blank string at the root
+                .withChildValueExtractor(p -> Chainable
+                        .empty(String.class) // Start with empty chain of strings
+                        .chainIndexed((s, i) -> p + alphabet[i.intValue()]) // Append each consecutive letter the parent
+                        .first(alphabet.length)); // Limit the children chain to the size of the alphabet
+
+        // Limit the depth of the infinite tree to the level of 3-letter strings
+        Chainable<ChainableTree<String>> permutationsUptoLength5 = permutations
+                .notBelowWhere(t -> t.value().length() >= maxLength) // Limit tree depth to 5 levels
+                .breadthFirst() // Traverse breadth-first
+                .afterFirst() // Skip the empty root
+                .cached(); // Cache the evaluated sequence since it won't change when recalc'd again
+
+        String actual = permutationsUptoLength5.join(", ");
+
+        // Then
+        assertEquals(expected, actual);
+        assertEquals(expectedCount, permutationsUptoLength5.count());
+    }
+
+    @Test
     public void testFirst() {
         // Given
         String expected = "1.2";
