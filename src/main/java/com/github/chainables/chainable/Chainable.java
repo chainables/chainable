@@ -30,22 +30,10 @@ import com.github.chainables.function.ToStringFunction;
  * iterator pattern, functional programming and lazy evaluation, intended for achieving code that is more succinct, readable, simpler to implement
  * and sometimes faster than its non-lazy/non-functional equivalent.
  * <p>
- * {@link Chainable} is somewhat analogous to and inspired by C#'s {@code Enumerable<T>} (LINQ), and conceived of before but ultimately also
- * somewhat overlapping with Java 8's {@link java.util.stream.Stream}.
+ * It is intended to be a rich, `Iterable`-based alternative to Java's `Stream` and Google's *guava*.
  * <p>
- * One of the key differences from {@link java.util.stream.Stream} is that {@link Chainable} fully preserves the functional and
- * re-entrancy semantics of {@link java.lang.Iterable}, i.e. it can be traversed multiple times, with multiple iterator instantiations,
- * whereas {@link java.util.stream.Stream} cannot be.
- * <p>
- * Also, the {@link Chainable} API surface contains various unique convenience methods, as {@link Chainable} is intended primarily for sequential
- * access and not so much the parallelism that has been a key guiding design principle behind Java's {@link Stream}.
- * <p>
- * Having said that, a basic level of interoperability between {@link java.util.stream.Stream} and {@link Chainable} is possible: a chain can
- * be created from a stream (see {@link Chainable#from(Stream)}) and a stream can be created from a chain (see {@link Chainable#stream()}).
- * <p>
- * (A note on the vocabulary: {@link Chainable} is the interface, whereas the word "chain" is used throughout the documentation to refer to a
- * specific instance of a {@link Chainable}).
- *
+ * See the project's home site at http://www.github.com/chainables/chainable for more information.
+ * 
  * @author Martin Sawicki
  *
  * @param <T> the type of items in the chain
@@ -170,6 +158,41 @@ public interface Chainable<T> extends Iterable<T> {
                 }
             }
         });
+    }
+
+    /**
+     * Splits the specified {@code text} into a individual characters.
+     * @param text the text to split
+     * @return a chain of characters
+     */
+    static Chainable<String> split(String text) {
+        return Chainables.split(text);
+    }
+
+    /**
+     * Splits the specified {@code text} using the specified {@code delimiterChars}.
+     * <p>
+     * Each of the characters in the specified {@code delimiterCharacters} is used as a separator individually.
+     * @param text the text to split
+     * @param delimiterCharacters the characters to use to split the specified {@code text}
+     * @return the split strings, including the delimiters
+     */
+    static Chainable<String> split(String text, String delimiterCharacters) {
+        return Chainables.split(text, delimiterCharacters);
+    }
+
+    /**
+     * Splits the specified {@code text} using the specified {@code delimiterChars}, optionally including the delimiter characters in the
+     * resulting chain.
+     * <p>
+     * Each of the characters in the specified {@code delimiterCharacters} is used as a separator individually.
+     * @param text the text to split
+     * @param delimiterCharacters the characters to use to split the specified {@code text}
+     * @param includeDelimiters if {@code true}, the delimiter chars are included in the returned results, otherwise they're not
+     * @return the split strings
+     */
+    static Chainable<String> split(String text, String delimiterCharacters, boolean includeDelimiters) {
+        return Chainables.split(text, delimiterCharacters, includeDelimiters);
     }
 
     /**

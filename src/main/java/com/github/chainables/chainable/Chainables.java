@@ -2078,7 +2078,7 @@ public final class Chainables {
     }
 
     /**
-     * Splits the specified {@code text} into a individual characters/
+     * Splits the specified {@code text} into a individual characters.
      * @param text the text to split
      * @return a chain of characters
      */
@@ -2123,7 +2123,7 @@ public final class Chainables {
 
     /**
      * Splits the specified {@code text} using the specified {@code delimiterChars}.
-     * @param text
+     * @param text the text to split
      * @param delimiterCharacters
      * @return the split strings, including the delimiters
      */
@@ -2133,9 +2133,11 @@ public final class Chainables {
 
     /**
      * Splits the specified {@code text} using the specified {@code delimiterChars}.
-     * @param text
-     * @param delimiterCharacters
-     * @param includeDelimiters if true, the delimiter chars are included in the returned results
+     * <p>
+     * Each of the characters in the specified {@code delimiterCharacters} is used as a separator individually.
+     * @param text the text to split
+     * @param delimiterCharacters the characters to use to split the specified {@code text}
+     * @param includeDelimiters if {@code true}, the delimiter chars are included in the returned results, otherwise they're not
      * @return the split strings
      */
     public static Chainable<String> split(String text, String delimiterCharacters, boolean includeDelimiters) {

@@ -1045,8 +1045,8 @@ public class ChainableTest {
         int expectedChars = text.length();
 
         // When
-        Chainable<String> tokens = Chainables.split(text, " ,'\"!?.()[]{};:-+=");
-        Chainable<String> chars = Chainables.split(text);
+        Chainable<String> tokens = Chainable.split(text, " ,'\"!?.()[]{};:-+=");
+        Chainable<String> chars = Chainable.split(text);
         String mergedTokens = tokens.join();
         String mergedChars = chars.join();
 
