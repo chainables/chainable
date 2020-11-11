@@ -63,9 +63,9 @@ Add this to your POM's `<depedencies>`:
 
 ## Getting Started
 
-A simple starting **chain** can be created using one of the factory methods on `Chainable`, such as [`from()`](https://www.javadoc.io/static/com.github.chainables/chainable/0.5.2/com/github/chainables/chainable/Chainable.html#from-T...-) or [`empty`](https://www.javadoc.io/static/com.github.chainables/chainable/0.5.2/com/github/chainables/chainable/Chainable.html#empty-java.lang.Class-).
+A simple starting **chain** can be created using one of the factory methods on `Chainable`, such as [`from()`](https://www.javadoc.io/static/com.github.chainables/chainable/0.5.2/com/github/chainables/chainable/Chainable.html#from-T...-) or [`empty()`](https://www.javadoc.io/static/com.github.chainables/chainable/0.5.2/com/github/chainables/chainable/Chainable.html#empty-java.lang.Class-).
 
-<details><summary>Example:</summary>
+<details><summary>Example...</summary>
 
   ```java
   // From pre-defined values
@@ -85,7 +85,7 @@ A simple starting **chain** can be created using one of the factory methods on `
 
 A simple **tree** can be created using the [`withRoot()`](https://www.javadoc.io/static/com.github.chainables/chainable/0.5.2/com/github/chainables/chainable/ChainableTree.html#withRoot-T-) factory method.
 
-<details><summary>Example:</summary>
+<details><summary>Example...</summary>
 
   ```java
   // Example tree of String values
@@ -106,7 +106,7 @@ and then child sub-trees can be assigned to it either:
       .withChildren("2.1", "2.2"));
   ```
 
- - or dynamically, using functional programming by providing a child-extracting lambda -- see the [tree processing example](#tree-processing) example, or more in the [Tree Examples](#tree-examples) section.
+ - or dynamically, using functional programming by providing a child-extracting lambda -- see the [tree processing example](#tree-processing), or more in the [Tree Examples](#tree-examples) section.
 </details>
 
 ## Overview
@@ -140,7 +140,7 @@ so that a subsequent chain can apply its logic to their outputs in a quasi-paral
 
   - **equality and sub-array containment checks**, evaluated lazily. Chain comparison using the equality [`equals()`](https://www.javadoc.io/static/com.github.chainables/chainable/0.5.2/com/github/chainables/chainable/Chainable.html#equals-java.lang.Iterable-) test or the sub-array containment [`containsSubarray()`](https://www.javadoc.io/static/com.github.chainables/chainable/0.5.2/com/github/chainables/chainable/Chainable.html#containsSubarray-java.lang.Iterable-) tests return quickly, without traversing/evaluating the rest of the chain.
 
-  - chainable **string joining/splitting** operations - You can get a chain of tokens or characters out of a string with `Chainables`' [`split()`](https://www.javadoc.io/static/com.github.chainables/chainable/0.5.2/com/github/chainables/chainable/Chainables.html#split-java.lang.String-java.lang.String-boolean-) method, process it using various `Chainable` APIs and go back to a string using [`join()`](https://www.javadoc.io/static/com.github.chainables/chainable/0.5.2/com/github/chainables/chainable/Chainable.html#join-java.lang.String-).
+  - chainable **string joining/splitting** operations - You can get a chain of tokens or characters out of a string with `Chainable`'s [`split()`](https://www.javadoc.io/static/com.github.chainables/chainable/0.5.2/com/github/chainables/chainable/Chainables.html#split-java.lang.String-java.lang.String-boolean-) method, process it using various `Chainable` APIs and go back to a string using [`join()`](https://www.javadoc.io/static/com.github.chainables/chainable/0.5.2/com/github/chainables/chainable/Chainable.html#join-java.lang.String-).
 </details>
 
 #### Tree processing
@@ -187,7 +187,7 @@ so that a subsequent chain can apply its logic to their outputs in a quasi-paral
    - a lazily evaluated predicate condition that the lowermost descendants are to meet, using [`notBelowWhere()`](https://www.javadoc.io/static/com.github.chainables/chainable/0.5.2/com/github/chainables/chainable/ChainableTree.html#notBelowWhere-java.util.function.Predicate-)
    - or taking into consideration the depth of the tree so far, using the `BiPredicate` flavor of [`notBelowWhere()`](https://www.javadoc.io/static/com.github.chainables/chainable/0.5.2/com/github/chainables/chainable/ChainableTree.html#notBelowWhere-java.util.function.BiPredicate-).
 
-   This enables methods that may result in a full traversal of the tree (such as `firstWhere()`) to *eventually* return, which they might not otherwise do if the tree is infinite.
+   This enables methods that may result in a full traversal of the tree (such as [`firstWhere()`])https://www.javadoc.io/static/com.github.chainables/chainable/0.5.2/com/github/chainables/chainable/ChainableTree.html#firstWhere-java.util.function.Predicate-)) to *eventually* return, which they might not otherwise do if the tree is infinite.
 
    For example, the following code, which builds on the previous example, results in a view of the previously defined tree that is limited to de-facto 3 layers of depth for any subsequent logic applied to it:
 

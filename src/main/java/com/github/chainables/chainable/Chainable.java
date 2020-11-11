@@ -164,6 +164,9 @@ public interface Chainable<T> extends Iterable<T> {
      * Splits the specified {@code text} into a individual characters.
      * @param text the text to split
      * @return a chain of characters
+     * @see #split(String, String)
+     * @see #split(String, String, boolean)
+     * @see #join()
      */
     static Chainable<String> split(String text) {
         return Chainables.split(text);
@@ -176,6 +179,9 @@ public interface Chainable<T> extends Iterable<T> {
      * @param text the text to split
      * @param delimiterCharacters the characters to use to split the specified {@code text}
      * @return the split strings, including the delimiters
+     * @see #split(String)
+     * @see #split(String, String, boolean)
+     * @see #join()
      */
     static Chainable<String> split(String text, String delimiterCharacters) {
         return Chainables.split(text, delimiterCharacters);
@@ -190,6 +196,9 @@ public interface Chainable<T> extends Iterable<T> {
      * @param delimiterCharacters the characters to use to split the specified {@code text}
      * @param includeDelimiters if {@code true}, the delimiter chars are included in the returned results, otherwise they're not
      * @return the split strings
+     * @see #split(String)
+     * @see #split(String, String)
+     * @see #join()
      */
     static Chainable<String> split(String text, String delimiterCharacters, boolean includeDelimiters) {
         return Chainables.split(text, delimiterCharacters, includeDelimiters);
@@ -732,7 +741,7 @@ public interface Chainable<T> extends Iterable<T> {
      * Counts the items in this chain.
      * <p>
      * This triggers a full traversal/evaluation of the items. If the expected number, maximum or minimum is known and the goal is only to
-     * confirm the expectation, it should be generally more efficient to use {@link #isCountAtLeast(int)}, {@link #isCountAtMost(int)} or {{@link #isCountExactly(long)}
+     * confirm the expectation, it should be generally more efficient to use {@link #isCountAtLeast(long)}, {@link #isCountAtMost(long)} or {{@link #isCountExactly(long)}
      * for that purpose, especially if the chain is defined dynamically/functionally and is potentially infinite.
      * @return total number of items
      * @chainables.similar
