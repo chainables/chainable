@@ -364,7 +364,7 @@ public interface ChainableTree<T> extends Cloneable {
     /**
      * Creates a new tree (a single node) with the specified wrapped {@code value}.
      * @param value the value to wrap in the new tree node
-     * @return
+     * @return a new tree wrapping the specified {@code value}
      */
     static <T> ChainableTree<T> withRoot(T value) {
         return ChainableTreeImpl.withRoot(value);

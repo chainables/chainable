@@ -364,16 +364,14 @@ public class ChainableTest {
                 .last();
 
         Chainable<Long> unseededChain = Chainable
-                .empty() // Test chaining without a seed
+                .empty(Long.class) // Test chaining without a seed
                 .chain(o -> Math.round(Math.random() * 10))
-                .first(5)
-                .cast(Long.class);
+                .first(5);
 
         Chainable<String> trulyEmptyChain = Chainable
-                .empty()
+                .empty(String.class)
                 .chain(i -> (i == null) ? null : "A")
-                .first(5)
-                .cast(String.class);
+                .first(5);
 
         // Then
         assertEquals(expected, actual);
@@ -1045,8 +1043,8 @@ public class ChainableTest {
         int expectedChars = text.length();
 
         // When
-        Chainable<String> tokens = Chainables.split(text, " ,'\"!?.()[]{};:-+=");
-        Chainable<String> chars = Chainables.split(text);
+        Chainable<String> tokens = Chainable.split(text, " ,'\"!?.()[]{};:-+=");
+        Chainable<String> chars = Chainable.split(text);
         String mergedTokens = tokens.join();
         String mergedChars = chars.join();
 
