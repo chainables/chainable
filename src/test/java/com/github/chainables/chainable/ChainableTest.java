@@ -364,16 +364,14 @@ public class ChainableTest {
                 .last();
 
         Chainable<Long> unseededChain = Chainable
-                .empty() // Test chaining without a seed
+                .empty(Long.class) // Test chaining without a seed
                 .chain(o -> Math.round(Math.random() * 10))
-                .first(5)
-                .cast(Long.class);
+                .first(5);
 
         Chainable<String> trulyEmptyChain = Chainable
-                .empty()
+                .empty(String.class)
                 .chain(i -> (i == null) ? null : "A")
-                .first(5)
-                .cast(String.class);
+                .first(5);
 
         // Then
         assertEquals(expected, actual);
@@ -738,6 +736,36 @@ public class ChainableTest {
         assertEquals(expectedTransformed, actualTransformed);
     }
 
+    @Test
+    public void testGet() {
+        // Given
+        Chainable<Integer> infiniteChain = Chainable
+                .from(0)
+                .chain(i -> i + 1);
+
+        Chainable<Integer> listChain = Chainable
+                .from(Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10));
+
+        Chainable<Long> cachedChain = Chainable
+                .empty(Long.class)
+                .chain(i -> Math.round(Math.random() * 1000))
+                .first(10)
+                .cached();
+
+        // When
+        int item5FromInfinite = infiniteChain.get(5);
+        int item5FromList = listChain.get(5);
+        long cachedCount = cachedChain.count();
+        long item5FromCache = cachedChain.get(5);
+        long item5FromCacheAgain = cachedChain.get(5);
+
+        // Then
+        assertEquals(5, item5FromInfinite);
+        assertEquals(5, item5FromList);
+        assertEquals(10, cachedCount);
+        assertEquals(item5FromCache, item5FromCacheAgain);
+    }
+
     @SuppressWarnings("unchecked")
     @Test
     public void testInterleave() {
@@ -1015,8 +1043,8 @@ public class ChainableTest {
         int expectedChars = text.length();
 
         // When
-        Chainable<String> tokens = Chainables.split(text, " ,'\"!?.()[]{};:-+=");
-        Chainable<String> chars = Chainables.split(text);
+        Chainable<String> tokens = Chainable.split(text, " ,'\"!?.()[]{};:-+=");
+        Chainable<String> chars = Chainable.split(text);
         String mergedTokens = tokens.join();
         String mergedChars = chars.join();
 
@@ -1092,6 +1120,33 @@ public class ChainableTest {
 
         // Then
         assertEquals(expected, actual);
+    }
+
+    @Test void testStreamPartialTraversal() {
+        // Given
+        Integer inputs[] = { 1, 2, 3, 4, 5, 6, 7, 8 };
+        Chainable<Integer> chain = Chainable.from(Stream.of(inputs));
+        String first4Expected = Chainable.from(inputs).first(4).join();
+        String first3Expected = Chainable.from(inputs).first(3).join();
+        String first6Expected = Chainable.from(inputs).first(6).join();
+        String allExpected = Chainable.from(inputs).join();
+
+        // When
+        Chainable<Integer> first4 = chain.first(4);
+        String first4Actual = first4.join();
+        Chainable<Integer> first3 = first4.first(3);
+        String first3Actual = first3.join();
+        Chainable<Integer> first6 = chain.first(6);
+        String first6Actual = first6.join();
+        String allActual = chain.join();
+        String allAgainActual = chain.join();
+
+        // Then
+        assertEquals(first4Expected, first4Actual);
+        assertEquals(first3Expected, first3Actual);
+        assertEquals(first6Expected, first6Actual);
+        assertEquals(allExpected, allActual);
+        assertEquals(allExpected, allAgainActual);
     }
 
     @Test

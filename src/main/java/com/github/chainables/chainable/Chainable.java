@@ -30,22 +30,10 @@ import com.github.chainables.function.ToStringFunction;
  * iterator pattern, functional programming and lazy evaluation, intended for achieving code that is more succinct, readable, simpler to implement
  * and sometimes faster than its non-lazy/non-functional equivalent.
  * <p>
- * {@link Chainable} is somewhat analogous to and inspired by C#'s {@code Enumerable<T>} (LINQ), and conceived of before but ultimately also
- * somewhat overlapping with Java 8's {@link java.util.stream.Stream}.
+ * It is intended to be a rich, `Iterable`-based alternative to Java's `Stream` and Google's *guava*.
  * <p>
- * One of the key differences from {@link java.util.stream.Stream} is that {@link Chainable} fully preserves the functional and
- * re-entrancy semantics of {@link java.lang.Iterable}, i.e. it can be traversed multiple times, with multiple iterator instantiations,
- * whereas {@link java.util.stream.Stream} cannot be.
- * <p>
- * Also, the {@link Chainable} API surface contains various unique convenience methods, as {@link Chainable} is intended primarily for sequential
- * access and not so much the parallelism that has been a key guiding design principle behind Java's {@link Stream}.
- * <p>
- * Having said that, a basic level of interoperability between {@link java.util.stream.Stream} and {@link Chainable} is possible: a chain can
- * be created from a stream (see {@link Chainable#from(Stream)}) and a stream can be created from a chain (see {@link Chainable#stream()}).
- * <p>
- * (A note on the vocabulary: {@link Chainable} is the interface, whereas the word "chain" is used throughout the documentation to refer to a
- * specific instance of a {@link Chainable}).
- *
+ * See the project's home site at http://www.github.com/chainables/chainable for more information.
+ * 
  * @author Martin Sawicki
  *
  * @param <T> the type of items in the chain
@@ -85,7 +73,7 @@ public interface Chainable<T> extends Iterable<T> {
      * <tr><td><i>C#:</i></td><td>{@code Enumerable.AsEnumerable()}</td></tr>
      * </table>
      */
-    static <T> Chainable<T> from(Iterable<T> items) {
+    static <T> Chainable<T> from(Iterable<? extends T> items) {
         return Chain.from(items);
     }
 
@@ -114,15 +102,16 @@ public interface Chainable<T> extends Iterable<T> {
     }
 
     /**
-     * Creates a new chain from the specified {@code stream}, which supports multiple traversals, just like a
+     * Creates a new chain from the specified {@code stream} that supports multiple traversals, just like a
      * standard {@link java.lang.Iterable}, even though the underlying {@link java.util.stream.Stream} does not.
      * <p>
-     * Note that upon subsequent traversals of the chain, the original stream is not recomputed, but rather its values as
-     * obtained during its first traversal are cached internally and used for any subsequent traversals.
+     * Note that upon subsequent traversals of the chain, none of the items in the original stream are evaluated twice,
+     * but rather their values are cached internally and used for any subsequent traversals, even if previous traversals of the chain
+     * were incomplete.
      * @param stream the stream to create a chain from
      * @return a chain based on the specified {@code stream}
      */
-    static <T> Chainable<T> from(Stream<T> stream) {
+    static <T> Chainable<T> from(Stream<? extends T> stream) {
         if (stream == null) {
             return Chainable.empty();
         }
@@ -130,34 +119,89 @@ public interface Chainable<T> extends Iterable<T> {
         return Chainable.from(new Iterable<T>() {
 
             List<T> cache = new ArrayList<>();
-            Iterator<T> iter = stream.iterator();
+            Iterator<? extends T> streamIter = stream.iterator();
 
             @Override
             public Iterator<T> iterator() {
-                if (this.iter == null) {
+                if (this.streamIter == null) {
                     return this.cache.iterator();
                 } else {
                     return new Iterator<T>() {
+                        int nextCacheIndex = 0;
+
                         @Override
                         public boolean hasNext() {
-                            if (iter.hasNext()) {
+                            if (cache.size() > this.nextCacheIndex) {
+                                return true;
+                            } else if (streamIter.hasNext()) {
                                 return true;
                             } else {
-                                iter = null;
+                                streamIter = null;
                                 return false;
                             }
                         }
 
                         @Override
                         public T next() {
-                            T next = iter.next();
-                            cache.add(next);
-                            return next;
+                            if (cache.size() > this.nextCacheIndex) {
+                                return cache.get(this.nextCacheIndex++);
+                            } else if (streamIter == null) {
+                                return null;
+                            } else {
+                                T next = streamIter.next();
+                                cache.add(next);
+                                this.nextCacheIndex++;
+                                return next;
+                            } 
                         }
                     };
                 }
             }
         });
+    }
+
+    /**
+     * Splits the specified {@code text} into a individual characters.
+     * @param text the text to split
+     * @return a chain of characters
+     * @see #split(String, String)
+     * @see #split(String, String, boolean)
+     * @see #join()
+     */
+    static Chainable<String> split(String text) {
+        return Chainables.split(text);
+    }
+
+    /**
+     * Splits the specified {@code text} using the specified {@code delimiterChars}.
+     * <p>
+     * Each of the characters in the specified {@code delimiterCharacters} is used as a separator individually.
+     * @param text the text to split
+     * @param delimiterCharacters the characters to use to split the specified {@code text}
+     * @return the split strings, including the delimiters
+     * @see #split(String)
+     * @see #split(String, String, boolean)
+     * @see #join()
+     */
+    static Chainable<String> split(String text, String delimiterCharacters) {
+        return Chainables.split(text, delimiterCharacters);
+    }
+
+    /**
+     * Splits the specified {@code text} using the specified {@code delimiterChars}, optionally including the delimiter characters in the
+     * resulting chain.
+     * <p>
+     * Each of the characters in the specified {@code delimiterCharacters} is used as a separator individually.
+     * @param text the text to split
+     * @param delimiterCharacters the characters to use to split the specified {@code text}
+     * @param includeDelimiters if {@code true}, the delimiter chars are included in the returned results, otherwise they're not
+     * @return the split strings
+     * @see #split(String)
+     * @see #split(String, String)
+     * @see #join()
+     */
+    static Chainable<String> split(String text, String delimiterCharacters, boolean includeDelimiters) {
+        return Chainables.split(text, delimiterCharacters, includeDelimiters);
     }
 
     /**
@@ -197,7 +241,7 @@ public interface Chainable<T> extends Iterable<T> {
      * <tr><td><i>C#:</i></td><td>{@code Enumerable.All()}</td></tr>
      * </table>
      */
-    default boolean allWhere(Predicate<T> condition) {
+    default boolean allWhere(Predicate<? super T> condition) {
         return Chainables.allWhere(this, condition);
     }
 
@@ -208,7 +252,7 @@ public interface Chainable<T> extends Iterable<T> {
      * @see #allWhere(Predicate)
      */
     @SuppressWarnings("unchecked")
-    default boolean allWhereEither(Predicate<T>...conditions) {
+    default boolean allWhereEither(Predicate<? super T>...conditions) {
         return Chainables.allWhereEither(this, conditions);
     }
 
@@ -234,7 +278,7 @@ public interface Chainable<T> extends Iterable<T> {
      * <tr><td><i>C#:</i></td><td>{@code Enumerable.Any(Func)}</td></tr>
      * </table>
      */
-    default boolean anyWhere(Predicate<T> condition) {
+    default boolean anyWhere(Predicate<? super T> condition) {
         return Chainables.anyWhere(this, condition);
     }
 
@@ -245,7 +289,7 @@ public interface Chainable<T> extends Iterable<T> {
      * @see #anyWhere(Predicate)
      */
     @SuppressWarnings("unchecked")
-    default boolean anyWhereEither(Predicate<T>... conditions) {
+    default boolean anyWhereEither(Predicate<? super T>... conditions) {
         return Chainables.anyWhereEither(this, conditions);
     }
 
@@ -267,7 +311,7 @@ public interface Chainable<T> extends Iterable<T> {
      * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#forEach(Consumer)}</td></tr>
      * </table>
      */
-    default Chainable<T> apply(Consumer<T> action) {
+    default Chainable<T> apply(Consumer<? super T> action) {
         return Chainables.apply(this, action);
     }
 
@@ -284,7 +328,7 @@ public interface Chainable<T> extends Iterable<T> {
      * @see #apply()
      * @see #apply(Consumer)
      */
-    default Chainable<T> applyAsYouGo(Consumer<T> action) {
+    default Chainable<T> applyAsYouGo(Consumer<? super T> action) {
         return Chainables.applyAsYouGo(this, action); // TODO: shouldn't this call applyAsYouGo?
     }
 
@@ -316,7 +360,7 @@ public interface Chainable<T> extends Iterable<T> {
      * </table>
      * @see #descending(ToStringFunction)
      */
-    default Chainable<T> ascending(ToStringFunction<T> keyExtractor) {
+    default Chainable<T> ascending(ToStringFunction<? super T> keyExtractor) {
         return Chainables.ascending(this, keyExtractor);
     }
 
@@ -334,7 +378,7 @@ public interface Chainable<T> extends Iterable<T> {
      * </table>
      * @see #descending(ToLongFunction)
      */
-    default Chainable<T> ascending(ToLongFunction<T> keyExtractor) {
+    default Chainable<T> ascending(ToLongFunction<? super T> keyExtractor) {
         return Chainables.ascending(this, keyExtractor);
     }
 
@@ -352,7 +396,7 @@ public interface Chainable<T> extends Iterable<T> {
      * </table>
      * @see #descending(ToDoubleFunction)
      */
-    default Chainable<T> ascending(ToDoubleFunction<T> keyExtractor) {
+    default Chainable<T> ascending(ToDoubleFunction<? super T> keyExtractor) {
         return Chainables.ascending(this, keyExtractor);
     }
 
@@ -369,7 +413,7 @@ public interface Chainable<T> extends Iterable<T> {
      * </table>
      * @see #asLongAsEquals(Object)
      */
-    default Chainable<T> asLongAs(Predicate<T> condition) {
+    default Chainable<T> asLongAs(Predicate<? super T> condition) {
         return (condition == null) ? this : this.before(condition.negate());
     }
 
@@ -412,7 +456,7 @@ public interface Chainable<T> extends Iterable<T> {
      * @see #asLongAs(Predicate)
      * @see #notAfter(Predicate)
      */
-    default Chainable<T> before(Predicate<T> condition) {
+    default Chainable<T> before(Predicate<? super T> condition) {
         return Chainables.before(this, condition);
     }
 
@@ -440,7 +484,7 @@ public interface Chainable<T> extends Iterable<T> {
      * @see #breadthFirstAsLongAs(Function, Predicate)
      * @see #depthFirst(Function)
      */
-    default Chainable<T> breadthFirst(Function<T, Iterable<T>> childExtractor) {
+    default Chainable<T> breadthFirst(Function<? super T, Iterable<T>> childExtractor) {
         return Chainables.breadthFirst(this, childExtractor);
     }
 
@@ -462,7 +506,7 @@ public interface Chainable<T> extends Iterable<T> {
      * @see #breadthFirst(Function)
      * @see #depthFirst(Function)
      */
-    default Chainable<T> breadthFirstNotBelow(Function<T, Iterable<T>> childExtractor, Predicate<T> condition) {
+    default Chainable<T> breadthFirstNotBelow(Function<? super T, Iterable<T>> childExtractor, Predicate<? super T> condition) {
         return Chainables.breadthFirstNotBelow(this, childExtractor, condition);
     }
 
@@ -479,7 +523,7 @@ public interface Chainable<T> extends Iterable<T> {
      * @see #breadthFirst(Function)
      * @see #depthFirst(Function)
      */
-    default Chainable<T> breadthFirstAsLongAs(Function<T, Iterable<T>> childExtractor, Predicate<T> condition) {
+    default Chainable<T> breadthFirstAsLongAs(Function<? super T, Iterable<T>> childExtractor, Predicate<? super T> condition) {
         return Chainables.breadthFirstAsLongAs(this, childExtractor, condition);
     }
 
@@ -636,7 +680,7 @@ public interface Chainable<T> extends Iterable<T> {
      * @return the resulting chain
      * @see #concat(Iterable)
      */
-    default Chainable<T> concat(Function<T, Iterable<T>> lister) {
+    default Chainable<T> concat(Function<? super T, Iterable<T>> lister) {
         return Chainables.concat(this, lister);
     }
 
@@ -697,7 +741,7 @@ public interface Chainable<T> extends Iterable<T> {
      * Counts the items in this chain.
      * <p>
      * This triggers a full traversal/evaluation of the items. If the expected number, maximum or minimum is known and the goal is only to
-     * confirm the expectation, it should be generally more efficient to use {@link #isCountAtLeast(int)}, {@link #isCountAtMost(int)} or {{@link #isCountExactly(long)}
+     * confirm the expectation, it should be generally more efficient to use {@link #isCountAtLeast(long)}, {@link #isCountAtMost(long)} or {{@link #isCountExactly(long)}
      * for that purpose, especially if the chain is defined dynamically/functionally and is potentially infinite.
      * @return total number of items
      * @chainables.similar
@@ -744,7 +788,7 @@ public interface Chainable<T> extends Iterable<T> {
      * @param condition
      * @return resulting chain
      */
-    default Chainable<T> depthFirstNotBelow(Function<T, Iterable<T>> childExtractor, Predicate<T> condition) {
+    default Chainable<T> depthFirstNotBelow(Function<? super T, Iterable<T>> childExtractor, Predicate<? super T> condition) {
         return Chainables.depthFirstNotBelow(this, childExtractor, condition);
     }
 
@@ -776,7 +820,7 @@ public interface Chainable<T> extends Iterable<T> {
      * </table>
      * @see #ascending(ToLongFunction)
      */
-    default Chainable<T> descending(ToLongFunction<T> keyExtractor) {
+    default Chainable<T> descending(ToLongFunction<? super T> keyExtractor) {
         return Chainables.descending(this, keyExtractor);
     }
 
@@ -794,7 +838,7 @@ public interface Chainable<T> extends Iterable<T> {
      * </table>
      * @see #ascending(ToDoubleFunction)
      */
-    default Chainable<T> descending(ToDoubleFunction<T> keyExtractor) {
+    default Chainable<T> descending(ToDoubleFunction<? super T> keyExtractor) {
         return Chainables.descending(this, keyExtractor);
     }
 
@@ -812,7 +856,7 @@ public interface Chainable<T> extends Iterable<T> {
      * </table>
      * @see #ascending(ToStringFunction)
      */
-    default Chainable<T> descending(ToStringFunction<T> keyExtractor) {
+    default Chainable<T> descending(ToStringFunction<? super T> keyExtractor) {
         return Chainables.descending(this, keyExtractor);
     }
 
@@ -840,7 +884,7 @@ public interface Chainable<T> extends Iterable<T> {
      * <tr><td><i>C#:</i></td><td>{@code Enumerable.Distinct()} with a custom comparer</td></tr>
      * </table>
      */
-    default <V> Chainable<T> distinct(Function<T, V> keyExtractor) {
+    default <V> Chainable<T> distinct(Function<? super T, V> keyExtractor) {
         return Chainables.distinct(this, keyExtractor);
     }
 
@@ -946,7 +990,7 @@ public interface Chainable<T> extends Iterable<T> {
      * </table>
      * @see #firstWhereEither(Predicate...)
      */
-    default T firstWhere(Predicate<T> condition) {
+    default T firstWhere(Predicate<? super T> condition) {
         return Chainables.firstWhereEither(this, condition);
     }
 
@@ -957,8 +1001,17 @@ public interface Chainable<T> extends Iterable<T> {
      * @see #firstWhere(Predicate)
      */
     @SuppressWarnings("unchecked")
-    default T firstWhereEither(Predicate<T>... conditions) {
+    default T firstWhereEither(Predicate<? super T>... conditions) {
         return Chainables.firstWhereEither(this, conditions);
+    }
+
+    /**
+     * Fetches the item in the chain at the specified {@code index}, traversing/evaluating the chain as needed until that index is reached.
+     * @param index the index of the item to retrieve from this chain
+     * @return the item at the specified index
+     */
+    default T get(long index) {
+        return Chainables.get(this, index);
     }
 
     /**
@@ -1101,7 +1154,7 @@ public interface Chainable<T> extends Iterable<T> {
      * </table>
      * @see #min(Function)
      */
-    default T max(Function<T, Double> valueExtractor) {
+    default T max(Function<? super T, Double> valueExtractor) {
         return Chainables.max(this, valueExtractor);
     }
 
@@ -1118,7 +1171,7 @@ public interface Chainable<T> extends Iterable<T> {
      * </table>
      * @see #max(Function)
      */
-    default T min(Function<T, Double> valueExtractor) {
+    default T min(Function<? super T, Double> valueExtractor) {
         return Chainables.min(this, valueExtractor);
     }
 
@@ -1133,7 +1186,7 @@ public interface Chainable<T> extends Iterable<T> {
      * </table>
      * @see #noneWhereEither(Predicate...)
      */
-    default boolean noneWhere(Predicate<T> condition) {
+    default boolean noneWhere(Predicate<? super T> condition) {
         return Chainables.noneWhere(this, condition);
     }
 
@@ -1144,7 +1197,7 @@ public interface Chainable<T> extends Iterable<T> {
      * @see #noneWhere(Predicate)
      */
     @SuppressWarnings("unchecked")
-    default boolean noneWhereEither(Predicate<T>... conditions) {
+    default boolean noneWhereEither(Predicate<? super T>... conditions) {
         return Chainables.noneWhereEither(this, conditions);
     }
 
@@ -1159,7 +1212,7 @@ public interface Chainable<T> extends Iterable<T> {
      * @see #asLongAs(Predicate)
      * @see #notAsLongAs(Predicate)
      */
-    default Chainable<T> notAfter(Predicate<T> condition) {
+    default Chainable<T> notAfter(Predicate<? super T> condition) {
         return Chainables.notAfter(this, condition);
     }
 
@@ -1179,7 +1232,7 @@ public interface Chainable<T> extends Iterable<T> {
      * @see #asLongAs(Predicate)
      * @see #before(Predicate)
      */
-    default Chainable<T> notAsLongAs(Predicate<T> condition) {
+    default Chainable<T> notAsLongAs(Predicate<? super T> condition) {
         return Chainables.notAsLongAs(this, condition);
     }
 
@@ -1209,7 +1262,7 @@ public interface Chainable<T> extends Iterable<T> {
      * @see #asLongAs(Predicate)
      * @see #notAsLongAs(Predicate)
      */
-    default Chainable<T> notBefore(Predicate<T> condition) {
+    default Chainable<T> notBefore(Predicate<? super T> condition) {
         return Chainables.notBefore(this, condition);
     }
 
@@ -1238,7 +1291,7 @@ public interface Chainable<T> extends Iterable<T> {
      * </table>
      * @see #where(Predicate)
      */
-    default Chainable<T> notWhere(Predicate<T> condition) {
+    default Chainable<T> notWhere(Predicate<? super T> condition) {
         return Chainables.notWhere(this, condition);
     }
 
@@ -1255,7 +1308,7 @@ public interface Chainable<T> extends Iterable<T> {
      * </table>
      * @see #transformAndFlatten(Function)
      */
-    default Chainable<T> replace(Function<T, Iterable<T>> replacer) {
+    default Chainable<T> replace(Function<? super T, Iterable<T>> replacer) {
         return Chainables.replace(this, replacer);
     }
 
@@ -1315,7 +1368,7 @@ public interface Chainable<T> extends Iterable<T> {
      * <tr><td><i>C#:</i></td><td>{@code Enumerable.Aggregate()}, but specifically for summation</td></tr>
      * </table>
      */
-    default long sum(Function<T, Long> valueExtractor) {
+    default long sum(Function<? super T, Long> valueExtractor) {
         return Chainables.sum(this, valueExtractor);
     }
 
@@ -1340,7 +1393,7 @@ public interface Chainable<T> extends Iterable<T> {
      * <tr><td><i>C#:</i></td><td>{@code Enumerable.ToDictionary()}</td></tr>
      * </table>
      */
-    default <K> Map<K, T> toMap(Function<T, K> keyExtractor) {
+    default <K> Map<K, T> toMap(Function<? super T, K> keyExtractor) {
         return Chainables.toMap(this, keyExtractor);
     }
 
@@ -1364,7 +1417,7 @@ public interface Chainable<T> extends Iterable<T> {
      * </table>
      * @see #transformAndFlatten(Function)
      */
-    default <O> Chainable<O> transform(Function<T, O> transformer) {
+    default <O> Chainable<O> transform(Function<? super T, O> transformer) {
         return Chainables.transform(this, transformer);
     }
 
@@ -1379,7 +1432,7 @@ public interface Chainable<T> extends Iterable<T> {
      * </table>
      * @see #transform(Function)
      */
-    default <O> Chainable<O> transformAndFlatten(Function<T, Iterable<O>> transformer) {
+    default <O> Chainable<O> transformAndFlatten(Function<? super T, Iterable<O>> transformer) {
         return Chainables.transformAndFlatten(this, transformer);
     }
 
@@ -1393,7 +1446,7 @@ public interface Chainable<T> extends Iterable<T> {
      * <tr><td><i>C#:</i></td><td>{@code Enumerable.Where()}</td></tr>
      * </table>
      */
-    default Chainable<T> where(Predicate<T> condition) {
+    default Chainable<T> where(Predicate<? super T> condition) {
         return Chainables.whereEither(this, condition);
     }
 
@@ -1404,7 +1457,7 @@ public interface Chainable<T> extends Iterable<T> {
      * @see #where(Predicate)
      */
     @SuppressWarnings("unchecked")
-    default Chainable<T> whereEither(Predicate<T>... conditions) {
+    default Chainable<T> whereEither(Predicate<? super T>... conditions) {
         return Chainables.whereEither(this, conditions);
     }
 
