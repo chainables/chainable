@@ -239,7 +239,7 @@ public final class Chainables {
 
     /**
      * @param items
-     * @return
+     * @return the chain of remaining items after the first of the specified {@code items}
      * @see Chainable#afterFirst()
      */
     public static <V> Chainable<V> afterFirst(Iterable<? extends V> items) {
@@ -249,7 +249,7 @@ public final class Chainables {
     /**
      * @param items
      * @param number
-     * @return
+     * @return the chain of remaining items after the first {@code number} of them in the specified {@code items}
      */
     public static <V> Chainable<V> afterFirst(Iterable<? extends V> items, long number) {
         return (items == null) ? Chainable.empty() : Chainable.fromIterator(() -> new Iterator<V>() {
@@ -281,8 +281,18 @@ public final class Chainables {
 
     /**
      * @param items
+     * @param condition
+     * @return {@code true} iff all of the specified {@code items} satisfy the specified {@code condition}
+     * @see Chainable#allWhere(Predicate)
+     */
+    public static <T> boolean allWhere(Iterable<? extends T> items, Predicate<? super T> condition) {
+        return allWhereEither(items, condition);
+    }
+
+    /**
+     * @param items
      * @param conditions
-     * @return
+     * @return {@code true} iff all of the specified {@code items} satisfy any of the specified {@code conditions}
      * @see Chainable#allWhereEither(Predicate...)
      */
     @SafeVarargs
@@ -296,30 +306,20 @@ public final class Chainables {
     }
 
     /**
-     * @param items
-     * @param condition
-     * @return
-     * @see Chainable#allWhere(Predicate)
-     */
-    public static <T> boolean allWhere(Iterable<? extends T> items, Predicate<? super T> condition) {
-        return allWhereEither(items, condition);
-    }
-
-    /**
      * Determines whether the specified iterable contains at least one element.
      *
-     * @param iterable the {@link java.lang.Iterable} to check
-     * @return {@code true} if the specified {@code iterable} has at least one item
+     * @param items the items to check
+     * @return {@code true} iff the specified {@code items} contain at least one member
      * @see Chainable#any()
      */
-    public static <V> boolean any(Iterable<? extends V> iterable) {
-        return !isNullOrEmpty(iterable);
+    public static <V> boolean any(Iterable<? extends V> items) {
+        return !isNullOrEmpty(items);
     }
 
     /**
      * @param items
      * @param condition
-     * @return
+     * @return {@code true} iff the specified {@code items} contain at least one member that satisfies the specified {@code condition}
      * @see Chainable#anyWhere(Predicate)
      */
     public static <T> boolean anyWhere(Iterable<? extends T> items, Predicate<? super T> condition) {
@@ -329,7 +329,7 @@ public final class Chainables {
     /**
      * @param items
      * @param conditions
-     * @return
+     * @return {@code true} iff the specified {@code items} contain at least one member that satisfies any of the specified {@code conditions}
      * @see Chainable#anyWhereEither(Predicate...)
      */
     @SafeVarargs
@@ -350,7 +350,7 @@ public final class Chainables {
     /**
      * @param items
      * @param action
-     * @return
+     * @return the resulting chain after applying the specified {@code action} to all of the specified {@code items}, fully traversing and evaluating them
      * @see Chainable#apply(Consumer)
      */
     public static <T> Chainable<T> apply(Iterable<? extends T> items, Consumer<? super T> action) {
@@ -376,7 +376,7 @@ public final class Chainables {
 
     /**
      * @param items
-     * @return
+     * @return the resulting chain from fully traversing and evaluating all of the members of specified {@code items}
      * @see Chainable#apply()
      */
     public static <T> Chainable<T> apply(Iterable<? extends T> items) {
@@ -386,7 +386,7 @@ public final class Chainables {
     /**
      * @param items
      * @param action
-     * @return
+     * @return the chain resulting from lazily applying the specified {@code action} to each of the specified {@items}
      * @see Chainable#applyAsYouGo(Consumer)
      */
     public static <T> Chainable<T> applyAsYouGo(Iterable<? extends T> items, Consumer<? super T> action) {
@@ -415,7 +415,7 @@ public final class Chainables {
 
     /**
      * @param items items to sort
-     * @return sorted items
+     * @return a chain of the specified {@code items} fully traversed, evaluated and sorted in the ascending order based on their default comparator
      * @see Chainable#ascending()
      */
     public static <T> Chainable<T> ascending(Iterable<? extends T> items) {
@@ -425,7 +425,8 @@ public final class Chainables {
     /**
      * @param items
      * @param keyExtractor
-     * @return
+     * @return a chain of the specified {@code items} fully traversed, evaluated and sorted in the ascending order based on the output of the specified
+     * {@link java.lang.String}-returning {@code keyExtractor} applied to each item
      * @see Chainable#ascending(ToStringFunction)
      */
     public static <T> Chainable<T> ascending(Iterable<? extends T> items, ToStringFunction<? super T> keyExtractor) {
@@ -435,7 +436,8 @@ public final class Chainables {
     /**
      * @param items
      * @param keyExtractor
-     * @return
+     * @return a chain of the specified {@code items} fully traversed, evaluated and sorted in the ascending order based on the output of the specified
+     * {@link java.lang.Long}-returning {@code keyExtractor} applied to each item
      * @see Chainable#ascending(ToLongFunction)
      */
     public static <T> Chainable<T> ascending(Iterable<? extends T> items, ToLongFunction<? super T> keyExtractor) {
@@ -445,7 +447,8 @@ public final class Chainables {
     /**
      * @param items
      * @param keyExtractor
-     * @return
+     * @return a chain of the specified {@code items} fully traversed, evaluated and sorted in the ascending order based on the output of the specified
+     * {@link java.lang.Double}-returning {@code keyExtractor} applied to each item
      * @see Chainable#ascending(ToDoubleFunction)
      */
     public static <T> Chainable<T> ascending(Iterable<? extends T> items, ToDoubleFunction<? super T> keyExtractor) {
@@ -453,20 +456,20 @@ public final class Chainables {
     }
 
     /**
-     * Returns items before the first one that does not satisfy the specified {@code condition}.
-     * @param items items to return from
-     * @param condition the condition for the returned items to satisfy
-     * @return items before the first one is encountered taht no longer satisfies the specified condition
+     * Returns items up to the last one that still satisfies the specified {@code condition}.
+     * @param items items to evaluate
+     * @param condition the condition for the returned initial chain of items to satisfy
+     * @return a chain of items up to the last one that still satisfies the specified {@code condition}
      */
     public static <T> Chainable<T> asLongAs(Iterable<? extends T> items, Predicate<? super T> condition) {
         return (condition == null) ? Chainable.from(items) : before(items, condition.negate());
     }
 
     /**
-     * Returns items before the first one that is not equal to the specified item.
+     * Returns items up to the last one that is equal to the specified item.
      * @param items items to return from
-     * @param item the item that returned items must be equal to
-     * @return items before the first one is encountered that no longer equals the specified item
+     * @param item the item that the initial chain of returned items must be equal to
+     * @return a chain of initial items up to the last one that are equal to the specified item
      */
     public static <T> Chainable<T> asLongAsEquals(Iterable<? extends T> items, T item) {
         return asLongAs(items, o -> o == item);
