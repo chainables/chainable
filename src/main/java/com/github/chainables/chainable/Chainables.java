@@ -469,7 +469,7 @@ public final class Chainables {
      * Returns items up to the last one that is equal to the specified item.
      * @param items items to return from
      * @param item the item that the initial chain of returned items must be equal to
-     * @return a chain of initial items up to the last one that are equal to the specified item
+     * @return chain of initial items up to the last one that are equal to the specified item
      */
     public static <T> Chainable<T> asLongAsEquals(Iterable<? extends T> items, T item) {
         return asLongAs(items, o -> o == item);
@@ -479,7 +479,7 @@ public final class Chainables {
      * Returns items before the first item satisfying the specified condition is encountered.
      * @param items items to return from
      * @param condition the condition that stops further items from being returned
-     * @return items before the specified condition is satisfied
+     * @return chain of items before the specified condition is satisfied
      * @see Chainable#before(Predicate)
      */
     public static <T> Chainable<T> before(Iterable<? extends T> items, Predicate<? super T> condition) {
@@ -530,7 +530,7 @@ public final class Chainables {
      * Returns items until the specified item is encountered.
      * @param items items to return from
      * @param item the item which, when encountered, will stop the rest of the items from being returned
-     * @return items before the specified item is encountered
+     * @return chain of items before the specified item is encountered
      * @see Chainable#beforeValue(Object)
      */
     public static <T> Chainable<T> beforeValue(Iterable<? extends T> items, T item) {
@@ -540,7 +540,8 @@ public final class Chainables {
     /**
      * @param items
      * @param childTraverser
-     * @return
+     * @return chain of items based on the specified {@code items} in the order of breadth-first traversal, where the specified {@code childTraverser} returns the
+     * next set of items to explore downstream from each item (that is, analogous to children of a tree node)
      * @see Chainable#breadthFirst(Function)
      */
     public static <T> Chainable<T> breadthFirst(Iterable<? extends T> items, Function<? super T, Iterable<T>> childTraverser) {
@@ -551,7 +552,9 @@ public final class Chainables {
      * @param items
      * @param childTraverser
      * @param condition
-     * @return
+     * @return chain of items based on the specified {@code items} in the order of breadth-first traversal, where the specified {@code childTraverser} returns the
+     * next set of items to explore downstream from each item (that is, analogous to children of a tree node), but not below items that satisfy the
+     * specified {@code condition}
      * @see Chainable#breadthFirstNotBelow(Function, Predicate)
      */
     public static <T> Chainable<T> breadthFirstNotBelow(
@@ -565,7 +568,9 @@ public final class Chainables {
      * @param items
      * @param childTraverser
      * @param condition
-     * @return
+     * @return chain of items based on the specified {@code items} in the order of breadth-first traversal, where the specified {@code childTraverser} returns the
+     * next set of items to explore downstream from each item (that is, analogous to children of a tree node), as long as that item satisfies the
+     * specified {@code condition}
      * @see Chainable#breadthFirstAsLongAs(Function, Predicate)
      */
     public static <T> Chainable<T> breadthFirstAsLongAs(
@@ -578,7 +583,8 @@ public final class Chainables {
 
     /**
      * @param items
-     * @return
+     * @return a chain which - instead of re-evaluating all the items upon each re-traversal - will cache the values obtained during the first complete traversal
+     * and return those, rather than re-evaluating during subsequent traversals, de-facto functioning as a list thereon
      * @see Chainable#cached()
      */
     public static <T> Chainable<T> cached(Iterable<? extends T> items) {
@@ -588,7 +594,7 @@ public final class Chainables {
     /**
      * @param items
      * @param clazz
-     * @return
+     * @return chain based on the specified {@code items} consisting of those items cast to the specified type ({@code clazz})
      * @see Chainable#cast(Class)
      */
     public static <T1, T2> Chainable<T2> cast(Iterable<? extends T1> items, Class<T2> clazz) {
