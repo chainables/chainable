@@ -1629,6 +1629,14 @@ public final class Chainables {
     }
 
     /**
+     * @param text text to check
+     * @return {@code true} if the specified {@code text} is {@code null} or empty.
+     */
+    public static boolean isNullOrEmpty(String text) {
+        return (text != null) ? text.isEmpty() : true;
+    }
+
+    /**
      * @param iterables
      * @return {@code true} if any of the specified {@code iterables} are null or empty
      */
