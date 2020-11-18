@@ -33,7 +33,7 @@ import com.github.chainables.function.ToStringFunction;
  * It is intended to be a rich, `Iterable`-based alternative to Java's `Stream` and Google's *guava*.
  * <p>
  * See the project's home site at http://www.github.com/chainables/chainable for more information.
- * 
+ *
  * @author Martin Sawicki
  *
  * @param <T> the type of items in the chain
@@ -152,7 +152,7 @@ public interface Chainable<T> extends Iterable<T> {
                                 cache.add(next);
                                 this.nextCacheIndex++;
                                 return next;
-                            } 
+                            }
                         }
                     };
                 }
@@ -980,9 +980,9 @@ public interface Chainable<T> extends Iterable<T> {
     }
 
     /**
-     * Finds the first item satisfying the specified {@code condition}.
-     * @param condition
-     * @return the first item satisfying the specified {@code condition}
+     * Returns the first item satisfying the specified {@code condition}, or {@code null} if none.
+     * @param condition the condition for the returned item to satisfy
+     * @return the first item satisfying the specified {@code condition}, or {@code null} if none.
      * @chainables.similar
      * <table summary="Similar to:">
      * <tr><td><i>Java:</i></td><td>a combination of {@link java.util.stream.Stream#filter(Predicate)} and {@link java.util.stream.Stream#findFirst()}</td></tr>
@@ -991,18 +991,39 @@ public interface Chainable<T> extends Iterable<T> {
      * @see #firstWhereEither(Predicate...)
      */
     default T firstWhere(Predicate<? super T> condition) {
-        return Chainables.firstWhereEither(this, condition);
+        return Chainables.firstWhereEither(this, (T)null, condition);
     }
 
     /**
-     * Finds the first item satisying any of the specified {@code conditions}.
-     * @param conditions
-     * @return the first item satisfying any of the specified {@code conditions}
+     * Returns the first item satisfying the specified {@code condition}, or {@code defaultValue} if none.
+     * @param condition the condition for the returned item to satisfy
+     * @param defaultValue the value to return if no item satisfying the specified {@code condition} was found.
+     * @return the first item satisfying the specified {@code condition}, or {@code defaultValue} if none.
+     */
+    default T firstWhere(Predicate<? super T> condition, T defaultValue) {
+        return Chainables.firstWhereEither(this, defaultValue, condition);
+    }
+
+    /**
+     * Returns the first item satisfying any of the specified {@code conditions} or {@code null} if none found.
+     * @param conditions the conditions any of which the returned item must satisfy
+     * @return the first item satisfying any of the specified {@code conditions} or {@code null} if none
      * @see #firstWhere(Predicate)
      */
     @SuppressWarnings("unchecked")
     default T firstWhereEither(Predicate<? super T>... conditions) {
         return Chainables.firstWhereEither(this, conditions);
+    }
+
+    /**
+     * Returns the first item satisfying any of the specified {@code conditions} or {@code defaultValue} if none found.
+     * @param defaultValue the value to return if no item satisfying any of the specified {@code conditions} has been found
+     * @param conditions the conditions any of which the returned item must satisfy
+     * @return the first item satisfying any of the specified {@code conditions} or {@code defaultValue} if none
+     */
+    @SuppressWarnings("unchecked")
+    default T firstWhereEither(T defaultValue, Predicate<? super T>... conditions) {
+        return Chainables.firstWhereEither(this, defaultValue, conditions);
     }
 
     /**
@@ -1022,7 +1043,7 @@ public interface Chainable<T> extends Iterable<T> {
      * <tr><td>{@code items2}:</td><td>2, 4, 6</td></tr>
      * <tr><td><i>result:</i></td><td>1, 2, 3, 4, 5, 6</td></tr>
      * </table>
-     * @param iterables to merge by interleaving
+     * @param iterables iterables to merge by interleaving
      * @return items from the interleaved merger of the specified {@code iterables}
      */
     @SuppressWarnings("unchecked")

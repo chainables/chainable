@@ -338,7 +338,7 @@ public final class Chainables {
             return true;
         } else {
             for (Predicate<? super T> condition : conditions) {
-                if (Chainables.firstWhereEither(items, condition) != null) {
+                if (Chainables.firstWhereEither(items, (T)null, condition) != null) {
                     return true;
                 }
             }
@@ -1458,14 +1458,14 @@ public final class Chainables {
     }
 
     /**
-     * Finds the first item satisfying the specified condition.
+     * Finds the first item satisfying the specified condition or returns the specified {@code defaultValue} if not found.
      * @param items
      * @param conditions
      * @return
-     * @see Chainable#firstWhereEither(Predicate...)
+     * @see Chainable#firstWhereEither(Object, Predicate...)
      */
     @SafeVarargs
-    public static <V> V firstWhereEither(Iterable<? extends V> items, Predicate<? super V>... conditions) {
+    public static <V> V firstWhereEither(Iterable<? extends V> items, V defaultValue, Predicate<? super V>... conditions) {
         if (items == null) {
             return null;
         } else if (conditions == null) {
@@ -1480,7 +1480,19 @@ public final class Chainables {
             }
         }
 
-        return null;
+        return defaultValue;
+    }
+
+    /**
+     * Finds the first item satisfying the specified condition or {@code null} if not found.
+     * @param items
+     * @param conditions
+     * @return
+     * @see Chainable#firstWhereEither(Predicate...)
+     */
+    @SafeVarargs
+    public static <V> V firstWhereEither(Iterable<? extends V> items, Predicate<? super V>... conditions) {
+        return firstWhereEither(items, null, conditions);
     }
 
     /**
