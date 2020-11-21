@@ -4,13 +4,11 @@
  */
 package com.github.chainables.chainable;
 
-import org.junit.jupiter.api.Test;
-
-import com.github.chainables.chainable.Chainable;
-import com.github.chainables.chainable.ChainableQueue;
-import com.github.chainables.chainable.Chainables;
-
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.nio.file.Paths;
@@ -22,6 +20,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Stream;
+
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests
@@ -699,8 +699,8 @@ public class ChainableTest {
         assertEquals("a", first);
         assertNull(Chainables.first(itemsEmpty));
         assertNull(Chainables.first(null));
-        assertNotNull(Chainables.firstWhereEither(items, i -> i.equals("b")));
-        assertNull(Chainables.firstWhereEither(items, i -> i.equals("d")));
+        assertNotNull(Chainables.firstWhereEither(items, (String)null, i -> i.equals("b")));
+        assertNull(Chainables.firstWhereEither(items, (String)null, i -> i.equals("d")));
     }
 
     @Test

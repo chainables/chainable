@@ -122,7 +122,9 @@ public final class Chainables {
 
         @SuppressWarnings("unchecked")
         static <T> Chain<T> from(Iterable<? extends T> iterable) {
-            if (iterable instanceof Chain<?>) {
+            if (iterable == null) {
+                return Chain.empty();
+            } else if (iterable instanceof Chain<?>) {
                 return (Chain<T>) iterable;
             } else if (iterable instanceof CachedChain<?>) {
                 return (CachedChain<T>) iterable;
@@ -239,7 +241,7 @@ public final class Chainables {
 
     /**
      * @param items
-     * @return
+     * @return the chain of remaining items after the first of the specified {@code items}
      * @see Chainable#afterFirst()
      */
     public static <V> Chainable<V> afterFirst(Iterable<? extends V> items) {
@@ -249,7 +251,7 @@ public final class Chainables {
     /**
      * @param items
      * @param number
-     * @return
+     * @return the chain of remaining items after the first {@code number} of them in the specified {@code items}
      */
     public static <V> Chainable<V> afterFirst(Iterable<? extends V> items, long number) {
         return (items == null) ? Chainable.empty() : Chainable.fromIterator(() -> new Iterator<V>() {
@@ -281,8 +283,18 @@ public final class Chainables {
 
     /**
      * @param items
+     * @param condition
+     * @return {@code true} iff all of the specified {@code items} satisfy the specified {@code condition}
+     * @see Chainable#allWhere(Predicate)
+     */
+    public static <T> boolean allWhere(Iterable<? extends T> items, Predicate<? super T> condition) {
+        return allWhereEither(items, condition);
+    }
+
+    /**
+     * @param items
      * @param conditions
-     * @return
+     * @return {@code true} iff all of the specified {@code items} satisfy any of the specified {@code conditions}
      * @see Chainable#allWhereEither(Predicate...)
      */
     @SafeVarargs
@@ -296,30 +308,20 @@ public final class Chainables {
     }
 
     /**
-     * @param items
-     * @param condition
-     * @return
-     * @see Chainable#allWhere(Predicate)
-     */
-    public static <T> boolean allWhere(Iterable<? extends T> items, Predicate<? super T> condition) {
-        return allWhereEither(items, condition);
-    }
-
-    /**
      * Determines whether the specified iterable contains at least one element.
      *
-     * @param iterable the {@link java.lang.Iterable} to check
-     * @return {@code true} if the specified {@code iterable} has at least one item
+     * @param items the items to check
+     * @return {@code true} iff the specified {@code items} contain at least one member
      * @see Chainable#any()
      */
-    public static <V> boolean any(Iterable<? extends V> iterable) {
-        return !isNullOrEmpty(iterable);
+    public static <V> boolean any(Iterable<? extends V> items) {
+        return !isNullOrEmpty(items);
     }
 
     /**
      * @param items
      * @param condition
-     * @return
+     * @return {@code true} iff the specified {@code items} contain at least one member that satisfies the specified {@code condition}
      * @see Chainable#anyWhere(Predicate)
      */
     public static <T> boolean anyWhere(Iterable<? extends T> items, Predicate<? super T> condition) {
@@ -329,7 +331,7 @@ public final class Chainables {
     /**
      * @param items
      * @param conditions
-     * @return
+     * @return {@code true} iff the specified {@code items} contain at least one member that satisfies any of the specified {@code conditions}
      * @see Chainable#anyWhereEither(Predicate...)
      */
     @SafeVarargs
@@ -338,7 +340,7 @@ public final class Chainables {
             return true;
         } else {
             for (Predicate<? super T> condition : conditions) {
-                if (Chainables.firstWhereEither(items, condition) != null) {
+                if (Chainables.firstWhereEither(items, (T)null, condition) != null) {
                     return true;
                 }
             }
@@ -350,7 +352,7 @@ public final class Chainables {
     /**
      * @param items
      * @param action
-     * @return
+     * @return the resulting chain after applying the specified {@code action} to all of the specified {@code items}, fully traversing and evaluating them
      * @see Chainable#apply(Consumer)
      */
     public static <T> Chainable<T> apply(Iterable<? extends T> items, Consumer<? super T> action) {
@@ -376,7 +378,7 @@ public final class Chainables {
 
     /**
      * @param items
-     * @return
+     * @return the resulting chain from fully traversing and evaluating all of the members of specified {@code items}
      * @see Chainable#apply()
      */
     public static <T> Chainable<T> apply(Iterable<? extends T> items) {
@@ -386,7 +388,7 @@ public final class Chainables {
     /**
      * @param items
      * @param action
-     * @return
+     * @return the chain resulting from lazily applying the specified {@code action} to each of the specified {@items}
      * @see Chainable#applyAsYouGo(Consumer)
      */
     public static <T> Chainable<T> applyAsYouGo(Iterable<? extends T> items, Consumer<? super T> action) {
@@ -415,7 +417,7 @@ public final class Chainables {
 
     /**
      * @param items items to sort
-     * @return sorted items
+     * @return a chain of the specified {@code items} fully traversed, evaluated and sorted in the ascending order based on their default comparator
      * @see Chainable#ascending()
      */
     public static <T> Chainable<T> ascending(Iterable<? extends T> items) {
@@ -425,7 +427,8 @@ public final class Chainables {
     /**
      * @param items
      * @param keyExtractor
-     * @return
+     * @return a chain of the specified {@code items} fully traversed, evaluated and sorted in the ascending order based on the output of the specified
+     * {@link java.lang.String}-returning {@code keyExtractor} applied to each item
      * @see Chainable#ascending(ToStringFunction)
      */
     public static <T> Chainable<T> ascending(Iterable<? extends T> items, ToStringFunction<? super T> keyExtractor) {
@@ -435,7 +438,8 @@ public final class Chainables {
     /**
      * @param items
      * @param keyExtractor
-     * @return
+     * @return a chain of the specified {@code items} fully traversed, evaluated and sorted in the ascending order based on the output of the specified
+     * {@link java.lang.Long}-returning {@code keyExtractor} applied to each item
      * @see Chainable#ascending(ToLongFunction)
      */
     public static <T> Chainable<T> ascending(Iterable<? extends T> items, ToLongFunction<? super T> keyExtractor) {
@@ -445,7 +449,8 @@ public final class Chainables {
     /**
      * @param items
      * @param keyExtractor
-     * @return
+     * @return a chain of the specified {@code items} fully traversed, evaluated and sorted in the ascending order based on the output of the specified
+     * {@link java.lang.Double}-returning {@code keyExtractor} applied to each item
      * @see Chainable#ascending(ToDoubleFunction)
      */
     public static <T> Chainable<T> ascending(Iterable<? extends T> items, ToDoubleFunction<? super T> keyExtractor) {
@@ -453,20 +458,20 @@ public final class Chainables {
     }
 
     /**
-     * Returns items before the first one that does not satisfy the specified {@code condition}.
-     * @param items items to return from
-     * @param condition the condition for the returned items to satisfy
-     * @return items before the first one is encountered taht no longer satisfies the specified condition
+     * Returns items up to the last one that still satisfies the specified {@code condition}.
+     * @param items items to evaluate
+     * @param condition the condition for the returned initial chain of items to satisfy
+     * @return a chain of items up to the last one that still satisfies the specified {@code condition}
      */
     public static <T> Chainable<T> asLongAs(Iterable<? extends T> items, Predicate<? super T> condition) {
         return (condition == null) ? Chainable.from(items) : before(items, condition.negate());
     }
 
     /**
-     * Returns items before the first one that is not equal to the specified item.
+     * Returns items up to the last one that is equal to the specified item.
      * @param items items to return from
-     * @param item the item that returned items must be equal to
-     * @return items before the first one is encountered that no longer equals the specified item
+     * @param item the item that the initial chain of returned items must be equal to
+     * @return chain of initial items up to the last one that are equal to the specified item
      */
     public static <T> Chainable<T> asLongAsEquals(Iterable<? extends T> items, T item) {
         return asLongAs(items, o -> o == item);
@@ -476,7 +481,7 @@ public final class Chainables {
      * Returns items before the first item satisfying the specified condition is encountered.
      * @param items items to return from
      * @param condition the condition that stops further items from being returned
-     * @return items before the specified condition is satisfied
+     * @return chain of items before the specified condition is satisfied
      * @see Chainable#before(Predicate)
      */
     public static <T> Chainable<T> before(Iterable<? extends T> items, Predicate<? super T> condition) {
@@ -527,7 +532,7 @@ public final class Chainables {
      * Returns items until the specified item is encountered.
      * @param items items to return from
      * @param item the item which, when encountered, will stop the rest of the items from being returned
-     * @return items before the specified item is encountered
+     * @return chain of items before the specified item is encountered
      * @see Chainable#beforeValue(Object)
      */
     public static <T> Chainable<T> beforeValue(Iterable<? extends T> items, T item) {
@@ -537,7 +542,8 @@ public final class Chainables {
     /**
      * @param items
      * @param childTraverser
-     * @return
+     * @return chain of items based on the specified {@code items} in the order of breadth-first traversal, where the specified {@code childTraverser} returns the
+     * next set of items to explore downstream from each item (that is, analogous to children of a tree node)
      * @see Chainable#breadthFirst(Function)
      */
     public static <T> Chainable<T> breadthFirst(Iterable<? extends T> items, Function<? super T, Iterable<T>> childTraverser) {
@@ -548,7 +554,9 @@ public final class Chainables {
      * @param items
      * @param childTraverser
      * @param condition
-     * @return
+     * @return chain of items based on the specified {@code items} in the order of breadth-first traversal, where the specified {@code childTraverser} returns the
+     * next set of items to explore downstream from each item (that is, analogous to children of a tree node), but not below items that satisfy the
+     * specified {@code condition}
      * @see Chainable#breadthFirstNotBelow(Function, Predicate)
      */
     public static <T> Chainable<T> breadthFirstNotBelow(
@@ -562,7 +570,9 @@ public final class Chainables {
      * @param items
      * @param childTraverser
      * @param condition
-     * @return
+     * @return chain of items based on the specified {@code items} in the order of breadth-first traversal, where the specified {@code childTraverser} returns the
+     * next set of items to explore downstream from each item (that is, analogous to children of a tree node), as long as that item satisfies the
+     * specified {@code condition}
      * @see Chainable#breadthFirstAsLongAs(Function, Predicate)
      */
     public static <T> Chainable<T> breadthFirstAsLongAs(
@@ -575,7 +585,8 @@ public final class Chainables {
 
     /**
      * @param items
-     * @return
+     * @return a chain which - instead of re-evaluating all the items upon each re-traversal - will cache the values obtained during the first complete traversal
+     * and return those, rather than re-evaluating during subsequent traversals, de-facto functioning as a list thereon
      * @see Chainable#cached()
      */
     public static <T> Chainable<T> cached(Iterable<? extends T> items) {
@@ -585,7 +596,7 @@ public final class Chainables {
     /**
      * @param items
      * @param clazz
-     * @return
+     * @return a chain based on the specified {@code items} consisting of those items cast to the specified type ({@code clazz})
      * @see Chainable#cast(Class)
      */
     public static <T1, T2> Chainable<T2> cast(Iterable<? extends T1> items, Class<T2> clazz) {
@@ -595,7 +606,8 @@ public final class Chainables {
     /**
      * @param item
      * @param nextItemExtractor
-     * @return
+     * @return a chain starting with the specified {@code item} and each consecutive item as generated by the specified {@code nextItemExtractor} applied to
+     * the previous item in the chain as its input parameter
      * @see Chainable#chain(UnaryOperator)
      */
     public static <T> Chainable<? super T> chain(T item, UnaryOperator<? super T> nextItemExtractor) {
@@ -605,20 +617,23 @@ public final class Chainables {
     /**
      * @param item
      * @param nextItemExtractor
-     * @return
+     * @return a chain starting with the specified {@code item} and each consecutive item as generated by the specified {@code nextItemExtractor} applied to
+     * the previous item in the chain and the current numerical index as its input parameters
      * @see Chainable#chainIndexed(BiFunction)
      */
-    public static <T> Chainable<T> chain(T item, BiFunction<? super T, Long, T> nextItemExtractor) {
+    public static <T> Chainable<T> chainIndexed(T item, BiFunction<? super T, Long, T> nextItemExtractor) {
         return chainIndexed(Chainable.from(item), nextItemExtractor);
     }
 
     /**
-     * @param items
-     * @param nextItemExtractorFromLastTwo
-     * @return
+     * @param items items to start the chain with
+     * @param nextItemExtractor
+     * @return a chain consisting of the specified {@code items}, followed by items generated by the specified {@code nextItemExtractor} applied to
+     * the last two items as its input parameters
+     * @see Chainable#chain(BinaryOperator)
      */
-    public static <T> Chainable<T> chain(Iterable<? extends T> items, BinaryOperator<T> nextItemExtractorFromLastTwo) {
-        return (items == null || nextItemExtractorFromLastTwo == null) ? Chainable.from(items) : Chainable.fromIterator(() -> new Iterator<T>() {
+    public static <T> Chainable<T> chain(Iterable<? extends T> items, BinaryOperator<T> nextItemExtractor) {
+        return (items == null || nextItemExtractor == null) ? Chainable.from(items) : Chainable.fromIterator(() -> new Iterator<T>() {
             Iterator<? extends T> iter = items.iterator();
             T next = null;
             T prev = null;
@@ -635,7 +650,7 @@ public final class Chainables {
                     // Seed iterator already finished so start the chaining
                     this.iter = null;
                     T temp = this.next;
-                    this.next = nextItemExtractorFromLastTwo.apply(this.prev, this.next);
+                    this.next = nextItemExtractor.apply(this.prev, this.next);
                     this.prev = temp;
                     if (this.next == null) {
                         isStopped = true;
@@ -663,9 +678,10 @@ public final class Chainables {
     }
 
     /**
-     * @param items
+     * @param items items to start the chain with
      * @param nextItemExtractor
-     * @return
+     * @return a chain consisting of the specified {@code items}, followed by items generated by the specified {@code nextItemExtractor} applied to
+     * the last item and the numerical index of the item to be generated as its arguments
      * @see Chainable#chainIndexed(BiFunction)
      */
     public static <T> Chainable<T> chainIndexed(Iterable<? extends T> items, BiFunction<? super T, Long, T> nextItemExtractor) {
@@ -714,7 +730,8 @@ public final class Chainables {
     /**
      * @param items
      * @param nextItemExtractor
-     * @return
+     * @return a chain consisting of the specified {@code items}, followed by items generated by the specified {@code nextItemExtractor} applied to
+     * the last item as its argument (or null if no preceding items)
      * @see Chainable#chain(UnaryOperator)
      */
     public static <T> Chainable<T> chain(Iterable<? extends T> items, UnaryOperator<T> nextItemExtractor) {
@@ -762,7 +779,9 @@ public final class Chainables {
      * @param items
      * @param condition
      * @param nextItemExtractor
-     * @return {@link Chainable#chainIf(Predicate, UnaryOperator)}
+     * @return a chain consisting of the specified {@code items}, followed by items generated by the specified {@code nextItemExtractor} applied to
+     * the last item as its argument (or null if no preceding items), as long as the specified {@code condition} applied to the last item is satisfied
+     * @see Chainable#chainIf(Predicate, UnaryOperator)
      */
     public static <T> Chainable<T> chainIf(Iterable<? extends T> items, Predicate<? super T> condition, UnaryOperator<T> nextItemExtractor) {
         return (items == null || nextItemExtractor == null) ? Chainable.from(items) : Chainable.fromIterator(() -> new Iterator<T>() {
@@ -809,7 +828,7 @@ public final class Chainables {
     /**
      * @param items
      * @param targetCollection
-     * @return
+     * @return a chain consisting of the specified {@code items}
      * @see Chainable#collectInto(Collection)
      */
     public static <T> Chainable<T> collectInto(Iterable<? extends T> items, Collection<T> targetCollection) {
@@ -819,7 +838,8 @@ public final class Chainables {
     /**
      * @param items
      * @param lister
-     * @return
+     * @return a chain that begins with the specified {@code items} which are followed by items generated by the specified {@code lister} applied
+     * to the last item
      * @see Chainable#concat(Function)
      */
     public static <T> Chainable<T> concat(Iterable<? extends T> items, Function<? super T, Iterable<T>> lister) {
@@ -853,7 +873,7 @@ public final class Chainables {
      * and the through the second.
      * @param items1 the first iterable
      * @param items2 the second iterable
-     * @return concatenated iterable
+     * @return a chain starting with the specified {@code items1} followed by the specified {@code items2}
      */
     // TODO Should this be removed now that concat(...) exists?
     public static <T> Chainable<T> concat(Iterable<? extends T> items1, Iterable<? extends T> items2) {
@@ -889,12 +909,9 @@ public final class Chainables {
 
     /**
      * Concatenates the specified iterable with the specified single item.
-     *
-     * @param items
-     *            the iterable to concatenate the single item with
-     * @param item
-     *            the item to concatenate
-     * @return the resulting concatenation
+     * @param items the items to append the specified {@code item} to
+     * @param item the item to append to the specified {@code items}
+     * @return a chain of the specified {@code items} followed by the specified {@code item}
      */
     public static <T> Chainable<T> concat(Iterable<? extends T> items, T item) {
         return concat(items, (Iterable<T>) Arrays.asList(item));
@@ -902,7 +919,7 @@ public final class Chainables {
 
     /**
      * @param itemSequences
-     * @return
+     * @return a chain where the specified {@code itemSequences} have been concatenated in the order specified
      * @see Chainable#concat(Iterable...)
      */
     @SafeVarargs
@@ -932,7 +949,7 @@ public final class Chainables {
     /**
      * @param item
      * @param items
-     * @return
+     * @return a chain starting with the specified {@code item} and with the specified {@code items} following it
      * @see Chainable#concat(Iterable)
      */
     public static <T> Chainable<T> concat(T item, Iterable<? extends T> items) {
@@ -942,7 +959,7 @@ public final class Chainables {
     /**
      * @param container
      * @param item
-     * @return true if the specified {@code item} is among the members of the specified {@code container}, else false
+     * @return {@code true} iff the specified {@code item} is among the members of the specified {@code container}
      */
     public static <T> boolean contains(Iterable<? extends T> container, T item) {
         if (container == null) {
@@ -959,7 +976,7 @@ public final class Chainables {
     /**
      * @param container
      * @param items
-     * @return
+     * @return {@code true} iff all of the specified {@code items} exist in the specified {@code container}
      * @see Chainable#containsAll(Object...)
      */
     @SafeVarargs
@@ -970,7 +987,7 @@ public final class Chainables {
     /**
      * @param container
      * @param items
-     * @return
+     * @return {@code true} iff all of the specified {@code items} exist in the specified {@code items}
      * @see Chainable#containsAll(Object...)
      */
     @SuppressWarnings("unchecked")
@@ -999,7 +1016,7 @@ public final class Chainables {
     /**
      * @param container
      * @param items
-     * @return true if any of the specified {@code items} are among the members of the specified {@code container}
+     * @return {@code true} iff any of the specified {@code items} are among the members of the specified {@code container}
      * @see Chainable#containsAny(Object...)
      */
     @SafeVarargs
@@ -1022,7 +1039,7 @@ public final class Chainables {
     /**
      * @param container
      * @param items
-     * @return
+     * @return {@code true} iff the specified {@code container} contains any of the specified {@code items}
      * @see Chainable#containsAny(Object...)
      */
     @SafeVarargs
@@ -1033,7 +1050,7 @@ public final class Chainables {
     /**
      * @param items
      * @param subarray
-     * @return
+     * @return {@code true} iff the specified {@code items} contain the specified {@code subarray} in that same contiguous sequence
      * @see Chainable#containsSubarray(Iterable)
      */
     public static <T> boolean containsSubarray(Iterable<? extends T> items, Iterable<? extends T> subarray) {
@@ -1065,8 +1082,7 @@ public final class Chainables {
     }
 
     /**
-     * Counts the number of items, forcing a complete traversal.
-     *
+     * Counts the number of items, forcing a complete traversal/evaluation of the specified {@code items}.
      * @param items an items to count
      * @return the number of items
      * @see Chainable#count()
@@ -1089,31 +1105,32 @@ public final class Chainables {
 
     /**
      * @param items
-     * @param childTraverser
-     * @return
+     * @param childExtractor
+     * @return a chain of items in the pre-order depth-first order based on the specified {@code childExtractor}
      * @see Chainable#depthFirst(Function)
      */
-    public static <T> Chainable<T> depthFirst(Iterable<? extends T> items, Function<? super T, Iterable<T>> childTraverser) {
-        return traverse(items, childTraverser, false);
+    public static <T> Chainable<T> depthFirst(Iterable<? extends T> items, Function<? super T, Iterable<T>> childExtractor) {
+        return traverse(items, childExtractor, false);
     }
 
     /**
      * @param items
-     * @param childTraverser
+     * @param childExtractor
      * @param condition
-     * @return
+     * @return a chain of items in the pre-order depth-first order based on the specified {@code childExtractor}, but not deeper than the items satisfying the
+     * specified {@code condition}
      * @see Chainable#depthFirstNotBelow(Function, Predicate)
      */
     public static <T> Chainable<T> depthFirstNotBelow(
             Iterable<? extends T> items,
-            Function<? super T, Iterable<T>> childTraverser,
+            Function<? super T, Iterable<T>> childExtractor,
             Predicate<? super T> condition) {
-        return notBelow(items, childTraverser, condition, false);
+        return notBelow(items, childExtractor, condition, false);
     }
 
     /**
      * @param items items to sort
-     * @return sorted items
+     * @return a chain of items sorted in the descending order based on an automatically detected key
      * @see Chainable#descending()
      */
     public static <T> Chainable<T> descending(Iterable<? extends T> items) {
@@ -1123,11 +1140,34 @@ public final class Chainables {
     /**
      * @param items
      * @param keyExtractor
-     * @return
+     * @return a chain of items sorted in the descending order based on the {@link java.lang.String} keys output by the specified {@code keyExtractor}
+     * applied to each item
      * @see Chainable#descending(ToStringFunction)
      */
     public static <T> Chainable<T> descending(Iterable<? extends T> items, ToStringFunction<? super T> keyExtractor) {
         return sortedBy(items, keyExtractor, false);
+    }
+
+    /**
+     * @param items
+     * @param keyExtractor
+     * @return a chain of items sorted in the descending order based on the {@link java.lang.Long} keys output by the specified {@code keyExtractor}
+     * applied to each item
+     * @see Chainable#descending(ToLongFunction)
+     */
+    public static <T> Chainable<T> descending(Iterable<? extends T> items, ToLongFunction<? super T> keyExtractor) {
+        return sortedBy(items, keyExtractor, false);
+    }
+
+    /**
+     * @param items
+     * @param comparable
+     * @return a chain of items sorted in the descending order based on the {@link java.lang.Double} keys output by the specified {@code keyExtractor}
+     * applied to each item
+     * @see Chainable#descending(ToDoubleFunction)
+     */
+    public static <T> Chainable<T> descending(Iterable<? extends T> items, ToDoubleFunction<? super T> comparable) {
+        return sortedBy(items, comparable, false);
     }
 
     /**
@@ -1172,7 +1212,7 @@ public final class Chainables {
                                 this.stream.close();
                             } catch (IOException e) {
                             }
-                            
+
                             return false;
                         }
 
@@ -1197,27 +1237,7 @@ public final class Chainables {
     /**
      * @param items
      * @param keyExtractor
-     * @return
-     * @see Chainable#descending(ToLongFunction)
-     */
-    public static <T> Chainable<T> descending(Iterable<? extends T> items, ToLongFunction<? super T> keyExtractor) {
-        return sortedBy(items, keyExtractor, false);
-    }
-
-    /**
-     * @param items
-     * @param comparable
-     * @return
-     * @see Chainable#descending(ToDoubleFunction)
-     */
-    public static <T> Chainable<T> descending(Iterable<? extends T> items, ToDoubleFunction<? super T> comparable) {
-        return sortedBy(items, comparable, false);
-    }
-
-    /**
-     * @param items
-     * @param keyExtractor
-     * @return
+     * @return a chain of items that are all distinct
      * @see Chainable#distinct(Function)
      */
     @SuppressWarnings("unchecked")
@@ -1262,7 +1282,7 @@ public final class Chainables {
 
     /**
      * @param items
-     * @return
+     * @return a chain of items that are all distinct
      * @see Chainable#distinct()
      */
     public static <T> Chainable<T> distinct(Iterable<? extends T> items) {
@@ -1444,14 +1464,14 @@ public final class Chainables {
     }
 
     /**
-     * Finds the first item satisfying the specified condition.
+     * Finds the first item satisfying the specified condition or returns the specified {@code defaultValue} if not found.
      * @param items
      * @param conditions
      * @return
-     * @see Chainable#firstWhereEither(Predicate...)
+     * @see Chainable#firstWhereEither(Object, Predicate...)
      */
     @SafeVarargs
-    public static <V> V firstWhereEither(Iterable<? extends V> items, Predicate<? super V>... conditions) {
+    public static <V> V firstWhereEither(Iterable<? extends V> items, V defaultValue, Predicate<? super V>... conditions) {
         if (items == null) {
             return null;
         } else if (conditions == null) {
@@ -1466,7 +1486,19 @@ public final class Chainables {
             }
         }
 
-        return null;
+        return defaultValue;
+    }
+
+    /**
+     * Finds the first item satisfying the specified condition or {@code null} if not found.
+     * @param items
+     * @param conditions
+     * @return
+     * @see Chainable#firstWhereEither(Predicate...)
+     */
+    @SafeVarargs
+    public static <V> V firstWhereEither(Iterable<? extends V> items, Predicate<? super V>... conditions) {
+        return firstWhereEither(items, null, conditions);
     }
 
     /**
@@ -1600,6 +1632,14 @@ public final class Chainables {
      */
     public static boolean isNullOrEmpty(Iterable<?> iterable) {
         return (iterable != null) ? !iterable.iterator().hasNext() : true;
+    }
+
+    /**
+     * @param text text to check
+     * @return {@code true} if the specified {@code text} is {@code null} or empty.
+     */
+    public static boolean isNullOrEmpty(String text) {
+        return (text != null) ? text.isEmpty() : true;
     }
 
     /**
@@ -2031,7 +2071,7 @@ public final class Chainables {
             return Chainable.from(items);
         } else if (null != (item = items.iterator().next()) && item instanceof Number) {
             // Sniff if first item is a number
-            return (Chainable<T>) sortedBy((Iterable<Number>) items, (Number n) -> n != null ? n.doubleValue() : null, ascending);            
+            return (Chainable<T>) sortedBy((Iterable<Number>) items, (Number n) -> n != null ? n.doubleValue() : null, ascending);
         } else {
             // Not a number so fall back on String
             return (Chainable<T>) sortedBy((Iterable<Object>) items, (Object o) -> o != null ? o.toString() : null, ascending);
