@@ -122,7 +122,9 @@ public final class Chainables {
 
         @SuppressWarnings("unchecked")
         static <T> Chain<T> from(Iterable<? extends T> iterable) {
-            if (iterable instanceof Chain<?>) {
+            if (iterable == null) {
+                return Chain.empty();
+            } else if (iterable instanceof Chain<?>) {
                 return (Chain<T>) iterable;
             } else if (iterable instanceof CachedChain<?>) {
                 return (CachedChain<T>) iterable;
@@ -1103,31 +1105,32 @@ public final class Chainables {
 
     /**
      * @param items
-     * @param childTraverser
-     * @return
+     * @param childExtractor
+     * @return a chain of items in the pre-order depth-first order based on the specified {@code childExtractor}
      * @see Chainable#depthFirst(Function)
      */
-    public static <T> Chainable<T> depthFirst(Iterable<? extends T> items, Function<? super T, Iterable<T>> childTraverser) {
-        return traverse(items, childTraverser, false);
+    public static <T> Chainable<T> depthFirst(Iterable<? extends T> items, Function<? super T, Iterable<T>> childExtractor) {
+        return traverse(items, childExtractor, false);
     }
 
     /**
      * @param items
-     * @param childTraverser
+     * @param childExtractor
      * @param condition
-     * @return
+     * @return a chain of items in the pre-order depth-first order based on the specified {@code childExtractor}, but not deeper than the items satisfying the
+     * specified {@code condition}
      * @see Chainable#depthFirstNotBelow(Function, Predicate)
      */
     public static <T> Chainable<T> depthFirstNotBelow(
             Iterable<? extends T> items,
-            Function<? super T, Iterable<T>> childTraverser,
+            Function<? super T, Iterable<T>> childExtractor,
             Predicate<? super T> condition) {
-        return notBelow(items, childTraverser, condition, false);
+        return notBelow(items, childExtractor, condition, false);
     }
 
     /**
      * @param items items to sort
-     * @return sorted items
+     * @return a chain of items sorted in the descending order based on an automatically detected key
      * @see Chainable#descending()
      */
     public static <T> Chainable<T> descending(Iterable<? extends T> items) {
@@ -1137,11 +1140,34 @@ public final class Chainables {
     /**
      * @param items
      * @param keyExtractor
-     * @return
+     * @return a chain of items sorted in the descending order based on the {@link java.lang.String} keys output by the specified {@code keyExtractor}
+     * applied to each item
      * @see Chainable#descending(ToStringFunction)
      */
     public static <T> Chainable<T> descending(Iterable<? extends T> items, ToStringFunction<? super T> keyExtractor) {
         return sortedBy(items, keyExtractor, false);
+    }
+
+    /**
+     * @param items
+     * @param keyExtractor
+     * @return a chain of items sorted in the descending order based on the {@link java.lang.Long} keys output by the specified {@code keyExtractor}
+     * applied to each item
+     * @see Chainable#descending(ToLongFunction)
+     */
+    public static <T> Chainable<T> descending(Iterable<? extends T> items, ToLongFunction<? super T> keyExtractor) {
+        return sortedBy(items, keyExtractor, false);
+    }
+
+    /**
+     * @param items
+     * @param comparable
+     * @return a chain of items sorted in the descending order based on the {@link java.lang.Double} keys output by the specified {@code keyExtractor}
+     * applied to each item
+     * @see Chainable#descending(ToDoubleFunction)
+     */
+    public static <T> Chainable<T> descending(Iterable<? extends T> items, ToDoubleFunction<? super T> comparable) {
+        return sortedBy(items, comparable, false);
     }
 
     /**
@@ -1211,27 +1237,7 @@ public final class Chainables {
     /**
      * @param items
      * @param keyExtractor
-     * @return
-     * @see Chainable#descending(ToLongFunction)
-     */
-    public static <T> Chainable<T> descending(Iterable<? extends T> items, ToLongFunction<? super T> keyExtractor) {
-        return sortedBy(items, keyExtractor, false);
-    }
-
-    /**
-     * @param items
-     * @param comparable
-     * @return
-     * @see Chainable#descending(ToDoubleFunction)
-     */
-    public static <T> Chainable<T> descending(Iterable<? extends T> items, ToDoubleFunction<? super T> comparable) {
-        return sortedBy(items, comparable, false);
-    }
-
-    /**
-     * @param items
-     * @param keyExtractor
-     * @return
+     * @return a chain of items that are all distinct
      * @see Chainable#distinct(Function)
      */
     @SuppressWarnings("unchecked")
@@ -1276,7 +1282,7 @@ public final class Chainables {
 
     /**
      * @param items
-     * @return
+     * @return a chain of items that are all distinct
      * @see Chainable#distinct()
      */
     public static <T> Chainable<T> distinct(Iterable<? extends T> items) {
