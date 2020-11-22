@@ -84,7 +84,7 @@ public class PerfTest {
                 .count();        
     }
 
-    static final Function<Character, Iterable<String>> CHAIN_TRANSFORMER = (i) -> Chainable.from(Character.toString(i), Character.toString(i), Character.toString(i));
+    static final Function<Character, Iterable<? extends String>> CHAIN_TRANSFORMER = (i) -> Chainable.from(Character.toString(i), Character.toString(i), Character.toString(i));
 
     @Benchmark
     public long benchmarkChainTransformAndFlatten() {

@@ -546,7 +546,7 @@ public final class Chainables {
      * next set of items to explore downstream from each item (that is, analogous to children of a tree node)
      * @see Chainable#breadthFirst(Function)
      */
-    public static <T> Chainable<T> breadthFirst(Iterable<? extends T> items, Function<? super T, Iterable<T>> childTraverser) {
+    public static <T> Chainable<T> breadthFirst(Iterable<? extends T> items, Function<? super T, Iterable<? extends T>> childTraverser) {
         return traverse(items, childTraverser, true);
     }
 
@@ -561,7 +561,7 @@ public final class Chainables {
      */
     public static <T> Chainable<T> breadthFirstNotBelow(
             Iterable<? extends T> items,
-            Function<? super T, Iterable<T>> childTraverser,
+            Function<? super T, Iterable<? extends T>> childTraverser,
             Predicate<? super T> condition) {
         return notBelow(items, childTraverser, condition, true);
     }
@@ -831,7 +831,7 @@ public final class Chainables {
      * @return a chain consisting of the specified {@code items}
      * @see Chainable#collectInto(Collection)
      */
-    public static <T> Chainable<T> collectInto(Iterable<? extends T> items, Collection<T> targetCollection) {
+    public static <T> Chainable<T> collectInto(Iterable<? extends T> items, Collection<? super T> targetCollection) {
         return (items == null || targetCollection == null) ? Chainable.from(items) : applyAsYouGo(items, o -> targetCollection.add(o));
     }
 
@@ -842,10 +842,10 @@ public final class Chainables {
      * to the last item
      * @see Chainable#concat(Function)
      */
-    public static <T> Chainable<T> concat(Iterable<? extends T> items, Function<? super T, Iterable<T>> lister) {
+    public static <T> Chainable<T> concat(Iterable<? extends T> items, Function<? super T, Iterable<? extends T>> lister) {
         return (lister == null || items == null) ? Chainable.from(items) : Chainable.fromIterator(() -> new Iterator<T>() {
             private final Iterator<? extends T> iter1 = items.iterator();
-            private Iterator<T> iter2 = null;
+            private Iterator<? extends T> iter2 = null;
 
             @Override
             public boolean hasNext() {
@@ -858,7 +858,7 @@ public final class Chainables {
                     return null;
                 } else if (Chainables.isNullOrEmpty(this.iter2)) {
                     T item = this.iter1.next();
-                    Iterable<T> items2 = lister.apply(item);
+                    Iterable<? extends T> items2 = lister.apply(item);
                     this.iter2 = (Chainables.isNullOrEmpty(items2)) ? null : items2.iterator();
                     return item;
                 } else {
@@ -914,7 +914,7 @@ public final class Chainables {
      * @return a chain of the specified {@code items} followed by the specified {@code item}
      */
     public static <T> Chainable<T> concat(Iterable<? extends T> items, T item) {
-        return concat(items, (Iterable<T>) Arrays.asList(item));
+        return concat(items, (Iterable<? extends T>) Arrays.asList(item));
     }
 
     /**
@@ -1109,7 +1109,7 @@ public final class Chainables {
      * @return a chain of items in the pre-order depth-first order based on the specified {@code childExtractor}
      * @see Chainable#depthFirst(Function)
      */
-    public static <T> Chainable<T> depthFirst(Iterable<? extends T> items, Function<? super T, Iterable<T>> childExtractor) {
+    public static <T> Chainable<T> depthFirst(Iterable<? extends T> items, Function<? super T, Iterable<? extends T>> childExtractor) {
         return traverse(items, childExtractor, false);
     }
 
@@ -1123,7 +1123,7 @@ public final class Chainables {
      */
     public static <T> Chainable<T> depthFirstNotBelow(
             Iterable<? extends T> items,
-            Function<? super T, Iterable<T>> childExtractor,
+            Function<? super T, Iterable<? extends T>> childExtractor,
             Predicate<? super T> condition) {
         return notBelow(items, childExtractor, condition, false);
     }
@@ -2000,7 +2000,7 @@ public final class Chainables {
 
     private static <T> Chainable<T> notBelow(
             Iterable<? extends T> items,
-            Function<? super T, Iterable<T>> childTraverser,
+            Function<? super T, Iterable<? extends T>> childTraverser,
             Predicate<? super T> condition,
             boolean breadthFirst) {
         final Predicate<? super T> appliedCondition = (condition != null) ? condition : (o -> false);
@@ -2037,7 +2037,7 @@ public final class Chainables {
      * @return
      * @see Chainable#replace(Function)
      */
-    public static <T> Chainable<T> replace(Iterable<? extends T> items, Function<? super T, Iterable<T>> replacer) {
+    public static <T> Chainable<T> replace(Iterable<? extends T> items, Function<? super T, Iterable<? extends T>> replacer) {
         return transformAndFlatten(items, replacer).withoutNull();
     }
 
@@ -2368,10 +2368,10 @@ public final class Chainables {
      * @return
      * @see Chainable#transformAndFlatten(Function)
      */
-    public static <I, O> Chainable<O> transformAndFlatten(Iterable<? extends I> items, Function<? super I, Iterable<O>> transformer) {
+    public static <I, O> Chainable<O> transformAndFlatten(Iterable<? extends I> items, Function<? super I, Iterable<? extends O>> transformer) {
         return (items == null || transformer == null) ? Chainable.empty() : Chainable.fromIterator(() -> new Iterator<O>() {
             private final Iterator<? extends I> iterIn = items.iterator();
-            private Iterator<O> iterOut = null;
+            private Iterator<? extends O> iterOut = null;
             private boolean stopped = false;
 
             @Override
@@ -2383,7 +2383,7 @@ public final class Chainables {
                 } else {
                     while (this.iterIn.hasNext()) {
                         I itemIn = this.iterIn.next();
-                        Iterable<O> results = transformer.apply(itemIn);
+                        Iterable<? extends O> results = transformer.apply(itemIn);
                         if (!Chainables.isNullOrEmpty(results)) {
                             this.iterOut = results.iterator();
                             return true;
@@ -2404,7 +2404,7 @@ public final class Chainables {
 
     private static <T> Chainable<T> traverse(
             Iterable<? extends T> initials,
-            Function<? super T, Iterable<T>> childTraverser,
+            Function<? super T, Iterable<? extends T>> childTraverser,
             boolean breadthFirst) {
         return (initials == null || childTraverser == null) ? Chainable.empty() : Chainable.fromIterator(() -> new Iterator<T>() {
             Deque<Iterator<? extends T>> iterators = new LinkedList<>(Arrays.asList(initials.iterator()));
@@ -2439,7 +2439,7 @@ public final class Chainables {
 
             @Override
             public T next() {
-                Iterable<T> nextChildren = childTraverser.apply(this.nextItem);
+                Iterable<? extends T> nextChildren = childTraverser.apply(this.nextItem);
                 if (!Chainables.isNullOrEmpty(nextChildren)) {
                     if (breadthFirst) {
                         this.iterators.addLast(nextChildren.iterator());
