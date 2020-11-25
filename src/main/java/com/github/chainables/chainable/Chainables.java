@@ -1329,7 +1329,7 @@ public final class Chainables {
     /**
      * @param items
      * @param suffix
-     * @return
+     * @return {@code true} iff the specified {@code items} end with the sequence of consecutive items in the specified {@code suffix}
      * @see Chainable#endsWith(Iterable)
      */
     public static <T> boolean endsWith(Iterable<? extends T> items, Iterable<? extends T> suffix) {
@@ -1339,7 +1339,7 @@ public final class Chainables {
     /**
      * @param items
      * @param suffixes
-     * @return
+     * @return {@code true} iff the specified {@code items} end with a sequence of consecutive items in any of the specified {@code suffixes}
      * @see Chainable#endsWithEither(Iterable...)
      */
     @SafeVarargs
@@ -1394,7 +1394,7 @@ public final class Chainables {
     /**
      * @param items1
      * @param items2
-     * @return
+     * @return {@code true} iff each of the specified {@code items1} equals the corresponding member of the specified {@code items2} in that exact order
      * @see Chainable#equals(Iterable)
      */
     public static <T> boolean equal(Iterable<? extends T> items1, Iterable<? extends T> items2) {
