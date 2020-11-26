@@ -1049,6 +1049,31 @@ public final class Chainables {
 
     /**
      * @param items
+     * @param contents
+     * @return {@code true} iff this chain contains no items other than those that equal one of the specified {@code contents}
+     */
+    @SafeVarargs
+    public static <T> boolean containsOnly(Iterable<? extends T> items, T...contents) {
+
+        if (Chainables.isNullOrEmpty(items)) {
+            return true;
+        } else if (Chainables.isNullOrEmpty(contents)) {
+            return false;
+        }
+
+        Set<T> searchSet = new HashSet<>(Arrays.asList(contents));
+
+        for (T item : items) {
+            if (!searchSet.contains(item)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * @param items
      * @param subarray
      * @return {@code true} iff the specified {@code items} contain the specified {@code subarray} in that same contiguous sequence
      * @see Chainable#containsSubarray(Iterable)

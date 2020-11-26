@@ -529,6 +529,20 @@ public class ChainableTest {
     }
 
     @Test
+    public void testContainsOnly() {
+        // Given
+        String items[] = { "a", "b", "c", "d" };
+        Chainable<String> chainValid = Chainable.from(items).concat(Arrays.asList(items));
+        Chainable<String> chainNonValid = Chainable.from(items).concat("e");
+        Chainable<String> chainEmpty = Chainable.empty();
+
+        // When / Then
+        assertTrue(chainValid.containsOnly(items));
+        assertFalse(chainNonValid.containsOnly(items));
+        assertTrue(chainEmpty.containsOnly(items));
+    }
+
+    @Test
     public void testContainsSubarray() {
         // Given
         Chainable<String> items1 = Chainable.from("a", "b", "x", "a", "b", "c", "d");

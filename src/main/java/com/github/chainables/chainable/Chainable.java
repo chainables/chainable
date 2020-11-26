@@ -725,6 +725,18 @@ public interface Chainable<T> extends Iterable<T> {
     }
 
     /**
+     * Determines whether this chain contains no items other than those that equal one of the specified {@code contents}.
+     * <p>
+     * If the chain is empty, the checked condition is not violated, so {@code true} is returned.
+     * @param contents the contents for the items of this chain to match
+     * @return {@code true} iff this chain contains no items other than those that equal one of the specified {@code contents}
+     */
+    @SuppressWarnings("unchecked")
+    default boolean containsOnly(T...contents) {
+        return Chainables.containsOnly(this, contents);
+    }
+
+    /**
      * Determines whether this chain contains items in the specified {@code subarray} in that exact order.
      * @param subarray
      * @return true if this contains the specified {@code subarray} of items
