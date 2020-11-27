@@ -1456,7 +1456,22 @@ public interface Chainable<T> extends Iterable<T> {
 
     /**
      * Transforms each item into several other items, possibly of a different type, using the specified {@code transformer}.
-     * @param transformer
+     * @param transformer the function to apply to each item whose output items will become part of the chain
+     * @return the resulting items from the transformation
+     * @chainables.similar
+     * <table summary="Similar to:">
+     * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#flatMap(Function)}</td></tr>
+     * <tr><td><i>C#:</i></td><td>{@code Enumerable.SelectMany()}</td></tr>
+     * </table>
+     * @see #transform(Function)
+     */
+    default <O> Chainable<O> transformAndFlattenArray(Function<? super T, O[]> transformer) {
+        return Chainables.transformAndFlattenArray(this, transformer);
+    }
+
+    /**
+     * Transforms each item into several other items, possibly of a different type, using the specified {@code transformer}.
+     * @param transformer the function to apply to each item whose output items will become part of the chain
      * @return the resulting items from the transformation
      * @chainables.similar
      * <table summary="Similar to:">

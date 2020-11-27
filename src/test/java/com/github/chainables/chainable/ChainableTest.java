@@ -1221,6 +1221,20 @@ public class ChainableTest {
     }
 
     @Test
+    public void testTransformAndFlattenArray() {
+        // Given
+        String[][] items = { { "a", "b" }, { "c", "d", "e" }, null, { "f" }};
+        Iterable<String[]> list = Arrays.asList(items);
+        String expected = "abcdef";
+
+        // When
+        String actual = Chainables.transformAndFlattenArray(list, o -> (o != null) ? o : null).join();
+
+        // Then
+        assertEquals(expected, actual);
+    }
+
+    @Test
     public void testWhere() {
         // Given
         Iterable<Integer> testList = Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);

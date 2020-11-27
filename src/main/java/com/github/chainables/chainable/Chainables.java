@@ -2391,6 +2391,16 @@ public final class Chainables {
      * @param items
      * @param transformer
      * @return
+     * @see Chainable#transformAndFlattenArray(Function)
+     */
+    public static <I, O> Chainable<O> transformAndFlattenArray(Iterable<? extends I> items, Function<? super I, O[]> transformer) {
+        return transformAndFlatten(items, o -> Chainable.from(transformer.apply(o)));
+    }
+
+    /**
+     * @param items
+     * @param transformer
+     * @return
      * @see Chainable#transformAndFlatten(Function)
      */
     public static <I, O> Chainable<O> transformAndFlatten(Iterable<? extends I> items, Function<? super I, Iterable<? extends O>> transformer) {

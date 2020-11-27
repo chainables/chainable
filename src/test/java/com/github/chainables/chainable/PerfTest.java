@@ -4,6 +4,12 @@
  */
 package com.github.chainables.chainable;
 
+import java.io.IOException;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+import java.util.function.UnaryOperator;
+import java.util.stream.Stream;
+
 import org.openjdk.jmh.Main;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
@@ -16,14 +22,6 @@ import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Warmup;
 import org.openjdk.jmh.runner.RunnerException;
-
-import com.github.chainables.chainable.Chainable;
-
-import java.io.IOException;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
-import java.util.function.UnaryOperator;
-import java.util.stream.Stream;
 
 @State(Scope.Benchmark)
 @BenchmarkMode(Mode.AverageTime)
@@ -72,7 +70,7 @@ public class PerfTest {
                 .chain(NEXT_ITEM_TRANSFORM_GENERATOR)
                 .first(length)
                 .transform(TRANSFORMER)
-                .count();        
+                .count();
     }
 
     @Benchmark
@@ -81,7 +79,7 @@ public class PerfTest {
                 .iterate((char) 65, NEXT_ITEM_TRANSFORM_GENERATOR)
                 .limit(length)
                 .map(TRANSFORMER)
-                .count();        
+                .count();
     }
 
     static final Function<Character, Iterable<? extends String>> CHAIN_TRANSFORMER = (i) -> Chainable.from(Character.toString(i), Character.toString(i), Character.toString(i));
