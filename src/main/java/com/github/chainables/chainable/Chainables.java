@@ -1813,9 +1813,22 @@ public final class Chainables {
      * @param delimiter the text to insert between the items
      * @param items the items to join
      * @return the joined string
+     * @see Chainable#join(String)
      */
     public static <T> String join(String delimiter, Iterable<? extends T> items) {
         return join(delimiter, items.iterator());
+    }
+
+    /**
+     * Joins the specified {@code items} into a single string, invoking {@code toString()}) on each, separating them with the specified {@code delimiter},
+     * skipping {@code null} values.
+     * @param delimiter the text to insert between the items
+     * @param items the items to join
+     * @return the joined string
+     * @see Chainable#join(String)
+     */
+    public static <T> String join(String delimiter, T[] items) {
+        return join(delimiter, Arrays.asList(items).iterator());
     }
 
     /**
