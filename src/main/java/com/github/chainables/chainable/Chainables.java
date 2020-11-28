@@ -388,7 +388,7 @@ public final class Chainables {
     /**
      * @param items
      * @param action
-     * @return the chain resulting from lazily applying the specified {@code action} to each of the specified {@items}
+     * @return the chain resulting from lazily applying the specified {@code action} to each of the specified {@code items}
      * @see Chainable#applyAsYouGo(Consumer)
      */
     public static <T> Chainable<T> applyAsYouGo(Iterable<? extends T> items, Consumer<? super T> action) {
