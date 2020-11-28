@@ -484,7 +484,7 @@ public interface Chainable<T> extends Iterable<T> {
      * @see #breadthFirstAsLongAs(Function, Predicate)
      * @see #depthFirst(Function)
      */
-    default Chainable<T> breadthFirst(Function<? super T, Iterable<T>> childExtractor) {
+    default Chainable<T> breadthFirst(Function<? super T, Iterable<? extends T>> childExtractor) {
         return Chainables.breadthFirst(this, childExtractor);
     }
 
@@ -506,7 +506,7 @@ public interface Chainable<T> extends Iterable<T> {
      * @see #breadthFirst(Function)
      * @see #depthFirst(Function)
      */
-    default Chainable<T> breadthFirstNotBelow(Function<? super T, Iterable<T>> childExtractor, Predicate<? super T> condition) {
+    default Chainable<T> breadthFirstNotBelow(Function<? super T, Iterable<? extends T>> childExtractor, Predicate<? super T> condition) {
         return Chainables.breadthFirstNotBelow(this, childExtractor, condition);
     }
 
@@ -603,7 +603,7 @@ public interface Chainable<T> extends Iterable<T> {
      * startint with 0
      * @return the resulting chain
      */
-    default Chainable<T> chainIndexed(BiFunction<T, Long, T> nextItemExtractor) {
+    default Chainable<T> chainIndexed(BiFunction<? super T, Long, T> nextItemExtractor) {
         return Chainables.chainIndexed(this, nextItemExtractor);
     }
 
@@ -615,7 +615,7 @@ public interface Chainable<T> extends Iterable<T> {
      * @return resulting {@link Chainable}
      * @see #chain(UnaryOperator)
      */
-    default Chainable<T> chainIf(Predicate<T> condition, UnaryOperator<T> nextItemExtractor) {
+    default Chainable<T> chainIf(Predicate<? super T> condition, UnaryOperator<T> nextItemExtractor) {
         return Chainables.chainIf(this, condition, nextItemExtractor);
     }
 
@@ -629,7 +629,7 @@ public interface Chainable<T> extends Iterable<T> {
      * <tr><td><i>C#:</i></td><td>{@code Enumerable.ToList()} and the like</td></tr>
      * </table>
      */
-    default Chainable<T> collectInto(Collection<T> targetCollection) {
+    default Chainable<T> collectInto(Collection<? super T> targetCollection) {
         return Chainables.collectInto(this, targetCollection);
     }
 
@@ -645,7 +645,7 @@ public interface Chainable<T> extends Iterable<T> {
      * </table>
      * @see #concat(Object)
      */
-    default Chainable<T> concat(Iterable<T> items) {
+    default Chainable<T> concat(Iterable<? extends T> items) {
         return Chainables.concat(this, items);
     }
 
@@ -656,7 +656,7 @@ public interface Chainable<T> extends Iterable<T> {
      * @see #concat(Iterable)
      */
     @SuppressWarnings("unchecked")
-    default Chainable<T> concat(Iterable<T>...iterables) {
+    default Chainable<T> concat(Iterable<? extends T>...iterables) {
         return this.concat(Chainables.concat(iterables));
     }
 
@@ -680,7 +680,7 @@ public interface Chainable<T> extends Iterable<T> {
      * @return the resulting chain
      * @see #concat(Iterable)
      */
-    default Chainable<T> concat(Function<? super T, Iterable<T>> lister) {
+    default Chainable<T> concat(Function<? super T, Iterable<? extends T>> lister) {
         return Chainables.concat(this, lister);
     }
 
@@ -725,6 +725,18 @@ public interface Chainable<T> extends Iterable<T> {
     }
 
     /**
+     * Determines whether this chain contains no items other than those that equal one of the specified {@code contents}.
+     * <p>
+     * If the chain is empty, the checked condition is not violated, so {@code true} is returned.
+     * @param contents the contents for the items of this chain to match
+     * @return {@code true} iff this chain contains no items other than those that equal one of the specified {@code contents}
+     */
+    @SuppressWarnings("unchecked")
+    default boolean containsOnly(T...contents) {
+        return Chainables.containsOnly(this, contents);
+    }
+
+    /**
      * Determines whether this chain contains items in the specified {@code subarray} in that exact order.
      * @param subarray
      * @return true if this contains the specified {@code subarray} of items
@@ -733,7 +745,7 @@ public interface Chainable<T> extends Iterable<T> {
      * @see #containsAll(Object...)
      * @see #containsAny(Object...)
      */
-    default boolean containsSubarray(Iterable<T> subarray) {
+    default boolean containsSubarray(Iterable<? extends T> subarray) {
         return Chainables.containsSubarray(this, subarray);
     }
 
@@ -768,7 +780,7 @@ public interface Chainable<T> extends Iterable<T> {
      * @return resulting chain
      * @see #breadthFirst(Function)
      */
-    default Chainable<T> depthFirst(Function<T, Iterable<T>> childExtractor) {
+    default Chainable<T> depthFirst(Function<? super T, Iterable<? extends T>> childExtractor) {
         return Chainables.depthFirst(this, childExtractor);
     }
 
@@ -788,7 +800,7 @@ public interface Chainable<T> extends Iterable<T> {
      * @param condition
      * @return resulting chain
      */
-    default Chainable<T> depthFirstNotBelow(Function<? super T, Iterable<T>> childExtractor, Predicate<? super T> condition) {
+    default Chainable<T> depthFirstNotBelow(Function<? super T, Iterable<? extends T>> childExtractor, Predicate<? super T> condition) {
         return Chainables.depthFirstNotBelow(this, childExtractor, condition);
     }
 
@@ -897,7 +909,7 @@ public interface Chainable<T> extends Iterable<T> {
      * @see #endsWithEither(Iterable...)
      * @see #startsWith(Iterable)
      */
-    default boolean endsWith(Iterable<T> suffix) {
+    default boolean endsWith(Iterable<? extends T> suffix) {
         return Chainables.endsWith(this, suffix);
     }
 
@@ -910,7 +922,7 @@ public interface Chainable<T> extends Iterable<T> {
      * @see #endsWith(Iterable)
      */
     @SuppressWarnings("unchecked")
-    default boolean endsWithEither(Iterable<T>...suffixes) {
+    default boolean endsWithEither(Iterable<? extends T>...suffixes) {
         return Chainables.endsWithEither(this, suffixes);
     }
 
@@ -924,7 +936,7 @@ public interface Chainable<T> extends Iterable<T> {
      * </table>
      * @see #equalsEither(Iterable...)
      */
-    default boolean equals(Iterable<T> items) {
+    default boolean equals(Iterable<? extends T> items) {
         return Chainables.equal(this, items);
     }
 
@@ -938,11 +950,11 @@ public interface Chainable<T> extends Iterable<T> {
      * @see #equalsEither(Iterable...)
      */
     @SuppressWarnings("unchecked")
-    default boolean equalsEither(Iterable<T>...iterables) {
+    default boolean equalsEither(Iterable<? extends T>...iterables) {
         if (iterables == null) {
             return false;
         } else {
-            for (Iterable<T> iterable : iterables) {
+            for (Iterable<? extends T> iterable : iterables) {
                 if (Chainables.equal(this, iterable)) {
                     return true;
                 }
@@ -1329,7 +1341,7 @@ public interface Chainable<T> extends Iterable<T> {
      * </table>
      * @see #transformAndFlatten(Function)
      */
-    default Chainable<T> replace(Function<? super T, Iterable<T>> replacer) {
+    default Chainable<T> replace(Function<? super T, Iterable<? extends T>> replacer) {
         return Chainables.replace(this, replacer);
     }
 
@@ -1354,7 +1366,7 @@ public interface Chainable<T> extends Iterable<T> {
      * @see #endsWith(Iterable)
      * @see #startsWithEither(Iterable...)
      */
-    default boolean startsWith(Iterable<T> prefix) {
+    default boolean startsWith(Iterable<? extends T> prefix) {
         return Chainables.startsWithEither(this, prefix);
     }
 
@@ -1365,7 +1377,7 @@ public interface Chainable<T> extends Iterable<T> {
      * @see #startsWith(Iterable)
      */
     @SuppressWarnings("unchecked")
-    default boolean startsWithEither(Iterable<T>... prefixes) {
+    default boolean startsWithEither(Iterable<? extends T>... prefixes) {
         return Chainables.startsWithEither(this, prefixes);
     }
 
@@ -1444,7 +1456,7 @@ public interface Chainable<T> extends Iterable<T> {
 
     /**
      * Transforms each item into several other items, possibly of a different type, using the specified {@code transformer}.
-     * @param transformer
+     * @param transformer the function to apply to each item whose output items will become part of the chain
      * @return the resulting items from the transformation
      * @chainables.similar
      * <table summary="Similar to:">
@@ -1453,7 +1465,22 @@ public interface Chainable<T> extends Iterable<T> {
      * </table>
      * @see #transform(Function)
      */
-    default <O> Chainable<O> transformAndFlatten(Function<? super T, Iterable<O>> transformer) {
+    default <O> Chainable<O> transformAndFlattenArray(Function<? super T, O[]> transformer) {
+        return Chainables.transformAndFlattenArray(this, transformer);
+    }
+
+    /**
+     * Transforms each item into several other items, possibly of a different type, using the specified {@code transformer}.
+     * @param transformer the function to apply to each item whose output items will become part of the chain
+     * @return the resulting items from the transformation
+     * @chainables.similar
+     * <table summary="Similar to:">
+     * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#flatMap(Function)}</td></tr>
+     * <tr><td><i>C#:</i></td><td>{@code Enumerable.SelectMany()}</td></tr>
+     * </table>
+     * @see #transform(Function)
+     */
+    default <O> Chainable<O> transformAndFlatten(Function<? super T, Iterable<? extends O>> transformer) {
         return Chainables.transformAndFlatten(this, transformer);
     }
 

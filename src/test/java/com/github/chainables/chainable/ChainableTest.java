@@ -253,7 +253,7 @@ public class ChainableTest {
         // Given
         final int depth = 4;
         Chainable<String> initial = Chainable.from("1");
-        Function<String, Iterable<String>> childExtractor = (s) -> (s.length() < (depth - 1)  * 2) ? Chainable.from(s + ".1", s + ".2") : null;
+        Function<String, Iterable<? extends String>> childExtractor = (s) -> (s.length() < (depth - 1)  * 2) ? Chainable.from(s + ".1", s + ".2") : null;
         String expectedBreadthFirst = "1, 1.1, 1.2, 1.1.1, 1.1.2, 1.2.1, 1.2.2, 1.1.1.1, 1.1.1.2, 1.1.2.1, 1.1.2.2, 1.2.1.1, 1.2.1.2, 1.2.2.1, 1.2.2.2";
 
         // When
@@ -529,6 +529,20 @@ public class ChainableTest {
     }
 
     @Test
+    public void testContainsOnly() {
+        // Given
+        String items[] = { "a", "b", "c", "d" };
+        Chainable<String> chainValid = Chainable.from(items).concat(Arrays.asList(items));
+        Chainable<String> chainNonValid = Chainable.from(items).concat("e");
+        Chainable<String> chainEmpty = Chainable.empty();
+
+        // When / Then
+        assertTrue(chainValid.containsOnly(items));
+        assertFalse(chainNonValid.containsOnly(items));
+        assertTrue(chainEmpty.containsOnly(items));
+    }
+
+    @Test
     public void testContainsSubarray() {
         // Given
         Chainable<String> items1 = Chainable.from("a", "b", "x", "a", "b", "c", "d");
@@ -566,7 +580,7 @@ public class ChainableTest {
         // Given
         final int depth = 4;
         Chainable<String> initial = Chainable.from("1");
-        Function<String, Iterable<String>> childExtractor = (s) -> (s.length() < (depth - 1)  * 2) ? Chainable.from(s + ".1", s + ".2") : null;
+        Function<String, Iterable<? extends String>> childExtractor = (s) -> (s.length() < (depth - 1)  * 2) ? Chainable.from(s + ".1", s + ".2") : null;
         String expectedDepthFirst = "1, 1.1, 1.1.1, 1.1.1.1, 1.1.1.2, 1.1.2, 1.1.2.1, 1.1.2.2, 1.2, 1.2.1, 1.2.1.1, 1.2.1.2, 1.2.2, 1.2.2.1, 1.2.2.2";
 
         // When
@@ -581,7 +595,7 @@ public class ChainableTest {
         // Given
         final int depth = 4;
         Chainable<String> initial = Chainable.from("1");
-        Function<String, Iterable<String>> childExtractor = (s) -> (s.length() < (depth - 1)  * 2) ? Chainable.from(s + ".1", s + ".2") : null;
+        Function<String, Iterable<? extends String>> childExtractor = (s) -> (s.length() < (depth - 1)  * 2) ? Chainable.from(s + ".1", s + ".2") : null;
         String expected = "1, 1.1, 1.1.1, 1.1.2, 1.2, 1.2.1, 1.2.2";
 
         // When
@@ -1201,6 +1215,20 @@ public class ChainableTest {
 
         // When
         String actual = Chainables.transformAndFlatten(list, o -> (o != null) ? Arrays.asList(o) : null).join();
+
+        // Then
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testTransformAndFlattenArray() {
+        // Given
+        String[][] items = { { "a", "b" }, { "c", "d", "e" }, null, { "f" }};
+        Iterable<String[]> list = Arrays.asList(items);
+        String expected = "abcdef";
+
+        // When
+        String actual = Chainables.transformAndFlattenArray(list, o -> (o != null) ? o : null).join();
 
         // Then
         assertEquals(expected, actual);
