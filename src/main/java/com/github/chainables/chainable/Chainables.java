@@ -1467,7 +1467,7 @@ public final class Chainables {
     /**
      * @param items
      * @param number
-     * @return the first number of items
+     * @return the first {@code number} of items
      * @see Chainable#first(long)
      */
     public static <T> Chainable<T> first(Iterable<? extends T> items, long number) {
@@ -1492,7 +1492,7 @@ public final class Chainables {
      * Finds the first item satisfying the specified condition or returns the specified {@code defaultValue} if not found.
      * @param items
      * @param conditions
-     * @return
+     * @return the first item satisfying any of the specified {@code conditions} if one exists, or the specified {@code defaultValue} if none
      * @see Chainable#firstWhereEither(Object, Predicate...)
      */
     @SafeVarargs
@@ -1518,12 +1518,22 @@ public final class Chainables {
      * Finds the first item satisfying the specified condition or {@code null} if not found.
      * @param items
      * @param conditions
-     * @return
+     * @return the first item satisfying any of the specified {@code conditions} if one exists, or {@code null} if none
      * @see Chainable#firstWhereEither(Predicate...)
      */
     @SafeVarargs
     public static <V> V firstWhereEither(Iterable<? extends V> items, Predicate<? super V>... conditions) {
         return firstWhereEither(items, null, conditions);
+    }
+
+    /**
+     * @param items
+     * @param index
+     * @return the item that is at the position indicated by the specified {@code index}, or {@code null} if there are fewer items than that
+     * @see Chainable#get(long)
+     */
+    public static <T> T get(Iterable<? extends T> items, long index) {
+        return afterFirst(items, index).first();
     }
 
     /**
@@ -1560,16 +1570,6 @@ public final class Chainables {
                 }
             }
         });
-    }
-
-    /**
-     * @param items
-     * @param index
-     * @return
-     * @see Chainable#get(long)
-     */
-    public static <T> T get(Iterable<? extends T> items, long index) {
-        return afterFirst(items, index).first();
     }
 
     /**
