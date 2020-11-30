@@ -1118,7 +1118,7 @@ public interface Chainable<T> extends Iterable<T> {
      * Enables the item existence check to be performed iteratively, emitting {@code null} values as long as the item is not <i>yet</i> found,
      * and ultimately emitting either {@code true} if the item is found, or otherwise {@code false} if the end has been reached.
      * @param item item to search for
-     * @return a {@link Chainable} consisting of {@code null} values as long as the search is not completed, and ultimately either {@code true} or {@code false}
+     * @return a chain consisting of {@code null} values as long as the search is not completed, and ultimately either {@code true} or {@code false}
      * @see #contains(Object)
      */
     @Experimental
