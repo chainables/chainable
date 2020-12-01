@@ -1880,7 +1880,7 @@ public final class Chainables {
     /**
      * @param items
      * @param condition
-     * @return
+     * @return {@code true} iff none of the specified {@code items} satisfy the specified {@code condition}
      * @see Chainable#noneWhere(Predicate)
      */
     public static <T> boolean noneWhere(Iterable<? extends T> items, Predicate<? super T> condition) {
@@ -1890,7 +1890,7 @@ public final class Chainables {
     /**
      * @param items
      * @param conditions
-     * @return
+     * @return {@code true} iff none of the specified {@code items} satisfy any of the specified {@code conditions}
      * @see Chainable#noneWhereEither(Predicate...)
      */
     @SafeVarargs
@@ -1902,7 +1902,7 @@ public final class Chainables {
      * Returns items until and including the first item satisfying the specified condition, and no items after that
      * @param items items to return from
      * @param condition the condition that the last item needs to meet
-     * @return items before and including the first item where the specified condition is satisfied
+     * @return initial items that do not satisfy the specified {@code condition} including the first one that does, but no others after that
      * @see Chainable#notAfter(Predicate)
      */
     public static <T> Chainable<T> notAfter(Iterable<? extends T> items, Predicate<? super T> condition) {
@@ -1954,7 +1954,7 @@ public final class Chainables {
     /**
      * @param items
      * @param condition
-     * @return
+     * @return items that do not satisfy the specified {@code condition} after the initial ones that do
      * @see Chainable#notAsLongAs(Predicate)
      */
     public static <T> Chainable<T> notAsLongAs(Iterable<? extends T> items, Predicate<? super T> condition) {
@@ -1964,7 +1964,7 @@ public final class Chainables {
     /**
      * @param items
      * @param value
-     * @return
+     * @return items that do not have the same value as the specified {@code value} after the initial ones that do
      * @see Chainable#notAsLongAsValue(Object)
      */
     public static <T> Chainable<T> notAsLongAsValue(Iterable<? extends T> items, T value) {
@@ -1974,7 +1974,7 @@ public final class Chainables {
     /**
      * @param items
      * @param condition
-     * @return
+     * @return items satisfying the specified {@code condition} after the initial ones that do not
      * @see Chainable#notBefore(Predicate)
      */
     static <T> Chainable<T> notBefore(Iterable<? extends T> items, Predicate<? super T> condition) {
@@ -2050,7 +2050,7 @@ public final class Chainables {
     /**
      * @param items
      * @param condition
-     * @return
+     * @return items that do not satisfy the specified {@code condition}
      * @see Chainable#notWhere(Predicate)
      */
     public static final <T> Chainable<T> notWhere(Iterable<? extends T> items, Predicate<? super T> condition) {
@@ -2060,7 +2060,7 @@ public final class Chainables {
     /**
      * @param items
      * @param example
-     * @return
+     * @return only those items that are of the same type as the specified {@code example}
      * @see Chainable#ofType(Object)
      */
     @SuppressWarnings("unchecked")
