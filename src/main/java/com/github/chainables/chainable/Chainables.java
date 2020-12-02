@@ -2319,7 +2319,28 @@ public final class Chainables {
 
     /**
      * @param items
-     * @return
+     * @return a set consisting of unique members of the specified {@code items}
+     * @see Chainable#toSet()
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> Set<T> toSet(Iterable<? extends T> items) {
+        if (items == null) {
+            return Collections.emptySet();
+        } else if (items instanceof Set<?>) {
+            return (Set<T>) items;
+        } else {
+            Set<T> set = new HashSet<>();
+            for (T item : items) {
+                set.add(item);
+            }
+
+            return set;
+        }
+    }
+
+    /**
+     * @param items
+     * @return a list consisting of the specified {@code items}
      * @see Chainable#toList()
      */
     @SuppressWarnings("unchecked")
