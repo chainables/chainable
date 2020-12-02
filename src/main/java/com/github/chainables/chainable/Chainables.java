@@ -2074,7 +2074,7 @@ public final class Chainables {
     /**
      * @param items
      * @param replacer
-     * @return
+     * @return chain of items after replacing each of the specified {@code items} with the ones returned by the specified {@code replacer}, without {@code null} values.
      * @see Chainable#replace(Function)
      */
     public static <T> Chainable<T> replace(Iterable<? extends T> items, Function<? super T, Iterable<? extends T>> replacer) {
@@ -2083,7 +2083,7 @@ public final class Chainables {
 
     /**
      * @param items
-     * @return
+     * @return chain of the specified {@code items} but in reverse order, forcing a full traversal/evaluation
      * @see Chainable#reverse()
      */
     public static <T> Chainable<T> reverse(Iterable<? extends T> items) {
@@ -2160,7 +2160,7 @@ public final class Chainables {
     /**
      * Splits the specified {@code text} into a individual characters.
      * @param text the text to split
-     * @return a chain of characters
+     * @return a chain of individual characters (as strings)
      */
     public static Chainable<String> split(String text) {
         return (text == null || text.isEmpty()) ? Chainable.empty() : Chainable.fromIterator(() -> new Iterator<String>() {
@@ -2205,7 +2205,7 @@ public final class Chainables {
      * Splits the specified {@code text} using the specified {@code delimiterChars}.
      * @param text the text to split
      * @param delimiterCharacters
-     * @return the split strings, including the delimiters
+     * @return the resulting fragment strings, including the delimiters as separate items
      */
     public static Chainable<String> split(String text, String delimiterCharacters) {
         return split(text, delimiterCharacters, true);
@@ -2218,7 +2218,7 @@ public final class Chainables {
      * @param text the text to split
      * @param delimiterCharacters the characters to use to split the specified {@code text}
      * @param includeDelimiters if {@code true}, the delimiter chars are included in the returned results, otherwise they're not
-     * @return the split strings
+     * @return the resulting fragment strings, including the delimiters as separate items if {@code includeDelimiters} is {@code true}
      */
     public static Chainable<String> split(String text, String delimiterCharacters, boolean includeDelimiters) {
         return (text == null || delimiterCharacters == null) ? Chainable.empty() : Chainable.fromIterator(() -> new Iterator<String>() {
