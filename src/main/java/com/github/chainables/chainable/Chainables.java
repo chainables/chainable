@@ -2161,6 +2161,7 @@ public final class Chainables {
      * Splits the specified {@code text} into a individual characters.
      * @param text the text to split
      * @return a chain of individual characters (as strings)
+     * @see Chainable#split(String)
      */
     public static Chainable<String> split(String text) {
         return (text == null || text.isEmpty()) ? Chainable.empty() : Chainable.fromIterator(() -> new Iterator<String>() {
@@ -2206,6 +2207,7 @@ public final class Chainables {
      * @param text the text to split
      * @param delimiterCharacters
      * @return the resulting fragment strings, including the delimiters as separate items
+     * @see Chainable#split(String, String)
      */
     public static Chainable<String> split(String text, String delimiterCharacters) {
         return split(text, delimiterCharacters, true);
@@ -2219,6 +2221,7 @@ public final class Chainables {
      * @param delimiterCharacters the characters to use to split the specified {@code text}
      * @param includeDelimiters if {@code true}, the delimiter chars are included in the returned results, otherwise they're not
      * @return the resulting fragment strings, including the delimiters as separate items if {@code includeDelimiters} is {@code true}
+     * @see Chainable#split(String, String, boolean)
      */
     public static Chainable<String> split(String text, String delimiterCharacters, boolean includeDelimiters) {
         return (text == null || delimiterCharacters == null) ? Chainable.empty() : Chainable.fromIterator(() -> new Iterator<String>() {
@@ -2239,7 +2242,8 @@ public final class Chainables {
     /**
      * @param items
      * @param prefixes
-     * @return
+     * @return {@code true} iff the initial run of the specified {@code items} matches any of the specified
+     * {@code prefixes}
      * @see Chainable#startsWithEither(Iterable...)
      */
     @SafeVarargs
@@ -2279,7 +2283,8 @@ public final class Chainables {
     /**
      * @param items
      * @param valueExtractor
-     * @return
+     * @return the sum of the values returned by the specified {@code valueExtractor} applied to each of the
+     * specified {@code items}
      * @see Chainable#sum(Function)
      */
     public static <T> long sum(Iterable<? extends T> items, Function<? super T, Long> valueExtractor) {
@@ -2298,7 +2303,7 @@ public final class Chainables {
 
     /**
      * @param items
-     * @return
+     * @return a string array built of the specified string {@code items}
      */
     public static String[] toArray(Iterable<String> items) {
         long len;
@@ -2362,7 +2367,8 @@ public final class Chainables {
     /**
      * @param items
      * @param keyExtractor
-     * @return
+     * @return a map of entries based on the specified {@code items}, where the key is returned by the specified
+     * {@code keyExtractor} applied to each item, and the item is the value stored at that key
      * @see Chainable#toMap(Function)
      */
     public static <K, V> Map<K, V> toMap(Iterable<? extends V> items, Function<? super V, K> keyExtractor) {
@@ -2377,7 +2383,7 @@ public final class Chainables {
 
     /**
      * @param items
-     * @return
+     * @return a queue initialized with the specified {@code items}
      * @see Chainable#toQueue()
      */
     @Experimental
@@ -2388,7 +2394,7 @@ public final class Chainables {
     /**
      * Converts the specified {@code items} into a sequential stream.
      * @param items the items to convert into a stream
-     * @return the resulting stream
+     * @return a stream made of the specified {@code items}
      * @see Chainable#stream()
      */
     public static <T> Stream<T> toStream(Iterable<T> items) {
@@ -2399,7 +2405,7 @@ public final class Chainables {
      * Uses the specified transformer function to transform the specified items and returns the resulting items.
      * @param items items to be transformed (LINQ: select())
      * @param transformer function performing the transformation
-     * @return the transformed items
+     * @return the chain of resulting items after applying the specified {@code transformer} to each of the specified items
      * @see Chainable#transform(Function)
      */
     public static <I, O> Chainable<O> transform(Iterable<? extends I> items, Function<? super I, O> transformer) {
