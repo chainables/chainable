@@ -2432,7 +2432,7 @@ public final class Chainables {
     /**
      * @param items
      * @param transformer
-     * @return
+     * @return a merged chain of items output by the specified {@code transformer} applied to each of the specified {@code items}
      * @see Chainable#transformAndFlattenArray(Function)
      */
     public static <I, O> Chainable<O> transformAndFlattenArray(Iterable<? extends I> items, Function<? super I, O[]> transformer) {
@@ -2442,7 +2442,7 @@ public final class Chainables {
     /**
      * @param items
      * @param transformer
-     * @return
+     * @return a merged chain of items output by the specified {@code transformer} applied to each of the specified {@code items}
      * @see Chainable#transformAndFlatten(Function)
      */
     public static <I, O> Chainable<O> transformAndFlatten(Iterable<? extends I> items, Function<? super I, Iterable<? extends O>> transformer) {
@@ -2535,7 +2535,7 @@ public final class Chainables {
     /**
      * @param items
      * @param predicates
-     * @return
+     * @return a chain of those from the specified {@code items} that satisfy any of the specified {@code predicates}
      * @see Chainable#whereEither(Predicate...)
      */
     @SafeVarargs
@@ -2594,7 +2594,7 @@ public final class Chainables {
 
     /**
      * @param items
-     * @return chain without null values
+     * @return a chain of the specified {@code items} without {@code null} values
      * @see Chainable#withoutNull()
      */
     public static <T> Chainable<T> withoutNull(Iterable<? extends T> items) {
