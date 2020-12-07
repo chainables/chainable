@@ -10,6 +10,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
@@ -1118,7 +1119,7 @@ public interface Chainable<T> extends Iterable<T> {
      * Enables the item existence check to be performed iteratively, emitting {@code null} values as long as the item is not <i>yet</i> found,
      * and ultimately emitting either {@code true} if the item is found, or otherwise {@code false} if the end has been reached.
      * @param item item to search for
-     * @return a {@link Chainable} consisting of {@code null} values as long as the search is not completed, and ultimately either {@code true} or {@code false}
+     * @return a chain consisting of {@code null} values as long as the search is not completed, and ultimately either {@code true} or {@code false}
      * @see #contains(Object)
      */
     @Experimental
@@ -1431,12 +1432,20 @@ public interface Chainable<T> extends Iterable<T> {
     }
 
     /**
-     * Create a {@link ChainableQueue} with the current items as the initial contents of the queue, but not yet traversed/evaluated.
+     * Creates a {@link ChainableQueue} with the current items as the initial contents of the queue, but not yet traversed/evaluated.
      * @return a mutable {@link ChainableQueue} with the current items as the initial contents of the queue
      */
     @Experimental
     default ChainableQueue<T> toQueue() {
         return Chainables.toQueue(this);
+    }
+
+    /**
+     * Puts the items from this chain into a new set.
+     * @return a set consisting of the unique items in this chain
+     */
+    default Set<T> toSet() {
+        return Chainables.toSet(this);
     }
 
     /**
