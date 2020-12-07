@@ -154,7 +154,7 @@ public abstract class ChainableTrees {
 
     /**
      * @param tree
-     * @return
+     * @return a chain of the ancestors of the specified {@code tree}, starting with the immediate parent, all the way up to the root
      * @see ChainableTree#ancestors()
      */
     public static <T> Chainable<ChainableTree<T>> ancestors(ChainableTree<T> tree) {
@@ -165,7 +165,7 @@ public abstract class ChainableTrees {
 
     /**
      * @param root
-     * @return
+     * @return a chain of tree nodes, starting with the specified {@code tree} and its children, traversed in a breadth-first fashion
      * @see ChainableTree#breadthFirst()
      */
     public static <T> Chainable<ChainableTree<T>> breadthFirst(ChainableTree<T> root) {
@@ -176,7 +176,7 @@ public abstract class ChainableTrees {
 
     /**
      * @param root
-     * @return
+     * @return a chain of all the descendants listed in a breadth first fashion, starting with the children of the specified {@code tree}
      * @see ChainableTree#descendants()
      */
     public static <T> Chainable<ChainableTree<T>> descendants(ChainableTree<T> root) {
@@ -185,7 +185,7 @@ public abstract class ChainableTrees {
 
     /**
      * @param tree
-     * @return
+     * @return a chain of tree nodes, starting with the specified {@code tree} and its children, traversed in a pre-order depth-first fashion
      * @see ChainableTree#depthFirst()
      */
     public static <T> Chainable<ChainableTree<T>> depthFirst(ChainableTree<T> tree) {
@@ -197,7 +197,8 @@ public abstract class ChainableTrees {
     /**
      * @param tree
      * @param condition
-     * @return
+     * @return a chain of tree nodes, starting with the specified {@code tree} and its children, traversed in a pre-order depth-first fashion, but not below the tree nodes
+     * that satisfy the specified {@code condition}
      * @see ChainableTree#depthFirstNotBelow(Predicate)
      */
     public static <T> Chainable<ChainableTree<T>> depthFirstNotBelow(ChainableTree<T> tree, Predicate<ChainableTree<T>> condition) {
@@ -209,7 +210,7 @@ public abstract class ChainableTrees {
     /**
      * @param tree
      * @param condition
-     * @return
+     * @return the first tree node starting with the specified {@code tree} and below, that satisfies the specified condition, found in a breadth-first fashion
      * @see ChainableTree#firstWhere(Predicate)
      */
     public static <T> ChainableTree<T> firstWhere(ChainableTree<T> tree, Predicate<ChainableTree<T>> condition) {
@@ -219,7 +220,7 @@ public abstract class ChainableTrees {
     /**
      * @param tree
      * @param value
-     * @return
+     * @return the first tree node starting with the specified {@code tree} and below, whose value is equal to the specified {@code value}
      * @see ChainableTree#firstWithValue(Object)
      */
     public static <T> ChainableTree<T> firstWithValue(ChainableTree<T> tree, T value) {
@@ -229,7 +230,7 @@ public abstract class ChainableTrees {
     /**
      * @param ancestor
      * @param value
-     * @return
+     * @return {@code true} iff any of the descendants of the specified {@code tree} have the specified {@code value}
      * @see ChainableTree#isAbove(Object)
      */
     public static <T> boolean isAbove(ChainableTree<T> ancestor, T value) {
@@ -239,7 +240,7 @@ public abstract class ChainableTrees {
     /**
      * @param tree
      * @param descendantCondition
-     * @return
+     * @return {@code true} iff any of the descendants of the specified {@code tree} meet the specified {@code descendantCondition}
      * @see ChainableTree#isAbove(Predicate)
      */
     public static <T> boolean isAbove(ChainableTree<T> tree, Predicate<ChainableTree<T>> descendantCondition) {
@@ -249,7 +250,7 @@ public abstract class ChainableTrees {
     /**
      * @param tree
      * @param ancestorCondition
-     * @return
+     * @return {@code true} iff any of the ancestors of the specified {@code tree} meet the specified {@code ancestorCondition}
      * @see ChainableTree#isBelow(Predicate)
      */
     public static <T> boolean isBelow(ChainableTree<T> tree, Predicate<ChainableTree<T>> ancestorCondition) {
@@ -259,7 +260,7 @@ public abstract class ChainableTrees {
     /**
      * @param tree
      * @param value
-     * @return
+     * @return {@code true} iff any of the ancestors of the specified {@code tree} have the specified {@code value}
      * @see ChainableTree#isBelow(Object)
      */
     public static <T> boolean isBelow(ChainableTree<T> tree, T value) {
@@ -269,7 +270,8 @@ public abstract class ChainableTrees {
     /**
      * @param tree
      * @param condition
-     * @return
+     * @return a tree whose root is the specified {@code tree} and whose descendants are clones of the descendants of this tree, but not below
+     * the descendants that meet the specified {@code condition}
      * @see ChainableTree#notBelowWhere(Predicate)
      */
     public static <T> ChainableTree<T> notBelowWhere(ChainableTree<T> tree, Predicate<ChainableTree<T>> condition) {
@@ -284,7 +286,8 @@ public abstract class ChainableTrees {
     /**
      * @param tree
      * @param depthAwareCondition
-     * @return
+     * @return a tree whose root is the specified {@code tree} and whose descendants are clones of the descendants of this tree, but not below
+     * the descendants that meet the specified {@code condition}, which is passed the parent tree and its depth relative to the root
      * @see ChainableTree#notBelowWhere(BiPredicate)
      */
     public static <T> ChainableTree<T> notBelowWhere(ChainableTree<T> tree, BiPredicate<ChainableTree<T>, Long> depthAwareCondition) {
@@ -303,7 +306,8 @@ public abstract class ChainableTrees {
     /**
      * @param tree
      * @param condition
-     * @return
+     * @return a tree whose root is the specified {@code tree} and whose descendants are clones of the descendants of this tree, but without those
+     * that satisfy the specified {@code condition}; instead they are replaced with those of its children or descendants that do not satisfy it
      * @see ChainableTree#notWhere(Predicate)
      */
     public static <T> ChainableTree<T> notWhere(ChainableTree<T> tree, Predicate<ChainableTree<T>> condition) {
@@ -321,7 +325,8 @@ public abstract class ChainableTrees {
     /**
      * @param tree
      * @param condition
-     * @return
+     * @return a tree whose root is the specified {@code tree} and whose descendants are clones of the descendants of this tree and satisfy the
+     * specified {@code condition}, whereas the ones that don't are replaced with those of their children or descendants that do
      * @see ChainableTree#where(Predicate)
      */
     public static <T> ChainableTree<T> where(ChainableTree<T> tree, Predicate<ChainableTree<T>> condition) {
@@ -338,7 +343,7 @@ public abstract class ChainableTrees {
 
     /**
      * @param tree
-     * @return
+     * @return the node preceding the specified {@code tree} relative to its parent, if any, or {@code null} otherwise
      * @see ChainableTree#predecessor()
      */
     public static <T> ChainableTree<T> predecessor(ChainableTree<T> tree) {
@@ -347,7 +352,7 @@ public abstract class ChainableTrees {
 
     /**
      * @param tree
-     * @return
+     * @return all the nodes that precede the specified {@code tree} within its parent, starting with the first one
      * @see ChainableTree#predecessors()
      */
     public static <T> Chainable<ChainableTree<T>> predecessors(final ChainableTree<T> tree) {
@@ -358,7 +363,7 @@ public abstract class ChainableTrees {
 
     /**
      * @param tree
-     * @return
+     * @return all the other tree nodes that are children of the same parent as the specified {@code tree}
      * @see ChainableTree#siblings()
      */
     public static <T> Chainable<ChainableTree<T>> siblings(ChainableTree<T> tree) {
@@ -369,7 +374,7 @@ public abstract class ChainableTrees {
 
     /**
      * @param tree
-     * @return
+     * @return the node following the specified {@code tree} relative to its parent, if any, or {@code null} otherwise
      * @see ChainableTree#successor()
      */
     public static <T> ChainableTree<T> successor(ChainableTree<T> tree) {
@@ -378,7 +383,7 @@ public abstract class ChainableTrees {
 
     /**
      * @param tree
-     * @return
+     * @return all the nodes that follow the specified {@code tree} within its parent, starting with the first one
      * @see ChainableTree#successors()
      */
     public static <T> Chainable<ChainableTree<T>> successors(ChainableTree<T> tree) {
@@ -390,7 +395,7 @@ public abstract class ChainableTrees {
 
     /**
      * @param root
-     * @return
+     * @return the terminal descendants of the specified {@code root} tree, that is those that do not have children
      * @see ChainableTree#terminals()
      */
     public static <T> Chainable<ChainableTree<T>> terminals(ChainableTree<T> root) {
@@ -400,7 +405,8 @@ public abstract class ChainableTrees {
     /**
      * @param tree
      * @param condition
-     * @return
+     * @return the last ancestor that satisfies the specified {@code condition} starting with the specified {@code tree} itself and going up (so the result may
+     * be the specified {@code tree} itself, if its parent does not meet the {@code condition})
      * @see ChainableTree#upAsLongAs(Predicate)
      */
     public static <T> ChainableTree<T> upAsLongAs(ChainableTree<T> tree, Predicate<ChainableTree<T>> condition) {
@@ -414,7 +420,8 @@ public abstract class ChainableTrees {
     /**
      * @param tree
      * @param condition
-     * @return
+     * @return the first ancestor that satisfies the specified {@code condition} starting with the specified {@code tree} itself and going up (so the
+     * result may be the {@code tree} itself if it already satisfies the {@code condition}
      * @see ChainableTree#upUntil(Predicate)
      */
     public static <T> ChainableTree<T> upUntil(ChainableTree<T> tree, Predicate<ChainableTree<T>> condition) {
@@ -427,7 +434,8 @@ public abstract class ChainableTrees {
     /**
      * @param tree
      * @param conditions
-     * @return
+     * @return the first ancestor that satisfies any of the specified {@code conditions} starting with the specified {@code tree} itself and going up (so the
+     * result may be the {@code tree} itself if it already satisfies the {@code conditions}
      * @see ChainableTree#upUntilEither(Predicate...)
      */
     @SafeVarargs
