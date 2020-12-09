@@ -81,6 +81,7 @@ public interface ChainableTree<T> extends Cloneable {
      * Returns the chain of all the descendants of this tree node, in a breadth-first order
      * @return all descendants of this tree
      * @see #ancestors()
+     * @see #breadthFirst()
      */
     default Chainable<ChainableTree<T>> descendants() {
         return ChainableTrees.descendants(this);
