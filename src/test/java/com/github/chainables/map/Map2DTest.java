@@ -141,7 +141,7 @@ public class Map2DTest {
         Map2D<String, String, String> map2D = HashMap2D.from(TEST_DATA);
         Chainable<Entry2D<String, String, String>> allEntries = map2D.entries();
         String actualMergedText = allEntries
-                .transform(e -> String.join("", e.key1, e.key2, e.value))
+                .transform(e -> String.join("", e.primaryKey, e.secondaryKey, e.value))
                 .join();
 
         // Then
