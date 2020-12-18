@@ -57,12 +57,23 @@ public interface Map2D<K1, K2, V> {
      * @param <V> the type of the values
      */
     public static class Entry2D<K1, K2, V> {
-        public final K1 key1;
-        public final K2 key2;
+        /**
+         * The primary key of this entry
+         */
+        public final K1 primaryKey;
+
+        /**
+         * The secondary key of this entry
+         */
+        public final K2 secondaryKey;
+
+        /**
+         * The value stored by this entry
+         */
         public final V value;
-        public Entry2D(K1 key1, K2 key2, V value) {
-            this.key1 = key1;
-            this.key2 = key2;
+        public Entry2D(K1 primaryKey, K2 secondaryKey, V value) {
+            this.primaryKey = primaryKey;
+            this.secondaryKey = secondaryKey;
             this.value = value;
         }
     }
@@ -139,7 +150,7 @@ public interface Map2D<K1, K2, V> {
 	Map<K1, Map<K2, V>> maps();
 
 	/**
-	 * Removes the specified entry from this 2D map and the specified {@code primaryKey} and {@code secondaryKey}.
+	 * Removes the entry from this 2D map at the location specified by {@code primaryKey} and {@code secondaryKey}.
 	 * @param primaryKey the primary key of the entry
 	 * @param secondaryKey the secondary key of the entry
 	 * @return the value at the specified keys (or {@code null})

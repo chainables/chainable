@@ -11,7 +11,7 @@ import com.github.chainables.chainable.Chainable;
 /**
  * A 2D map derived from {@link com.github.chainables.Map2D} which can store multiple unique values at the location given by
  * the primary and secondary key pair.
- * @author msawicki
+ * @author Martin Sawicki
  *
  * @param <K1> the primary key type
  * @param <K2> the secondary key type
@@ -42,7 +42,7 @@ public interface Map2DMultiValued<K1, K2, V> extends Map2D<K1, K2, Set<V>> {
      * @param primaryKey the primary key of the location to remove the specified {@code value} from
      * @param secondaryKey the secondary key of the location to remove the specified {@code value} from
      * @param value the value to remove
-     * @return {@code true} iff the specified {@code values} was actually among the values stored at the specified location
+     * @return {@code true} iff the specified {@code value} was actually among the values stored at the specified location
      */
     boolean removeFromValues(K1 primaryKey, K2 secondaryKey, V value);
 
