@@ -62,7 +62,7 @@ public class HashMap2D<K1, K2, V> implements Map2D<K1, K2, V> {
     }
 
     /**
-     * Creates a new 2D map with {@null} as the default value.
+     * Creates a new 2D map with {@code null} as the default value.
      */
 	public HashMap2D() {
 		this(null);

@@ -9,7 +9,7 @@ import java.util.Set;
 import com.github.chainables.chainable.Chainable;
 
 /**
- * A 2D map derived from {@link com.github.chainables.Map2D} which can store multiple unique values at the location given by
+ * A 2D map derived from {@link com.github.chainables.map.Map2D} which can store multiple unique values at the location given by
  * the primary and secondary key pair.
  * @author Martin Sawicki
  *
