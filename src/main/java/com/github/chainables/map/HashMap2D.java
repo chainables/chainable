@@ -50,6 +50,22 @@ public class HashMap2D<K1, K2, V> implements Map2D<K1, K2, V> {
         return this.clear(true);
     }
 
+    /**
+     * Creates a new 2D map with {@code null} as the default value.
+     */
+    public HashMap2D() {
+        this(null);
+    }
+
+    /**
+     * Creates a new 2D map with the specified {@code defaultValue} returned for locations where no other value has been put.
+     * @param defaultValue the value to return for locations where no other value has been put
+     */
+    public HashMap2D(V defaultValue) {
+        this.defaultValue = defaultValue;
+        this.reverse = new HashMap2D<>(this, defaultValue);
+    }
+
     private Map2D<K1, K2, V> clear(boolean updateReverse) {
         this.maps.clear();
         this.lastKey1 = null;
@@ -60,22 +76,6 @@ public class HashMap2D<K1, K2, V> implements Map2D<K1, K2, V> {
 
         return this;
     }
-
-    /**
-     * Creates a new 2D map with {@code null} as the default value.
-     */
-	public HashMap2D() {
-		this(null);
-	}
-
-	/**
-	 * Creates a new 2D map with the specified {@code defaultValue} returned for locations where no other value has been put.
-	 * @param defaultValue the value to return for locations where no other value has been put
-	 */
-	public HashMap2D(V defaultValue) {
-		this.defaultValue = defaultValue;
-		this.reverse = new HashMap2D<>(this, defaultValue);
-	}
 
 	private HashMap2D(HashMap2D<K2, K1, V> reverse, V defaultValue) {
 		this.defaultValue = defaultValue;
