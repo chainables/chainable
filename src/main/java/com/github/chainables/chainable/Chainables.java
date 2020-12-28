@@ -529,6 +529,54 @@ public final class Chainables {
     }
 
     /**
+     * Returns items before the last one
+     * @param items items to return from
+     * @return chain of items before the last one
+     */
+    public static <T> Chainable<T> beforeLast(Iterable<? extends T> items) {
+        if (items == null) {
+            return null;
+        }
+
+        return Chainable.fromIterator(() -> new Iterator<T>() {
+            Iterator<? extends T> iter = items.iterator();
+            T next = null;
+            boolean isStopped = false;
+            boolean isFetched = false;
+
+            @Override
+            public boolean hasNext() {
+                if (isStopped) {
+                    return false;
+                } else if (isFetched) {
+                    return true;
+                } else if (!this.iter.hasNext()) {
+                    this.isStopped = true;
+                    return false;
+                }
+
+                // Cache the next item
+                this.next = iter.next();
+
+                // If this is the last one then stop
+                if (!this.iter.hasNext()) {
+                    this.isStopped = true;
+                    return false;
+                } else {
+                    isFetched = true;
+                    return true;
+                }
+            }
+
+            @Override
+            public T next() {
+                this.isFetched = false;
+                return this.next;
+            }
+        });
+    }
+
+    /**
      * Returns items until the specified item is encountered.
      * @param items items to return from
      * @param item the item which, when encountered, will stop the rest of the items from being returned
@@ -670,9 +718,8 @@ public final class Chainables {
 
             @Override
             public T next() {
-                T temp = this.next;
                 isFetched = false;
-                return temp;
+                return this.next;
             }
         });
     }

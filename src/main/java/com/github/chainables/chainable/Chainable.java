@@ -462,6 +462,14 @@ public interface Chainable<T> extends Iterable<T> {
     }
 
     /**
+     * Returns the items in this chain before the last item, or an empty chain if there are less than two items in this chain.
+     * @return a chain of items before the last item, or an empty chain if there are less than two items in this chain
+     */
+    default Chainable<T> beforeLast() {
+        return Chainables.beforeLast(this);
+    }
+
+    /**
      * Returns a chain of initial items from this chain before the specified {@code value}.
      * @param item
      * @return the initial items until one is encountered that is the same as the specified {@code item}
