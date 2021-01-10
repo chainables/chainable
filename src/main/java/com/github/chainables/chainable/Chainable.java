@@ -1184,7 +1184,7 @@ public interface Chainable<T> extends Iterable<T> {
     }
 
     /**
-     * Returns the item tha has the highest value extracted by the specified {@code valueExtractor} in this chain.
+     * Returns the item with the highest value extracted by the specified {@code valueExtractor} in this chain.
      * <p>
      * This triggers a full traversal/evaluation of the items.
      * @param valueExtractor
@@ -1201,7 +1201,7 @@ public interface Chainable<T> extends Iterable<T> {
     }
 
     /**
-     * Returns the item that has the lowest value extracted by the specified {@code valueExtractor} in this chain.
+     * Returns the item with the lowest value extracted by the specified {@code valueExtractor} in this chain.
      * <p>
      * This triggers a full traversal/evaluation of the items.
      * @param valueExtractor
