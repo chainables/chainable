@@ -23,7 +23,6 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
 import com.github.chainables.annotation.Experimental;
-import com.github.chainables.chainable.Chainables.Chain;
 import com.github.chainables.function.ToStringFunction;
 
 /**
