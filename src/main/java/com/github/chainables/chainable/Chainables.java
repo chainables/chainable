@@ -288,7 +288,7 @@ public final class Chainables {
         }
 
         // Apply to all
-        List<? extends T> itemsList = Chainables.toList(items);
+        ChainableList<? extends T> itemsList = Chainables.toList(items);
         for (T item : itemsList) {
             try {
                 action.accept(item);
@@ -1066,8 +1066,8 @@ public final class Chainables {
         }
 
         // Brute force evaluation of everything (TODO: make it lazy and faster?)
-        List<? extends T> subList = toList(subarray);
-        List<? extends T> itemsCached = toList(items);
+        ChainableList<? extends T> subList = toList(subarray);
+        ChainableList<? extends T> itemsCached = toList(items);
 
         for (int i = 0; i < itemsCached.size() - subList.size(); i++) {
             boolean matched = true;
@@ -1355,7 +1355,7 @@ public final class Chainables {
             return false;
         }
 
-        List<? extends T> itemList = toList(items);
+        ChainableList<? extends T> itemList = toList(items);
         for (Iterable<? extends T> suffix : suffixes) {
             // Check each suffix
             List<? extends T> suffixSequence = Chainables.toList(suffix);
@@ -1797,7 +1797,7 @@ public final class Chainables {
      */
     public static <T> Chainable<T> last(Iterable<? extends T> items, long count) {
         return (items == null) ? Chainable.empty() : Chainable.fromIterator(() -> new Iterator<T>() {
-            final List<? extends T> list = Chainables.toList(items);
+            final ChainableList<? extends T> list = Chainables.toList(items);
             final int size = this.list.size();
             long next = this.size - count;
 
@@ -2068,7 +2068,7 @@ public final class Chainables {
      */
     public static <T> Chainable<T> reverse(Iterable<? extends T> items) {
         return (items == null) ? Chainable.empty() : Chainable.fromIterator(() -> new Iterator<T>() {
-            List<? extends T> list = Chainables.toList(items);
+            ChainableList<? extends T> list = Chainables.toList(items);
             int nextIndex = list.size() - 1;
 
             @Override
@@ -2103,7 +2103,7 @@ public final class Chainables {
             return Chainable.from(items);
         }
 
-        List<T> list = toList(items);
+        ChainableList<T> list = toList(items);
         list.sort(new Comparator<T>() {
 
             @Override
@@ -2325,22 +2325,17 @@ public final class Chainables {
 
     /**
      * @param items
-     * @return a list consisting of the specified {@code items}
+     * @return a chainable list consisting of the specified {@code items}
      * @see Chainable#toList()
      */
     @SuppressWarnings("unchecked")
-    public static <T> List<T> toList(Iterable<? extends T> items) {
+    public static <T> ChainableList<T> toList(Iterable<? extends T> items) {
         if (items == null) {
             return null;
-        } else if (items instanceof List<?>) {
-            return (List<T>) items;
+        } else if (items instanceof ChainableList<?>) {
+            return (ChainableList<T>) items;
         } else {
-            List<T> list = new ArrayList<>();
-            for (T item : items) {
-                list.add(item);
-            }
-
-            return list;
+            return new ChainList<>(items);
         }
     }
 

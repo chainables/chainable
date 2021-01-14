@@ -1217,7 +1217,7 @@ public class ChainableTest {
         String expected = "abc";
 
         // When
-        List<String> list = chain.toList();
+        ChainableList<String> list = chain.toList();
         String actual = String.join("", list);
 
         // Then
