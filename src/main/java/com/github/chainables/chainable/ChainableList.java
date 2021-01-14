@@ -7,6 +7,12 @@ package com.github.chainables.chainable;
 import java.util.List;
 import java.util.stream.Stream;
 
+/**
+ * A Java {@link List} that is also {@link Chainable}.
+ * @author msawicki
+ *
+ * @param <T> the type of the stored items
+ */
 public interface ChainableList<T> extends Chainable<T>, List<T> {
 
     @SuppressWarnings("unchecked")

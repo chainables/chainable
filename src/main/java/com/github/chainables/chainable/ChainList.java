@@ -6,6 +6,12 @@ package com.github.chainables.chainable;
 
 import java.util.ArrayList;
 
+/**
+ * An implementation of {@link ChainableList} based on an {@link ArrayList}.
+ * @author Martin Sawicki
+ *
+ * @param <T> the type of stored items
+ */
 public class ChainList<T> extends ArrayList<T> implements ChainableList<T> {
     private static final long serialVersionUID = 1L;
     public ChainList(Iterable<? extends T> items) {
