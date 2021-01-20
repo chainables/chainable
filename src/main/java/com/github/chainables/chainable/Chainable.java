@@ -32,7 +32,7 @@ import com.github.chainables.function.ToStringFunction;
  * <p>
  * It is intended to be a rich, {@link Iterable}-based alternative to Java's {@link Stream} and Google's *guava*.
  * <p>
- * See the project's home site at {@link http://www.github.com/chainables/chainable} for more information.
+ * See the project's home site at http://www.github.com/chainables/chainable for more information.
  *
  * @author Martin Sawicki
  *
