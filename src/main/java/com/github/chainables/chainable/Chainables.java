@@ -30,7 +30,6 @@ import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 import java.util.function.ToDoubleFunction;
 import java.util.function.ToLongFunction;
 import java.util.function.UnaryOperator;
@@ -106,80 +105,6 @@ public final class Chainables {
                     }
                 };
             }
-        }
-    }
-
-    static class Chain<T> implements Chainable<T> {
-        protected Iterable<? extends T> iterable;
-
-        private Chain(Iterable<? extends T> iterable) {
-            this.iterable = (iterable != null) ? iterable : new ArrayList<>();
-        }
-
-        static <T> Chain<T> empty() {
-            return Chain.from(new ArrayList<>());
-        }
-
-        @SuppressWarnings("unchecked")
-        static <T> Chain<T> from(Iterable<? extends T> iterable) {
-            if (iterable == null) {
-                return Chain.empty();
-            } else if (iterable instanceof Chain<?>) {
-                return (Chain<T>) iterable;
-            } else if (iterable instanceof CachedChain<?>) {
-                return (CachedChain<T>) iterable;
-            } else {
-                return new Chain<T>(iterable);
-            }
-        }
-
-        static <T> Chain<T> from(Supplier<Iterator<T>> iteratorSupplier) {
-            return (iteratorSupplier == null) ? Chain.empty() : Chain.from(new Iterable<T>() {
-                @Override
-                public Iterator<T> iterator() {
-                    return iteratorSupplier.get();
-                }
-            });
-        }
-
-        @SuppressWarnings("unchecked")
-        static <T> Chain<T> from(T...items) {
-            return Chain.from(new Iterable<T>() {
-
-                @Override
-                public Iterator<T> iterator() {
-                    return new Iterator<T>() {
-                        final T[] sourceItems = items;
-                        int nextIndex = 0;
-                        @Override
-                        public boolean hasNext() {
-                            return (this.sourceItems != null) ? (this.nextIndex < this.sourceItems.length) : false;
-                        }
-
-                        @Override
-                        public T next() {
-                            this.nextIndex++;
-                            return this.sourceItems[this.nextIndex-1];
-                        }
-                    };
-                }
-            });
-        }
-
-        @SuppressWarnings("unchecked")
-        @Override
-        public Iterator<T> iterator() {
-            return (Iterator<T>) this.iterable.iterator();
-        }
-
-        @Override
-        public String toString() {
-            return Chainables.join(", ", this);
-        }
-
-        @Override
-        public T get(long index) {
-            return (this.iterable instanceof List<?>) ? ((List<? extends T>) this.iterable).get(Math.toIntExact(index)) : Chainables.get(this, index);
         }
     }
 
@@ -363,7 +288,7 @@ public final class Chainables {
         }
 
         // Apply to all
-        List<? extends T> itemsList = Chainables.toList(items);
+        ChainableList<? extends T> itemsList = Chainables.toList(items);
         for (T item : itemsList) {
             try {
                 action.accept(item);
@@ -529,6 +454,54 @@ public final class Chainables {
     }
 
     /**
+     * Returns items before the last one
+     * @param items items to return from
+     * @return chain of items before the last one
+     */
+    public static <T> Chainable<T> beforeLast(Iterable<? extends T> items) {
+        if (items == null) {
+            return null;
+        }
+
+        return Chainable.fromIterator(() -> new Iterator<T>() {
+            Iterator<? extends T> iter = items.iterator();
+            T next = null;
+            boolean isStopped = false;
+            boolean isFetched = false;
+
+            @Override
+            public boolean hasNext() {
+                if (isStopped) {
+                    return false;
+                } else if (isFetched) {
+                    return true;
+                } else if (!this.iter.hasNext()) {
+                    this.isStopped = true;
+                    return false;
+                }
+
+                // Cache the next item
+                this.next = iter.next();
+
+                // If this is the last one then stop
+                if (!this.iter.hasNext()) {
+                    this.isStopped = true;
+                    return false;
+                } else {
+                    isFetched = true;
+                    return true;
+                }
+            }
+
+            @Override
+            public T next() {
+                this.isFetched = false;
+                return this.next;
+            }
+        });
+    }
+
+    /**
      * Returns items until the specified item is encountered.
      * @param items items to return from
      * @param item the item which, when encountered, will stop the rest of the items from being returned
@@ -670,9 +643,8 @@ public final class Chainables {
 
             @Override
             public T next() {
-                T temp = this.next;
                 isFetched = false;
-                return temp;
+                return this.next;
             }
         });
     }
@@ -1094,8 +1066,8 @@ public final class Chainables {
         }
 
         // Brute force evaluation of everything (TODO: make it lazy and faster?)
-        List<? extends T> subList = toList(subarray);
-        List<? extends T> itemsCached = toList(items);
+        ChainableList<? extends T> subList = toList(subarray);
+        ChainableList<? extends T> itemsCached = toList(items);
 
         for (int i = 0; i < itemsCached.size() - subList.size(); i++) {
             boolean matched = true;
@@ -1383,7 +1355,7 @@ public final class Chainables {
             return false;
         }
 
-        List<? extends T> itemList = toList(items);
+        ChainableList<? extends T> itemList = toList(items);
         for (Iterable<? extends T> suffix : suffixes) {
             // Check each suffix
             List<? extends T> suffixSequence = Chainables.toList(suffix);
@@ -1825,7 +1797,7 @@ public final class Chainables {
      */
     public static <T> Chainable<T> last(Iterable<? extends T> items, long count) {
         return (items == null) ? Chainable.empty() : Chainable.fromIterator(() -> new Iterator<T>() {
-            final List<? extends T> list = Chainables.toList(items);
+            final ChainableList<? extends T> list = Chainables.toList(items);
             final int size = this.list.size();
             long next = this.size - count;
 
@@ -2096,7 +2068,7 @@ public final class Chainables {
      */
     public static <T> Chainable<T> reverse(Iterable<? extends T> items) {
         return (items == null) ? Chainable.empty() : Chainable.fromIterator(() -> new Iterator<T>() {
-            List<? extends T> list = Chainables.toList(items);
+            ChainableList<? extends T> list = Chainables.toList(items);
             int nextIndex = list.size() - 1;
 
             @Override
@@ -2131,7 +2103,7 @@ public final class Chainables {
             return Chainable.from(items);
         }
 
-        List<T> list = toList(items);
+        ChainableList<T> list = toList(items);
         list.sort(new Comparator<T>() {
 
             @Override
@@ -2353,22 +2325,17 @@ public final class Chainables {
 
     /**
      * @param items
-     * @return a list consisting of the specified {@code items}
+     * @return a chainable list consisting of the specified {@code items}
      * @see Chainable#toList()
      */
     @SuppressWarnings("unchecked")
-    public static <T> List<T> toList(Iterable<? extends T> items) {
+    public static <T> ChainableList<T> toList(Iterable<? extends T> items) {
         if (items == null) {
             return null;
-        } else if (items instanceof List<?>) {
-            return (List<T>) items;
+        } else if (items instanceof ChainableList<?>) {
+            return (ChainableList<T>) items;
         } else {
-            List<T> list = new ArrayList<>();
-            for (T item : items) {
-                list.add(item);
-            }
-
-            return list;
+            return new ChainList<>(items);
         }
     }
 
