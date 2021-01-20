@@ -23,17 +23,16 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
 import com.github.chainables.annotation.Experimental;
-import com.github.chainables.chainable.Chainables.Chain;
 import com.github.chainables.function.ToStringFunction;
 
 /**
- * {@link Chainable} is a fluent interface-style sub type of {@link java.lang.Iterable} with additional methods facilitating the use of the
- * iterator pattern, functional programming and lazy evaluation, intended for achieving code that is more succinct, readable, simpler to implement
+ * {@link Chainable} is a fluent interface-style sub type of {@link Iterable} with additional methods facilitating the use of the
+ * functional programming, the iterator pattern and lazy evaluation, intended for achieving code that is more succinct, readable, simpler to implement
  * and sometimes faster than its non-lazy/non-functional equivalent.
  * <p>
- * It is intended to be a rich, `Iterable`-based alternative to Java's `Stream` and Google's *guava*.
+ * It is intended to be a rich, {@link Iterable}-based alternative to Java's {@link Stream} and Google's *guava*.
  * <p>
- * See the project's home site at http://www.github.com/chainables/chainable for more information.
+ * See the project's home site at {@link http://www.github.com/chainables/chainable} for more information.
  *
  * @author Martin Sawicki
  *
@@ -41,7 +40,7 @@ import com.github.chainables.function.ToStringFunction;
  */
 public interface Chainable<T> extends Iterable<T> {
     /**
-     * Returns an empty chain.
+     * Returns an empty chain that can be used as a starting point to build a non-empty chain.
      * @return an empty chain
      * @chainables.similar
      * <table summary="Similar to:">
@@ -55,7 +54,8 @@ public interface Chainable<T> extends Iterable<T> {
     }
 
     /**
-     * Returns an empty chain whose items are expected to be of the specified {@code clazz} type.
+     * Returns an empty chain that can be used as a starting point to build a non-empty chain whose items are expected to be of the
+     * specified {@code clazz} type.
      * @param clazz the expected type of the items in the chain
      * @return an empty chain expected to contain items of the specified {@code clazz} type.
      */
@@ -64,8 +64,7 @@ public interface Chainable<T> extends Iterable<T> {
     }
 
     /**
-     * Creates a new chain from the specified {@code items} in a "lazy" fashion, not traversing/evaluating the items,
-     * just holding internal references to them.
+     * Creates a new chain from the specified {@code items}.
      * @param items the items to create the chain from
      * @return a chain for the specified {@code items}
      * @chainables.similar
@@ -88,7 +87,7 @@ public interface Chainable<T> extends Iterable<T> {
     }
 
     /**
-     * Creates a new chain from the specified {@code items} array,
+     * Creates a new chain from the specified {@code items} array.
      * @param items the items to create a chain from
      * @return an {@link Chainable} wrapper for the specified {@code items}
      * @chainables.similar
@@ -104,9 +103,9 @@ public interface Chainable<T> extends Iterable<T> {
 
     /**
      * Creates a new chain from the specified {@code stream} that supports multiple traversals, just like a
-     * standard {@link java.lang.Iterable}, even though the underlying {@link java.util.stream.Stream} does not.
+     * standard {@link Iterable}, even though the underlying {@link Stream} does not.
      * <p>
-     * Note that upon subsequent traversals of the chain, none of the items in the original stream are evaluated twice,
+     * Note that upon subsequent traversals of the chain created this way, none of the items in the original stream are evaluated twice,
      * but rather their values are cached internally and used for any subsequent traversals, even if previous traversals of the chain
      * were incomplete.
      * @param stream the stream to create a chain from
@@ -162,9 +161,9 @@ public interface Chainable<T> extends Iterable<T> {
     }
 
     /**
-     * Splits the specified {@code text} into a individual characters.
+     * Splits the specified {@code text} into a individual characters and returns them as a chain of strings.
      * @param text the text to split
-     * @return a chain of characters
+     * @return a chain of strings made of the resulting characters
      * @see #split(String, String)
      * @see #split(String, String, boolean)
      * @see #join()
@@ -174,7 +173,7 @@ public interface Chainable<T> extends Iterable<T> {
     }
 
     /**
-     * Splits the specified {@code text} using the specified {@code delimiterChars}.
+     * Splits the specified {@code text} using the specified {@code delimiterCharacters}.
      * <p>
      * Each of the characters in the specified {@code delimiterCharacters} is used as a separator individually.
      * @param text the text to split
@@ -189,7 +188,7 @@ public interface Chainable<T> extends Iterable<T> {
     }
 
     /**
-     * Splits the specified {@code text} using the specified {@code delimiterChars}, optionally including the delimiter characters in the
+     * Splits the specified {@code text} using the specified {@code delimiterCharacters}, optionally including the delimiter characters in the
      * resulting chain.
      * <p>
      * Each of the characters in the specified {@code delimiterCharacters} is used as a separator individually.
@@ -206,7 +205,7 @@ public interface Chainable<T> extends Iterable<T> {
     }
 
     /**
-     * Returns a chain of items after the first one in this chain.
+     * Returns a chain of items that follow the first one in this chain.
      * @return items following the first one
      * @chainables.similar
      * <table summary="Similar to:">
@@ -219,7 +218,7 @@ public interface Chainable<T> extends Iterable<T> {
     }
 
     /**
-     * Returns a chain after skipping the first specified number of items.
+     * Returns a chain of items that follow the first specified {@code number} of skipped items.
      * @param number the number of initial items to skip
      * @return the remaining chain
      * @chainables.similar
@@ -247,7 +246,7 @@ public interface Chainable<T> extends Iterable<T> {
     }
 
     /**
-     * Determines whether all the items in this chain satisfy any of the specified {@code conditions}
+     * Determines whether all the items in this chain satisfy <i>any</i> of the specified {@code conditions}
      * @param conditions the choice of conditions for the items to satisfy
      * @return {@code true} if all items satisfy at least one of the {@code conditions}, otherwise {@code false}
      * @see #allWhere(Predicate)
@@ -284,7 +283,7 @@ public interface Chainable<T> extends Iterable<T> {
     }
 
     /**
-     * Determines whether any of the items in this chain satisfy any of the specified {@code conditions}.
+     * Determines whether any of the items in this chain satisfy <i>any</i> of the specified {@code conditions}.
      * @param conditions the conditions to satisfy
      * @return true if there are any items that satisfy any of the specified {@code conditions}
      * @see #anyWhere(Predicate)
@@ -295,8 +294,9 @@ public interface Chainable<T> extends Iterable<T> {
     }
 
     /**
-     * Ensures all items are traversed, forcing any of the predecessors in the chain to be fully evaluated.
+     * Ensures all items in the chain are traversed, causing everything to be fully evaluated.
      * <p>This is somewhat similar to {@link #toList()}, except that what is returned is still a {@link Chainable}.
+     * <p>Note that if this chain is functionally defined as de-facto infinite, this will never return.
      * @return self
      */
     default Chainable<T> apply() {
@@ -305,6 +305,7 @@ public interface Chainable<T> extends Iterable<T> {
 
     /**
      * Applies the specified {@code action} to all the items in this chain, triggering a full evaluation of all the items.
+     * <p>Note that if this chain is functionally defined as de-facto infinite, this will never return.
      * @param action
      * @return self
      * @chainables.similar
@@ -318,7 +319,7 @@ public interface Chainable<T> extends Iterable<T> {
 
     /**
      * Applies the specified {@code action} to each item one by one lazily, that is without triggering a full
-     * evaluation of the entire chain, but only to the extent that the returned chain is evaluated using another function.
+     * evaluation of the entire chain, but only to the extent that the returned chain is evaluated using a subsequent function applied to it after this one.
      * @param action
      * @return self
      * @chainables.similar
@@ -334,12 +335,12 @@ public interface Chainable<T> extends Iterable<T> {
     }
 
     /**
-     * Sorts in the ascending order by an automatically detected key based on the first item in the chain.
+     * Sorts the chain in the ascending order by an automatically detected key based on the type of the first item in the chain.
      * <P>
-     * If the item type in the chain is {@link String}, or {@link Double}, or {@link Long}, then the value is used as the key.
+     * If the item type is {@link String}, or {@link Double}, or {@link Long}, then the value is used as the key.
      * For other types, the return value of {@code toString()} is used as the key.
      * <P>
-     * Note this triggers a full traversal/evaluation of the chain.
+     * Note this triggers a full traversal/evaluation of the chain, so for for chains functionally defined as infinite, this will never return.
      * @return sorted items
      * @see #descending()
      */
@@ -351,7 +352,7 @@ public interface Chainable<T> extends Iterable<T> {
      * Sorts the items in this chain in the ascending order based on the {@link String}
      * keys returned by the specified {@code keyExtractor} applied to each item.
      * <P>
-     * Note this triggers a full traversal/evaluation of the chain.
+     * Note this triggers a full traversal/evaluation of the chain, so for for chains functionally defined as infinite, this will never return.
      * @param keyExtractor
      * @return sorted items
      * @chainables.similar
@@ -369,7 +370,7 @@ public interface Chainable<T> extends Iterable<T> {
      * Sorts the items in this chain in the ascending order based on the {@link Long}
      * keys returned by the specified {@code keyExtractor} applied to each item.
      * <P>
-     * Note this triggers a full traversal/evaluation of the chain.
+     * Note this triggers a full traversal/evaluation of the chain, so for for chains functionally defined as infinite, this will never return.
      * @param keyExtractor
      * @return sorted items
      * @chainables.similar
@@ -387,7 +388,7 @@ public interface Chainable<T> extends Iterable<T> {
      * Sorts the items in this chain in the ascending order based on the {@link Double}
      * keys returned by the specified {@code keyExtractor} applied to each item.
      * <P>
-     * Note this triggers a full traversal/evaluation of the chain.
+     * Note this triggers a full traversal/evaluation of the chain, so for for chains functionally defined as infinite, this will never return.
      * @param keyExtractor
      * @return sorted items
      * @chainables.similar
@@ -421,7 +422,7 @@ public interface Chainable<T> extends Iterable<T> {
     /**
      * Returns a chain of the initial items from this chain that are equal to the specified {@code value}, stopping before the first item that is not.
      * <p>
-     * For example, if the chain consists of { 1, 1, 2, 1, 1, ...} and the {@code value} is 1 then the returned chain will be { 1, 1 }.
+     * For example, if the chain consists of {@code 1, 1, 2, 1, 1, ...} and the {@code value} is 1 then the returned chain will be {@code 1, 1 }.
      * @param value value to match
      * @return items <i>before</i> the first one that is not equal to the specified {@code value}
      * @see #asLongAs(Predicate)
@@ -444,8 +445,8 @@ public interface Chainable<T> extends Iterable<T> {
     /**
      * Returns a chain of initial items from this chain before the first one that satisfies the specified {@code condition}.
      * <p>
-     * For example, if this chain consists of { 1, 3, 2, 5, 6 } and the {@code condition} returns {@code true} for even numbers, then the resulting chain
-     * will consist of { 1, 3 }.
+     * For example, if this chain consists of {@code 1, 3, 2, 5, 6 } and the {@code condition} returns {@code true} for even numbers, then the resulting chain
+     * will consist of {@code 1, 3 }.
      * @param condition
      * @return the initial items before and not including the one that meets the specified {@code condition}
      * @chainables.similar
@@ -462,7 +463,18 @@ public interface Chainable<T> extends Iterable<T> {
     }
 
     /**
+     * Returns the items in this chain before the last item, or an empty chain if there are less than two items in this chain.
+     * <p>
+     * Note this triggers a full traversal/evaluation of the chain, so for for chains functionally defined as infinite, this will never return.
+     * @return a chain of items before the last item, or an empty chain if there are less than two items in this chain
+     */
+    default Chainable<T> beforeLast() {
+        return Chainables.beforeLast(this);
+    }
+
+    /**
      * Returns a chain of initial items from this chain before the specified {@code value}.
+     * <p>Note if the value is not in the chain but the chain is defined functionally as de-facto infinite, this will never return.
      * @param item
      * @return the initial items until one is encountered that is the same as the specified {@code item}
      * @see #before(Predicate)
@@ -1176,7 +1188,7 @@ public interface Chainable<T> extends Iterable<T> {
     }
 
     /**
-     * Returns the item tha has the highest value extracted by the specified {@code valueExtractor} in this chain.
+     * Returns the item with the highest value extracted by the specified {@code valueExtractor} in this chain.
      * <p>
      * This triggers a full traversal/evaluation of the items.
      * @param valueExtractor
@@ -1193,7 +1205,7 @@ public interface Chainable<T> extends Iterable<T> {
     }
 
     /**
-     * Returns the item that has the lowest value extracted by the specified {@code valueExtractor} in this chain.
+     * Returns the item with the lowest value extracted by the specified {@code valueExtractor} in this chain.
      * <p>
      * This triggers a full traversal/evaluation of the items.
      * @param valueExtractor
@@ -1393,7 +1405,7 @@ public interface Chainable<T> extends Iterable<T> {
     /**
      * Computes the sum of values generated by the specified {@code valueExtractor} applied to each item in this chain.
      * <p>
-     * This trighers a full traversal/evaluation of the items.
+     * This triggers a full traversal/evaluation of the items.
      * @param valueExtractor
      * @return sum of all the values returned by the specified {@code valueExtractor} applied to each item
      * @chainables.similar
@@ -1414,7 +1426,7 @@ public interface Chainable<T> extends Iterable<T> {
      * <tr><td><i>C#:</i></td><td>{@code Enumerable.ToList()}</td></tr>
      * </table>
      */
-    default List<T> toList() {
+    default ChainableList<T> toList() {
         return Chainables.toList(this);
     }
 

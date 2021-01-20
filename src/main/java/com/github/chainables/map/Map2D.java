@@ -139,7 +139,7 @@ public interface Map2D<K1, K2, V> {
 	/**
 	 * Retrieves the secondary key-indexed map associated with the specified {@code primaryKey}.
 	 * @param primaryKey the primary key to get the map from
-	 * @return the map pointed by the specified primary key
+	 * @return the map pointed by the specified primary key or an empty map if not found
 	 */
 	Map<K2, V> mapFrom(K1 primaryKey);
 

@@ -236,6 +236,23 @@ public class ChainableTest {
     }
 
     @Test
+    public void testBeforeLast() {
+        // Given
+        String[] itemsLong = { "a", "b", "c", "d" };
+        String[] itemsOne = { "a" };
+
+        // When
+        Chainable<String> chainLong = Chainable.from(itemsLong).beforeLast();
+        Chainable<String> chainOne = Chainable.from(itemsOne).beforeLast();
+        Chainable<String> chainEmpty = Chainable.empty();
+
+        // Then
+        assertEquals(itemsLong.length - 1, chainLong.count());
+        assertTrue(chainOne.isEmpty());
+        assertTrue(chainEmpty.isEmpty());
+    }
+
+    @Test
     public void testBeforeValue() {
         // Given
         Iterable<String> testList = Arrays.asList("a", "a", "c", "d", "e");
@@ -1200,7 +1217,7 @@ public class ChainableTest {
         String expected = "abc";
 
         // When
-        List<String> list = chain.toList();
+        ChainableList<String> list = chain.toList();
         String actual = String.join("", list);
 
         // Then
