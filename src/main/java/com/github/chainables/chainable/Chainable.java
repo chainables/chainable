@@ -949,7 +949,7 @@ public interface Chainable<T> extends Iterable<T> {
      * </table>
      * @see #equalsEither(Iterable...)
      */
-    default boolean equals(Iterable<? extends T> items) {
+    default boolean equals(Iterable<?> items) {
         return Chainables.equal(this, items);
     }
 
