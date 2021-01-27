@@ -25,6 +25,8 @@ import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
 
+import com.github.chainables.tuple.Pair;
+
 /**
  * Unit tests
  */
@@ -592,6 +594,44 @@ public class ChainableTest {
         assertEquals(expectedItemsSize, actualItemsChainSize);
         assertEquals(0, actualEmptyChainSize);
         assertEquals(expectedItemsSize, actualTransformedChainSize);
+    }
+
+    @Test
+    public void testCross() {
+        // Given
+        Integer[] items1 = { 1, 2, 3, 4, 5 };
+        String[] items2 = { "a", "b", "c", "d" };
+        long expectedLength = items1.length * items2.length;
+
+        Chainable<Integer> chain1 = Chainable.from(items1);
+        Chainable<String> chain2 = Chainable.from(items2);
+
+        List<Pair<Integer, String>> expected12 = new ArrayList<>();
+        List<Pair<String, Integer>> expected21 = new ArrayList<>();
+
+        for (int i = 0; i < items1.length; i++) {
+            for (int j = 0; j < items2.length; j++) {
+                Pair<Integer, String> pair12 = Pair.from(items1[i], items2[j]);
+                Pair<String, Integer> pair21 = Pair.from(items2[j], items1[i]);
+                expected12.add(pair12);
+                expected21.add(pair21);
+            }
+        }
+
+        // When
+        Chainable<Pair<Integer, String>> crossChain12 = chain1.cross(chain2);
+        Chainable<Pair<String, Integer>> crossChain21 = chain2.cross(chain1);
+        Chainable<Pair<Integer, String>> crossChainEmpty = chain1.cross(Chainable.empty(String.class));
+
+        ChainableList<Pair<Integer, String>> actual12 = crossChain12.toList();
+        ChainableList<Pair<String, Integer>> actual21 = crossChain21.toList();
+
+        // Then
+        assertEquals(expectedLength, actual12.size());
+        assertEquals(expectedLength, actual21.size());
+        assertTrue(actual12.containsAll(expected12));
+        assertTrue(actual21.containsAll(expected21));
+        assertTrue(crossChainEmpty.isEmpty());
     }
 
     @Test

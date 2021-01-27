@@ -24,6 +24,7 @@ import java.util.stream.Stream;
 
 import com.github.chainables.annotation.Experimental;
 import com.github.chainables.function.ToStringFunction;
+import com.github.chainables.tuple.Pair;
 
 /**
  * {@link Chainable} is a fluent interface-style sub type of {@link Iterable} with additional methods facilitating the use of the
@@ -783,6 +784,15 @@ public interface Chainable<T> extends Iterable<T> {
     }
 
     /**
+     * Produces all the combinations of this chain with the specified items, traversing each of them incrementally.
+     * @param items items to cross with this chain
+     * @return a chain of pairs of all the combinations of items in this chain and the specified {@code items}
+     */
+    default <V> Chainable<Pair<T, V>> cross(Iterable<? extends V> items) {
+        return Chainables.cross(this, items);
+    }
+
+    /**
      * Traverses the items in a depth-first (pre-order) manner, by visiting the children of each item in the chain, as returned by the
      * specified {@code childExtractor} before visting its siblings, in a de-facto recursive manner.
      * <p>
@@ -1074,6 +1084,21 @@ public interface Chainable<T> extends Iterable<T> {
     @SuppressWarnings("unchecked")
     default Chainable<T> interleave(Iterable<T>...iterables) {
         return Chainables.interleave(this, iterables);
+    }
+
+    /**
+     * Interleaves the items of the specified {@code iterables}.
+     * <p><b>Example:</b>
+     * <table summary="Example:">
+     * <tr><td>{@code items1}:</td><td>1, 3, 5</td></tr>
+     * <tr><td>{@code items2}:</td><td>2, 4, 6</td></tr>
+     * <tr><td><i>result:</i></td><td>1, 2, 3, 4, 5, 6</td></tr>
+     * </table>
+     * @param items items to interleave this chain with
+     * @return items from the interleaved merger of this chain with the specified {@code items}
+     */
+    default Chainable<T> interleave(Iterable<T> items) {
+        return Chainables.interleave(this, items);
     }
 
     /**
