@@ -9,6 +9,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import static com.github.chainables.chainable.Chainable.chain;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -33,8 +35,7 @@ public class ChainableTreeTest {
     final long infiniteTreeChildCount = 3;
     ChainableTree<String> infiniteTree = ChainableTree
             .withRoot("1")
-            .withChildValueExtractor(p -> Chainable
-                    .empty(String.class)
+            .withChildValueExtractor(p -> chain(String.class)
                     .chainIndexed((c, i) -> String.format("%s.%s", p, Long.toString(i + 1)))
                     .first(infiniteTreeChildCount)); // Limit the number of children
 
@@ -55,7 +56,7 @@ public class ChainableTreeTest {
 
         return ChainableTree
                 .withRoot(rootKey)
-                .withChildValueExtractor(s -> Chainable.from(dataMap.get(s)));
+                .withChildValueExtractor(s -> chain(dataMap.get(s)));
     }
 
     @Test
@@ -109,9 +110,7 @@ public class ChainableTreeTest {
                 "0.0.0", "0.0.1", "0.0.2",    "0.1.0", "0.1.1", "0.1.2",    "0.2.0", "0.2.1", "0.2.2");
 
         // Make each entry look like 1.1@1, where the numbering as per the array comes before @, and the level comes after
-        Chainable<String> expected = Chainable
-                .from(names)
-                .transform(s -> s + levelSep + (s.split("\\.").length - 1));
+        Chainable<String> expected = chain(names).transform(s -> s + levelSep + (s.split("\\.").length - 1));
 
         // When
         Chainable<ChainableTree<String>> actualTrees = ChainableTree

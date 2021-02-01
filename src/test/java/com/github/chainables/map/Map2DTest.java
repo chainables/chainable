@@ -4,6 +4,7 @@
  */
 package com.github.chainables.map;
 
+import static com.github.chainables.chainable.Chainable.chain;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
@@ -133,8 +134,7 @@ public class Map2DTest {
     public void testEntries() {
         // Given
         String expectedMergedText = Chainables
-                .join("", Chainable
-                .from(TEST_DATA)
+                .join("", chain(TEST_DATA)
                 .transform(o -> String.join("", o)));
 
         // When

@@ -4,6 +4,8 @@
  */
 package com.github.chainables.chainable;
 
+import static com.github.chainables.chainable.Chainable.chain;
+
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
@@ -48,8 +50,7 @@ public class PerfTest {
 
     @Benchmark
     public long benchmarkChainCount() {
-        return Chainable
-                .from(1l)
+        return chain(1l)
                 .chain(NEXT_ITEM_GENERATOR)
                 .first(this.length)
                 .count();
@@ -65,8 +66,7 @@ public class PerfTest {
 
     @Benchmark
     public long benchmarkChainTransform() {
-        return Chainable
-                .from((char) 65)
+        return chain((char) 65)
                 .chain(NEXT_ITEM_TRANSFORM_GENERATOR)
                 .first(length)
                 .transform(TRANSFORMER)
@@ -82,12 +82,14 @@ public class PerfTest {
                 .count();
     }
 
-    static final Function<Character, Iterable<? extends String>> CHAIN_TRANSFORMER = (i) -> Chainable.from(Character.toString(i), Character.toString(i), Character.toString(i));
+    static final Function<Character, Iterable<? extends String>> CHAIN_TRANSFORMER = (i) -> chain(
+            Character.toString(i),
+            Character.toString(i),
+            Character.toString(i));
 
     @Benchmark
     public long benchmarkChainTransformAndFlatten() {
-        return Chainable
-                .from((char) 65)
+        return chain((char) 65)
                 .chain(NEXT_ITEM_TRANSFORM_GENERATOR)
                 .first(length)
                 .transformAndFlatten(CHAIN_TRANSFORMER)

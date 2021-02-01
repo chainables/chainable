@@ -229,7 +229,7 @@ public final class Chainables {
         if (items == null) {
             return false;
         } else {
-            Chainable<Predicate<? super T>> conds = Chainable.from(conditions);
+            Chainable<Predicate<? super T>> conds = Chainable.chain(conditions);
             return noneWhere(items, i -> !conds.anyWhere(c -> c.test(i)));
         }
     }

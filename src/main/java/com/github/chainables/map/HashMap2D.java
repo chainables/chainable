@@ -4,6 +4,8 @@
  */
 package com.github.chainables.map;
 
+import static com.github.chainables.chainable.Chainable.chain;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -243,14 +245,12 @@ public class HashMap2D<K1, K2, V> implements Map2D<K1, K2, V> {
 
 	@Override
 	public Chainable<V> values() {
-	    return Chainable
-	            .from(this.maps.values())
-	            .transformAndFlatten(m -> m.values());
+	    return chain(this.maps.values()).transformAndFlatten(Map::values);
 	}
 
     @Override
     public Chainable<Entry2D<K1, K2, V>> entries() {
-        return Chainable.from(new Iterable<Entry2D<K1, K2, V>>() {
+        return chain(new Iterable<Entry2D<K1, K2, V>>() {
             @Override
             public Iterator<Entry2D<K1, K2, V>> iterator() {
                 return new Iterator<Entry2D<K1,K2,V>>() {

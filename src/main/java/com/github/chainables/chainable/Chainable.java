@@ -41,6 +41,61 @@ import com.github.chainables.tuple.Pair;
  */
 public interface Chainable<T> extends Iterable<T> {
     /**
+     * Creates a new chain from the specified items.
+     * @param items the items to create the chain from
+     * @return a chain for the specified {@code items}
+     * @see #from(Object...)
+     */
+    @SafeVarargs
+    static <T> Chainable<T> chain(T...items) {
+        return Chain.from(items);
+    }
+
+    /**
+     * Returns an empty chain that can be used as a starting point to build a non-empty chain.
+     * @return an empty chain
+     * @see #empty()
+     */
+    static <T> Chainable<T> chain() {
+        return Chain.empty();
+    }
+
+    /**
+     * Creates a new chain from the specified {@code items}.
+     * @param items the items to create the chain from
+     * @return a chain for the specified {@code items}
+     * @see #from(Iterable)
+     */
+    static <T> Chainable<T> chain(Iterable<? extends T> items) {
+        return Chain.from(items);        
+    }
+
+    /**
+     * Returns an empty chain that can be used as a starting point to build a non-empty chain whose items are expected to be of the
+     * specified {@code clazz} type.
+     * @param clazz the expected type of the items in the chain
+     * @return an empty chain expected to contain items of the specified {@code clazz} type.
+     * @see #empty(Class)
+     */
+    static <T> Chainable<T> chain(Class<T> clazz) {
+        return chain().cast(clazz);
+    }
+
+    /**
+     * Creates a new chain from the specified {@code stream} that supports multiple traversals, just like a
+     * standard {@link Iterable}, even though the underlying {@link Stream} does not.
+     * <p>
+     * Note that upon subsequent traversals of the chain created this way, none of the items in the original stream are evaluated twice,
+     * but rather their values are cached internally and used for any subsequent traversals, even if previous traversals of the chain
+     * were incomplete.
+     * @param stream the stream to create a chain from
+     * @return a chain based on the specified {@code stream}
+     */
+    static <T> Chainable<T> chain(Stream<? extends T> stream) {
+        return from(stream);
+    }
+
+    /**
      * Returns an empty chain that can be used as a starting point to build a non-empty chain.
      * @return an empty chain
      * @chainables.similar
@@ -76,15 +131,6 @@ public interface Chainable<T> extends Iterable<T> {
      */
     static <T> Chainable<T> from(Iterable<? extends T> items) {
         return Chain.from(items);
-    }
-
-    /**
-     * Creates a new chain such that its iterator is a new iterator instance created by the specified {@code iteratorSupplier}
-     * @param iteratorSupplier an iterator supplying function
-     * @return the resulting chain
-     */
-    static <T> Chainable<T> fromIterator(Supplier<Iterator<T>> iteratorSupplier) {
-        return Chain.from(iteratorSupplier);
     }
 
     /**
@@ -159,6 +205,15 @@ public interface Chainable<T> extends Iterable<T> {
                 }
             }
         });
+    }
+
+    /**
+     * Creates a new chain such that its iterator is a new iterator instance created by the specified {@code iteratorSupplier}
+     * @param iteratorSupplier an iterator supplying function
+     * @return the resulting chain
+     */
+    static <T> Chainable<T> fromIterator(Supplier<Iterator<T>> iteratorSupplier) {
+        return Chain.from(iteratorSupplier);
     }
 
     /**
