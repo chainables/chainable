@@ -34,26 +34,6 @@ import com.github.chainables.tuple.Pair;
  */
 public class ChainableTest {
 
-    @SuppressWarnings("unchecked")
-    @Test
-    public void testExample() {
-        // Given / When
-        Chainable<String> chain = chain(0, 0, 0, 2, 3, 7, 0, 1, 8, 3, 13, 14, 0, 2) // Integers
-                .notAsLongAs(i -> i == 0) // Ignore leading sub chain of 0s
-                .notAfter(i -> i == 13) // Stop after finding 13
-                .whereEither( // Choose only those that...
-                        i -> i % 2 == 0, // ...are even
-                        i -> i > 6) // ...or greater than 6
-                .transform(i -> Character.toString((char) (i + 65))); // Transform into letters
-
-        String text = chain.join(); // Merge into a string
-        String textBackwards = chain.reverse().join(); // Reverse and merge into a string
-
-        // Then
-        assertEquals("CHAIN", text);
-        assertEquals("NIAHC", textBackwards);
-    }
-
     @Test
     public void testAfterFirst() {
         // Given
