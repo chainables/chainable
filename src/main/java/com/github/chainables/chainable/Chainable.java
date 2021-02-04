@@ -217,6 +217,23 @@ public interface Chainable<T> extends Iterable<T> {
     }
 
     /**
+     * @param end
+     * @return a chain of numbers from {@code start} to right before {@code end}
+     */
+    public static Chainable<Integer> range(int end) {
+        return range(0, end);
+    }
+
+    /**
+     * @param start
+     * @param end
+     * @return a chain of numbers from {@code start} to right before {@code end}
+     */
+    public static Chainable<Integer> range(int start, int end) {
+        return Chainable.from(start).chain(i -> i < end - 1 ? i + 1 : null);
+    }
+
+    /**
      * Splits the specified {@code text} into a individual characters and returns them as a chain of strings.
      * @param text the text to split
      * @return a chain of strings made of the resulting characters

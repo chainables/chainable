@@ -1025,6 +1025,21 @@ public class ChainableTest {
     }
 
     @Test
+    public void testRange() {
+        // Given
+        int start = 2, end = 6;
+        String expectedFrom0 = "012345", expectedFromStart = "2345";
+
+        // When
+        String actualFrom0 = Chainable.range(end).join();
+        String actualFromStart = Chainable.range(start, end).join();
+
+        // Then
+        assertEquals(expectedFrom0, actualFrom0);
+        assertEquals(expectedFromStart, actualFromStart);
+    }
+
+    @Test
     public void testReplace() {
         // Given
         Iterable<String> items = Arrays.asList("a", "b", "c", "d");

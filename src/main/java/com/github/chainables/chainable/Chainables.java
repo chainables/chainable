@@ -717,9 +717,9 @@ public final class Chainables {
 
             @Override
             public boolean hasNext() {
-                if (isStopped) {
+                if (this.isStopped) {
                     return false;
-                } else if (isFetched) {
+                } else if (this.isFetched) {
                     return true;
                 } else if (isNullOrEmpty(this.iter)) {
                     // Seed iterator already finished so start the chaining
