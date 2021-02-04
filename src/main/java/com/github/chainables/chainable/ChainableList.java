@@ -30,4 +30,18 @@ public interface ChainableList<T> extends Chainable<T>, List<T> {
     default Stream<T> stream() {
         return Chainable.super.stream();
     }
+
+    /**
+     * Adds all the specified {@code items} to this list.
+     * @param items items to add
+     * @return {@code true}} iff this operation resulted in a change to the list
+     */
+    default boolean addAll(Iterable<T> items) {
+        boolean added = false;
+        for (T item : items) {
+            added |= this.add(item);
+        }
+
+        return added;
+    }
 }
