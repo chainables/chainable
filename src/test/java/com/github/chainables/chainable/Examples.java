@@ -14,19 +14,9 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 
 public class Examples {
-    @Test
-    public void testFibonacci() {
-        String fibonacciFirst8 = chain(0l, 1l)  // Starting values for Fibonacci
-                .chain((i0, i1) -> i0 + i1)     // Generate next Fibonacci number
-                .first(8)                       // Take first 8 items
-                .join(", ");                    // Merge into a string
-
-        assertEquals("0, 1, 1, 2, 3, 5, 8, 13", fibonacciFirst8);        
-    }
-
     @SuppressWarnings("unchecked")
     @Test
-    public void testExample() {
+    public void initialExample() {
         Chainable<String> chain =
                 chain(0, 0, 0, 2, 3, 7, 0, 1, 8, 3, 13, 14, 0, 2)   // Integers
                     .notAsLongAs(i -> i == 0)                       // Ignore leading sub chain of 0s
@@ -98,5 +88,31 @@ public class Examples {
                 + "baa, bab, bac, bba, bbb, bbc, bca, bcb, bcc, "
                 + "caa, cab, cac, cba, cbb, cbc, cca, ccb, ccc",
                 text);
+    }
+
+    @Test
+    public void fibonacci() {
+        String fibonacciFirst8 = chain(0l, 1l)  // Starting values for Fibonacci
+                .chain((i0, i1) -> i0 + i1)     // Generate next Fibonacci number
+                .first(8)                       // Take first 8 items
+                .join(", ");                    // Merge into a string
+
+        assertEquals("0, 1, 1, 2, 3, 5, 8, 13", fibonacciFirst8);        
+    }
+
+    @Test
+    public void interleaveNaturals() {
+        // Define infinite chain of odd numbers starting with 1
+        final Chainable<Long> odds = chain(1l).chain(o -> o + 2);
+
+        // Define infinite chain of even numbers starting with 2
+        final Chainable<Long> evens = chain(2l).chain(o -> o + 2);
+
+        String naturals = odds
+            .interleave(evens) // Interleave odds with evens
+            .first(10)         // Take the first 10 items 
+            .join(", ");       // Merge into a string
+
+        assertEquals("1, 2, 3, 4, 5, 6, 7, 8, 9, 10", naturals);
     }
 }
