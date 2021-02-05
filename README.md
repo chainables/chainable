@@ -22,22 +22,36 @@
 
 ## Summary
 
-*Chainable* is intended to be a rich, `Iterable`-based alternative to Java's `Stream` and Google's *guava*, heavily relying on lambdas and command chaining, but focused on functional trees (tries), 2D maps, and other useful non-sequential data structures, in addition to sequences (chains).  It is heavily inspired by the iterator pattern, functional programming, lazy evaluation and C#'s `Enumerable`. It is designed to enable writing powerful yet readable code quickly, succinctly, and performing sometimes faster than its non-lazy/non-functional equivalents.
+*Chainables* is a set of fluent interface-style sub types of `Iterable` with a large selection of methods facilitating the use of the
+functional programming, the iterator pattern and lazy evaluation, intended for achieving code that is more succinct, readable, simpler to implement
+and sometimes faster than its non-lazy/non-functional equivalent.
 
+It includes support for data structures such as:
+ - **tree** (or trie) - (`ChainableTree`) enabling a number of lazy operations on trees defined in a functional-programming manner (including infinite trees)
+ - **2-dimensional (2 key) map** (`Map2D`, `Map2DMultiValued`)
+ - **list** -- see `ChainableList`
+ - **queue** -- see `ChainableQueue`
+ - and the `Chainable` interface itself, which is intended to be a rich, `Iterable`-based alternative to Java's `Stream` and Google's *guava*.
+ 
 The implementation is lightweight, based on Java 8, self-contained, i.e. it has no external dependencies, so as not to contribute to any sub-dependency versioning challenges.
 
-```java
-        Chainable<String> chain = Chainable
-                .from(0, 0, 0, 2, 3, 7, 0, 1, 8, 3, 13, 14, 0, 2)     // Integers
-                .notAsLongAs(i -> i == 0)                             // Ignore leading sub chain of 0s
-                .notAfter(i -> i == 13)                               // Stop after finding 13
-                .whereEither(                                         // Choose only those that...
-                        i -> i % 2 == 0,                              // ...are even
-                        i -> i > 6)                                   // ...or greater than 6
-                .transform(i -> Character.toString((char) (i + 65))); // Transform into letters
+[Simple example](https://github.com/chainables/chainable/blob/7ff3056c0772b5b91a4eeaccf812b159f6611356/src/test/java/com/github/chainables/chainable/Examples.java#L30-L43)
 
-        String text = chain.join(); // Merge into a string
-        String textBackwards = chain.reverse().join(); // Reverse and merge into a string
+```java
+        import static com.github.chainables.chainable.Chainable.chain;
+        // ...
+
+        Chainable<String> chain =
+                chain(0, 0, 0, 2, 3, 7, 0, 1, 8, 3, 13, 14, 0, 2)   // Integers
+                    .notAsLongAs(i -> i == 0)                       // Ignore leading sub chain of 0s
+                    .notAfter(i -> i == 13)                         // Stop after finding 13
+                    .whereEither(                                   // Choose only those that...
+                        i -> i % 2 == 0,                            // ...are even
+                        i -> i > 6)                                 // ...or greater than 6
+                    .transform(i -> Character.toString((char) (i + 65)));   // Transform into letters
+
+        String text = chain.join();                                 // Merge into a string
+        String textBackwards = chain.reverse().join();              // Reverse and merge into a string
 
         assertEquals("CHAIN", text);
         assertEquals("NIAHC", textBackwards);
@@ -61,6 +75,12 @@ Add this to your POM's `<depedencies>`:
         </dependency>
 ```
 
+Also, for easier access, it is a good idea to add the following static import to the Java file:
+
+```java
+        import static com.github.chainables.chainable.Chainable.chain;
+```
+
 ## Getting Started
 
 A simple starting **chain** can be created using one of the factory methods on `Chainable`, such as [`from()`](https://www.javadoc.io/static/com.github.chainables/chainable/0.5.2/com/github/chainables/chainable/Chainable.html#from-T...-) or [`empty()`](https://www.javadoc.io/static/com.github.chainables/chainable/0.5.2/com/github/chainables/chainable/Chainable.html#empty-java.lang.Class-).
@@ -68,17 +88,17 @@ A simple starting **chain** can be created using one of the factory methods on `
 <details><summary>Example...</summary>
 
   ```java
-  // From pre-defined values
-  Chainable<String> chain = Chainable.from("a", "b", "c");
+        // From pre-defined values
+        Chainable<String> chain1 = chain("a", "b", "c");
 
-  // Empty but expecting String items
-  Chainable<String> chain = Chainable.empty(String.class);
+        // Empty but expecting String items
+        Chainable<String> chain2 = chain(String.class);
 
-  // From an existing Iterable<Foo>
-  Chainable<Foo> chain = Chainable.from(existingIterable);
+        // From an existing Iterable<Foo>
+        Chainable<Foo> chain3 = chain(existingIterable);
 
-  // From an existing Stream<Foo>
-  Chainable<Foo> chain = Chainable.from(existingStream);
+        // From an existing Stream<Foo>
+        Chainable<Foo> chain4 = chain(existingStream);
   ```
 
 </details>
@@ -88,22 +108,21 @@ A simple **tree** can be created using the [`withRoot()`](https://www.javadoc.io
 <details><summary>Example...</summary>
 
   ```java
-  // Example tree of String values
-  ChainableTree<String> tree = ChainableTree.withRoot("root");
+        // Example tree of String values
+        ChainableTree<String> tree = ChainableTree.withRoot("root");
   ```
 
 and then child sub-trees can be assigned to it either:
  - as explicitly pre-defined trees or values:
  
   ```java
-  // Assign explicit child subtrees
-  tree.withChildren(
-    ChainableTree
-      .withRoot("1")
-      .withChildren("1.1", 1.2"),
-    ChainableTree
-      .withRoot("2")
-      .withChildren("2.1", "2.2"));
+        tree.withChildren(
+                ChainableTree
+                    .withRoot("1")
+                    .withChildValues("1.1", "1.2"),
+                ChainableTree
+                    .withRoot("2")
+                    .withChildValues("2.1", "2.2"));
   ```
 
  - or dynamically, using functional programming by providing a child-extracting lambda -- see the [tree processing example](#tree-processing), or more in the [Tree Examples](#tree-examples) section.
@@ -124,13 +143,13 @@ Tightly integrated with `Chainable` chains, the functional programming-based tre
   - **infinite trees**, or trees of infinite depth, can be easily defined in terms of children-generating lambdas. For example, the code below defines a lazily evaluated infinite tree made of all the possible permutations of the letters *a*, *b* and *c*, where each layer of the tree consists of nodes of increasingly longer strings:
 
 ```java
-        char[] alphabet = { 'a', 'b', 'c' };        // Define alphabet to take letters from
+        char[] alphabet = { 'a', 'b', 'c' };                // Define alphabet to take letters from
         ChainableTree<String> permutations = ChainableTree
-                .withRoot("")                       // Blank string at the root
+                .withRoot("")                               // Blank string at the root
                 .withChildValueExtractor(p -> Chainable
-                        .empty(String.class)        // Start with an empty chain of strings
+                        .empty(String.class)                // Start with an empty chain of strings
                         .chainIndexed((s, i) -> p + alphabet[i.intValue()]) // Append each alphabet item to the parent
-                        .first(alphabet.length)); // Limit the children chain to the size of the alphabet
+                        .first(alphabet.length));           // Limit the children chain to the size of the alphabet
 ```
 
    If you were to begin to traverse this infinite tree, its initial few layers would look like this:
@@ -194,6 +213,8 @@ so that a subsequent chain can apply its logic to their outputs in a quasi-paral
 
   - **breadth-first / depth-first traversal** - You can achieve a tree-like traversal of a chain, where children of each item extracted by the child-extracting lambda are inserted immediately ahead [`depthFirst()`](https://www.javadoc.io/static/com.github.chainables/chainable/0.5.2/com/github/chainables/chainable/Chainable.html#depthFirst-java.util.function.Function-) or appended to the end of the chain [`breadthFirst()`](https://www.javadoc.io/static/com.github.chainables/chainable/0.5.2/com/github/chainables/chainable/Chainable.html#breadthFirst-java.util.function.Function-), thereby resulting in a pre-order/depth-first or breadth-first traversal respectively.
 
+  - **crossing** - Using the `cross()` method, you can cross two chains to create one chain that iterates through all the pairs of the members of the two input chains, in a lazily evaluated fashion.
+
   - **disjunctive filtering** - Using the [`whereEither()`](https://www.javadoc.io/static/com.github.chainables/chainable/0.5.2/com/github/chainables/chainable/Chainable.html#whereEither-java.util.function.Predicate...-) method, you can specify one or more filter predicates at the same time, with disjunctive (logical-OR) semantics. This means you can define specific filtering predicates for specific purposes and then just supply them all as parameters, rather than having to create yet another predicate that's an *OR* of the others.
 
   - **skipping** of the leading sub-chain of items under various scenarios, e.g.:
@@ -209,7 +230,7 @@ so that a subsequent chain can apply its logic to their outputs in a quasi-paral
   - chainable **string joining/splitting** operations - You can get a chain of tokens or characters out of a string with `Chainable`'s [`split()`](https://www.javadoc.io/static/com.github.chainables/chainable/0.5.2/com/github/chainables/chainable/Chainables.html#split-java.lang.String-java.lang.String-boolean-) method, process it using various `Chainable` APIs and go back to a string using [`join()`](https://www.javadoc.io/static/com.github.chainables/chainable/0.5.2/com/github/chainables/chainable/Chainable.html#join-java.lang.String-).
 </details>
 
-#### Two-dimensionals Maps
+#### Two-dimensional Maps
 
 > :warning: To do
 
@@ -250,20 +271,19 @@ Functional and design differences with streams aside, a level of interoperabilit
 In this example, an infinite tree is defined with a child extracting lambda that generates strings as permutations of letters from the specified alphabet (*a, b, c*) of increasingly greater length. Then, a "view" of the tree is defined, limiting its depth to 4 layers (including the empty root). Finally, it is transformed into a string listing of all the permutations:
 
   ```java
-        char[] alphabet = { 'a', 'b', 'c' };        // Define alphabet to take letters from
+        char[] alphabet = { 'a', 'b', 'c' };                // Define alphabet to take letters from
         ChainableTree<String> permutations = ChainableTree
-                .withRoot("")                       // Blank string at the root
+                .withRoot("")                               // Blank string at the root
                 .withChildValueExtractor(p -> Chainable
-                        .empty(String.class)        // Start with empty chain of strings
+                        .empty(String.class)                // Start with an empty chain of strings
                         .chainIndexed((s, i) -> p + alphabet[i.intValue()]) // Append each alphabet item to the parent
-                        .first(alphabet.length));   // Limit the children chain to the size of the alphabet
+                        .first(alphabet.length));           // Limit the children chain to the size of the alphabet
 
-        // Prepare a listing of the permutations
-        String text = permutationsUptoLength3 = permutations
-            .notBelowWhere(t -> t.value().length() >= 3)    // Limit permutation length to 3 letters
-            .breadthFirst()                                 // Create chain from breadth-first traversal
-            .afterFirst()                                   // Skip the empty root
-            .join(", ");
+        String text = permutations
+                .notBelowWhere(t -> t.value().length() >= 3) // Limit permutation length to 3 letters
+                .breadthFirst()                              // Create chain from breadth-first traversal
+                .afterFirst()                                // Skip the empty root
+                .join(", ");
 
         System.out.println(text);
   ```
@@ -279,16 +299,12 @@ The beginning of the output text here, which lists all the permutations of *a*, 
   In this example, each next item is the sum of the previous two preceding it in the chain:
 
   ```java
-    // When
-    String fibonacciFirst8 = Chainable
-        .from(0l, 1l)   // Starting values for Fibonacci
-        .chain((i0, i1) -> i0 + i1) // Generate next Fibonacci number
-        .first(8)       // Take first 8 items
-        .join(", ");    // Merge into a string
+        String fibonacciFirst8 = chain(0l, 1l)  // Starting values for Fibonacci
+                .chain((i0, i1) -> i0 + i1)     // Generate next Fibonacci number
+                .first(8)                       // Take first 8 items
+                .join(", ");                    // Merge into a string
 
-    assertEquals(
-        "0, 1, 1, 2, 3, 5, 8, 13",
-        fibonacciFirst8);
+        assertEquals("0, 1, 1, 2, 3, 5, 8, 13", fibonacciFirst8);        
   ```
 
   The flavor of the `chain()` method used above feeds the user-specified lambda with the two preceding items.
@@ -298,26 +314,26 @@ The beginning of the output text here, which lists all the permutations of *a*, 
   In this examples, a chain of odd numbers is interleaved with a chain of even numbers to produce a chain of natural numbers:
 
   ```java
-    final Chainable<Long> odds = Chainable
-        .from(1l)           // Start with 1
-        .chain(o -> o + 2); // Generate infinite chain of odd numbers
+    // Define infinite chain of odd numbers starting with 1
+    final Chainable<Long> odds = chain(1l).chain(o -> o + 2);
 
-    final Chainable<Long> evens = Chainable
-        .from(2l)           // Start with 2
-        .chain(o -> o + 2); // Generate infinite chain of even numbers
+    // Define infinite chain of even numbers starting with 2
+    final Chainable<Long> evens = chain(2l).chain(o -> o + 2);
 
     String naturals = odds
         .interleave(evens) // Interleave odds with evens
         .first(10)         // Take the first 10 items 
         .join(", ");       // Merge into a string
 
-    assertEquals(
-        "1, 2, 3, 4, 5, 6, 7, 8, 9, 10"
-        naturals);
+    assertEquals("1, 2, 3, 4, 5, 6, 7, 8, 9, 10", naturals);
   ```
 
 > :triangular_flag_on_post: To do...
 
 ### Two-dimensional Map Examples
+
+> :triangular_flag_on_post: To do...
+
+### Traversing all permutations of items from two chains
 
 > :triangular_flag_on_post: To do...
