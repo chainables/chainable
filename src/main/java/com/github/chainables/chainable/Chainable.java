@@ -24,6 +24,7 @@ import java.util.stream.Stream;
 
 import com.github.chainables.annotation.Experimental;
 import com.github.chainables.function.ToStringFunction;
+import com.github.chainables.tuple.Pair;
 
 /**
  * {@link Chainable} is a fluent interface-style sub type of {@link Iterable} with additional methods facilitating the use of the
@@ -39,6 +40,61 @@ import com.github.chainables.function.ToStringFunction;
  * @param <T> the type of items in the chain
  */
 public interface Chainable<T> extends Iterable<T> {
+    /**
+     * Creates a new chain from the specified items.
+     * @param items the items to create the chain from
+     * @return a chain for the specified {@code items}
+     * @see #from(Object...)
+     */
+    @SafeVarargs
+    static <T> Chainable<T> chain(T...items) {
+        return Chain.from(items);
+    }
+
+    /**
+     * Returns an empty chain that can be used as a starting point to build a non-empty chain.
+     * @return an empty chain
+     * @see #empty()
+     */
+    static <T> Chainable<T> chain() {
+        return Chain.empty();
+    }
+
+    /**
+     * Creates a new chain from the specified {@code items}.
+     * @param items the items to create the chain from
+     * @return a chain for the specified {@code items}
+     * @see #from(Iterable)
+     */
+    static <T> Chainable<T> chain(Iterable<? extends T> items) {
+        return Chain.from(items);        
+    }
+
+    /**
+     * Returns an empty chain that can be used as a starting point to build a non-empty chain whose items are expected to be of the
+     * specified {@code clazz} type.
+     * @param clazz the expected type of the items in the chain
+     * @return an empty chain expected to contain items of the specified {@code clazz} type.
+     * @see #empty(Class)
+     */
+    static <T> Chainable<T> chain(Class<T> clazz) {
+        return chain().cast(clazz);
+    }
+
+    /**
+     * Creates a new chain from the specified {@code stream} that supports multiple traversals, just like a
+     * standard {@link Iterable}, even though the underlying {@link Stream} does not.
+     * <p>
+     * Note that upon subsequent traversals of the chain created this way, none of the items in the original stream are evaluated twice,
+     * but rather their values are cached internally and used for any subsequent traversals, even if previous traversals of the chain
+     * were incomplete.
+     * @param stream the stream to create a chain from
+     * @return a chain based on the specified {@code stream}
+     */
+    static <T> Chainable<T> chain(Stream<? extends T> stream) {
+        return from(stream);
+    }
+
     /**
      * Returns an empty chain that can be used as a starting point to build a non-empty chain.
      * @return an empty chain
@@ -75,15 +131,6 @@ public interface Chainable<T> extends Iterable<T> {
      */
     static <T> Chainable<T> from(Iterable<? extends T> items) {
         return Chain.from(items);
-    }
-
-    /**
-     * Creates a new chain such that its iterator is a new iterator instance created by the specified {@code iteratorSupplier}
-     * @param iteratorSupplier an iterator supplying function
-     * @return the resulting chain
-     */
-    static <T> Chainable<T> fromIterator(Supplier<Iterator<T>> iteratorSupplier) {
-        return Chain.from(iteratorSupplier);
     }
 
     /**
@@ -158,6 +205,32 @@ public interface Chainable<T> extends Iterable<T> {
                 }
             }
         });
+    }
+
+    /**
+     * Creates a new chain such that its iterator is a new iterator instance created by the specified {@code iteratorSupplier}
+     * @param iteratorSupplier an iterator supplying function
+     * @return the resulting chain
+     */
+    static <T> Chainable<T> fromIterator(Supplier<Iterator<T>> iteratorSupplier) {
+        return Chain.from(iteratorSupplier);
+    }
+
+    /**
+     * @param end
+     * @return a chain of numbers from {@code start} to right before {@code end}
+     */
+    public static Chainable<Integer> range(int end) {
+        return range(0, end);
+    }
+
+    /**
+     * @param start
+     * @param end
+     * @return a chain of numbers from {@code start} to right before {@code end}
+     */
+    public static Chainable<Integer> range(int start, int end) {
+        return Chainable.from(start).chain(i -> i < end - 1 ? i + 1 : null);
     }
 
     /**
@@ -783,6 +856,15 @@ public interface Chainable<T> extends Iterable<T> {
     }
 
     /**
+     * Produces all the combinations of this chain with the specified items, traversing each of them incrementally.
+     * @param items items to cross with this chain
+     * @return a chain of pairs of all the combinations of items in this chain and the specified {@code items}
+     */
+    default <V> Chainable<Pair<T, V>> cross(Iterable<? extends V> items) {
+        return Chainables.cross(this, items);
+    }
+
+    /**
      * Traverses the items in a depth-first (pre-order) manner, by visiting the children of each item in the chain, as returned by the
      * specified {@code childExtractor} before visting its siblings, in a de-facto recursive manner.
      * <p>
@@ -949,7 +1031,7 @@ public interface Chainable<T> extends Iterable<T> {
      * </table>
      * @see #equalsEither(Iterable...)
      */
-    default boolean equals(Iterable<? extends T> items) {
+    default boolean equals(Iterable<?> items) {
         return Chainables.equal(this, items);
     }
 
@@ -1074,6 +1156,21 @@ public interface Chainable<T> extends Iterable<T> {
     @SuppressWarnings("unchecked")
     default Chainable<T> interleave(Iterable<T>...iterables) {
         return Chainables.interleave(this, iterables);
+    }
+
+    /**
+     * Interleaves the items of the specified {@code iterables}.
+     * <p><b>Example:</b>
+     * <table summary="Example:">
+     * <tr><td>{@code items1}:</td><td>1, 3, 5</td></tr>
+     * <tr><td>{@code items2}:</td><td>2, 4, 6</td></tr>
+     * <tr><td><i>result:</i></td><td>1, 2, 3, 4, 5, 6</td></tr>
+     * </table>
+     * @param items items to interleave this chain with
+     * @return items from the interleaved merger of this chain with the specified {@code items}
+     */
+    default Chainable<T> interleave(Iterable<T> items) {
+        return Chainables.interleave(this, items);
     }
 
     /**

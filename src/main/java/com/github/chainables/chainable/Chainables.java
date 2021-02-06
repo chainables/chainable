@@ -38,6 +38,8 @@ import java.util.stream.StreamSupport;
 
 import com.github.chainables.annotation.Experimental;
 import com.github.chainables.function.ToStringFunction;
+import com.github.chainables.tuple.Pair;
+import com.github.chainables.chainable.ChainableList;
 
 /**
  * This is the source of all the static methods underlying the default implementation of {@link Chainable} as well as some other conveniences.
@@ -227,7 +229,7 @@ public final class Chainables {
         if (items == null) {
             return false;
         } else {
-            Chainable<Predicate<? super T>> conds = Chainable.from(conditions);
+            Chainable<Predicate<? super T>> conds = Chainable.chain(conditions);
             return noneWhere(items, i -> !conds.anyWhere(c -> c.test(i)));
         }
     }
@@ -715,9 +717,9 @@ public final class Chainables {
 
             @Override
             public boolean hasNext() {
-                if (isStopped) {
+                if (this.isStopped) {
                     return false;
-                } else if (isFetched) {
+                } else if (this.isFetched) {
                     return true;
                 } else if (isNullOrEmpty(this.iter)) {
                     // Seed iterator already finished so start the chaining
@@ -1106,6 +1108,87 @@ public final class Chainables {
         }
 
         return i;
+    }
+
+    /**
+     * Produces all the combinations of the specified items, traversing each of the specified iterables incrementally.
+     * @param items1 one set of items
+     * @param items2 another set of items
+     * @return a chain of pairs of all the combinations of items from {@code items1} and {@code items2}
+     */
+    public static <V1, V2> Chainable<Pair<V1, V2>> cross(Iterable<? extends V1> items1, Iterable<? extends V2> items2) {
+        return (items1 == null || items2 == null) ? Chainable.empty() : Chainable.fromIterator(() -> new Iterator<Pair<V1, V2>>() {
+            Iterator<? extends V1> iter1 = items1.iterator();
+            Iterator<? extends V2> iter2 = items2.iterator();
+            List<V1> cache1 = new ArrayList<>();
+            List<V2> cache2 = new ArrayList<>();
+            V1 item1 = null;
+            V2 item2 = null;
+            Chainable<Pair<V1, V2>> pairsOf1With2 = Chainable
+                    .from(this.cache2)
+                    .transform(i2 -> Pair.from(item1, i2));
+
+            Chainable<Pair<V1, V2>> pairsOf2With1 = Chainable
+                    .from(this.cache1)
+                    .beforeLast() // Avoid duplicating the pair at the intersection
+                    .transform(i1 -> Pair.from(i1, item2));
+
+            Chainable<Pair<V1, V2>> pairs = pairsOf1With2.interleave(pairsOf2With1);
+            Iterator<Pair<V1, V2>> pairIterator = pairs.iterator();
+
+            boolean isStopped = false;
+
+            Pair<V1, V2> next = null;
+
+            @Override
+            public boolean hasNext() {
+                if (this.isStopped) {
+                    return false;
+                } else if (this.next != null) {
+                    return true;
+                } else if (this.pairIterator.hasNext()) {
+                    this.next = this.pairIterator.next();
+                    return true;
+                } else if (!this.iter1.hasNext() && !this.iter2.hasNext()) {
+                    this.isStopped = true;
+                    return false;
+                }
+
+                // Store current item and fetch next one from items1
+                if (this.iter1.hasNext()) {
+                    this.item1 = this.iter1.next();
+                    this.cache1.add(this.item1);
+                } else {
+                    this.cache2.clear();
+                }
+
+                // Store current items and fetch next ones from items2
+                if (this.iter2.hasNext()) {
+                    this.item2 = this.iter2.next();
+                    this.cache2.add(this.item2);
+                } else {
+                    this.cache1.clear();
+                }
+
+                // Re-initialize the pair iterator
+                this.pairIterator = this.pairs.iterator();
+                if (this.pairIterator.hasNext()) {
+                    // One of the input chains is empty so cross not possible
+                    this.next = this.pairIterator.next();
+                    return true;
+                } else {
+                    isStopped = true;
+                    return false;
+                }
+            }
+
+            @Override
+            public Pair<V1, V2> next() {
+                Pair<V1, V2> temp = this.next;
+                this.next = null;
+                return temp;
+            }
+        });
     }
 
     /**
@@ -2377,7 +2460,7 @@ public final class Chainables {
     }
 
     /**
-     * Uses the specified transformer function to transform the specified items and returns the resulting items.
+     * Uses the specified {@code transformer} function to transform the specified items and returns the resulting items.
      * @param items items to be transformed (LINQ: select())
      * @param transformer function performing the transformation
      * @return the chain of resulting items after applying the specified {@code transformer} to each of the specified items

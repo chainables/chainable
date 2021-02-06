@@ -10,6 +10,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import static com.github.chainables.chainable.Chainable.chain;
+
 import java.io.File;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -25,36 +27,17 @@ import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
 
+import com.github.chainables.tuple.Pair;
+
 /**
  * Unit tests
  */
 public class ChainableTest {
 
-    @SuppressWarnings("unchecked")
-    @Test
-    public void testExample() {
-        // Given / When
-        Chainable<String> chain = Chainable
-                .from(0, 0, 0, 2, 3, 7, 0, 1, 8, 3, 13, 14, 0, 2) // Integers
-                .notAsLongAs(i -> i == 0) // Ignore leading sub chain of 0s
-                .notAfter(i -> i == 13) // Stop after finding 13
-                .whereEither( // Choose only those that...
-                        i -> i % 2 == 0, // ...are even
-                        i -> i > 6) // ...or greater than 6
-                .transform(i -> Character.toString((char) (i + 65))); // Transform into letters
-
-        String text = chain.join(); // Merge into a string
-        String textBackwards = chain.reverse().join(); // Reverse and merge into a string
-
-        // Then
-        assertEquals("CHAIN", text);
-        assertEquals("NIAHC", textBackwards);
-    }
-
     @Test
     public void testAfterFirst() {
         // Given
-        Chainable<String> items = Chainable.from("a", "b", "c", "d", "e");
+        Chainable<String> items = chain("a", "b", "c", "d", "e");
         String expectedAfterFirst = "bcde";
         String expectedAfterSecond = "cde";
 
@@ -73,9 +56,9 @@ public class ChainableTest {
     @Test
     public void testAllWhereEither() {
         // Given
-        final Chainable<Integer> odds = Chainable.from(1, 3, 5, 7);
-        final Chainable<Integer> evens = Chainable.from(2, 4, 6, 8);
-        final Chainable<Integer> mixed = Chainable.from(1, 2, 3, 4);
+        final Chainable<Integer> odds = chain(1, 3, 5, 7);
+        final Chainable<Integer> evens = chain(2, 4, 6, 8);
+        final Chainable<Integer> mixed = chain(1, 2, 3, 4);
 
         // When + Then
         assertTrue(Chainables.allWhereEither(odds,
@@ -122,7 +105,7 @@ public class ChainableTest {
     @Test
     public void testAsLongAs() {
         // Given
-        Chainable<Integer> integers = Chainable.from(1, 1, 1, 2, 1, 1);
+        Chainable<Integer> integers = chain(1, 1, 1, 2, 1, 1);
         String expectedText = "111";
 
         // When
@@ -154,7 +137,7 @@ public class ChainableTest {
         String expected = String.join("", items);
 
         // Adding individual items to end of queue
-        ChainableQueue<String> queue = Chainable.from(items[0]).toQueue();
+        ChainableQueue<String> queue = chain(items[0]).toQueue();
         for (int i = 1; i < items.length; i++) {
             queue.withLast(items[i]);
         }
@@ -198,7 +181,7 @@ public class ChainableTest {
         assertEquals(expected, actual);
 
         // Larger initial iterable
-        queue = Chainable.from(items[0], items[1]).toQueue();
+        queue = chain(items[0], items[1]).toQueue();
         sb.setLength(0);
         for (int i = 2; i < items.length; i++) {
             queue.withLast(items[i]);
@@ -242,8 +225,8 @@ public class ChainableTest {
         String[] itemsOne = { "a" };
 
         // When
-        Chainable<String> chainLong = Chainable.from(itemsLong).beforeLast();
-        Chainable<String> chainOne = Chainable.from(itemsOne).beforeLast();
+        Chainable<String> chainLong = chain(itemsLong).beforeLast();
+        Chainable<String> chainOne = chain(itemsOne).beforeLast();
         Chainable<String> chainEmpty = Chainable.empty();
 
         // Then
@@ -271,8 +254,8 @@ public class ChainableTest {
     public void testBreadthFirst() {
         // Given
         final int depth = 4;
-        Chainable<String> initial = Chainable.from("1");
-        Function<String, Iterable<? extends String>> childExtractor = (s) -> (s.length() < (depth - 1)  * 2) ? Chainable.from(s + ".1", s + ".2") : null;
+        Chainable<String> initial = chain("1");
+        Function<String, Iterable<? extends String>> childExtractor = (s) -> (s.length() < (depth - 1)  * 2) ? chain(s + ".1", s + ".2") : null;
         String expectedBreadthFirst = "1, 1.1, 1.2, 1.1.1, 1.1.2, 1.2.1, 1.2.2, 1.1.1.1, 1.1.1.2, 1.1.2.1, 1.1.2.2, 1.2.1.1, 1.2.1.2, 1.2.2.1, 1.2.2.2";
 
         // When
@@ -283,28 +266,10 @@ public class ChainableTest {
     }
 
     @Test
-    public void testBreadthFirstNotBelow() {
-        // Given
-        Chainable<String> roots = Chainable.from("a", "b", "c");
-        String expected = Chainable
-                .from("a", "b", "c", "aa", "ab", "ac", "ba", "bb", "bc", "ca", "cb", "cc")
-                .join(",");
-
-        // When
-        String actual = roots.breadthFirstNotBelow(
-                s -> roots.transform(o -> s + o),
-                s -> s.length() == 2)
-                .join(",");
-
-        // Then
-        assertEquals(expected, actual);
-    }
-
-    @Test
     public void testBreadthFirstAsLongAs() {
         // Given
-        Chainable<String> roots = Chainable.from("a", "b", "c");
-        Chainable<String> expectedResults = Chainable.from("a", "b", "c", "aa", "ab", "ac", "ba", "bb", "bc", "ca", "cb", "cc");
+        Chainable<String> roots = chain("a", "b", "c");
+        Chainable<String> expectedResults = chain("a", "b", "c", "aa", "ab", "ac", "ba", "bb", "bc", "ca", "cb", "cc");
         String expected = String.join(",", expectedResults);
 
         // When
@@ -318,10 +283,25 @@ public class ChainableTest {
     }
 
     @Test
+    public void testBreadthFirstNotBelow() {
+        // Given
+        Chainable<String> roots = chain("a", "b", "c");
+        String expected = chain("a", "b", "c", "aa", "ab", "ac", "ba", "bb", "bc", "ca", "cb", "cc").join(",");
+
+        // When
+        String actual = roots.breadthFirstNotBelow(
+                s -> roots.transform(o -> s + o),
+                s -> s.length() == 2)
+                .join(",");
+
+        // Then
+        assertEquals(expected, actual);
+    }
+
+    @Test
     public void testCached() {
         // Given
-        Chainable<Long> randomInts = Chainable
-                .from((Long)null)
+        Chainable<Long> randomInts = chain(Long.class)
                 .chain(o -> Math.round(Math.random() * 100.0))
                 .withoutNull()
                 .first(10)
@@ -360,7 +340,7 @@ public class ChainableTest {
         final Iterator<String> iter1 = items.iterator();
         String expected = Chainables.join("", items);
 
-        Chainable<String> initial = Chainable.from("1", "2", "3");
+        Chainable<String> initial = chain("1", "2", "3");
         final Iterator<String> iter2 = items.iterator();
         String expected2 = String.join("", Chainables.concat(initial, items));
 
@@ -376,8 +356,7 @@ public class ChainableTest {
                 .chain(i -> (iter2.hasNext()) ? iter2.next() : null)
                 .join();
 
-        Long actual3 = Chainable
-                .from(1l)
+        Long actual3 = chain(1l)
                 .chain(i -> i + 1)
                 .first(length)
                 .last();
@@ -400,48 +379,31 @@ public class ChainableTest {
         assertEquals(expected3, actual3);
     }
 
-    // Note this is a test case for a README example
-    @Test void testChainLastTwo() {
-        // Given
-        String expected = "0, 1, 1, 2, 3, 5, 8, 13";
-
-        // When
-        String actual = Chainable
-                .from(0l, 1l)
-                .chain((i0, i1) -> i0 + i1) // Fibonacci sequence
-                .first(8)
-                .join(", ");
-
-        // Then
-        assertEquals(expected, actual);
-    }
-
     @Test
     public void testChainIf() {
         // Given/When
-        Chainable<String> items = Chainable.from("a", "b", "c");
+        Chainable<String> items = chain("a", "b", "c");
         String expectedText = "abcd";
         String expectedText2 = "d";
 
-        Chainable<String> itemsEmpty = Chainable.from(new ArrayList<String>());
+        Chainable<String> itemsEmpty = chain(new ArrayList<String>());
 
-        Chainable<Boolean> bools = Chainable
-                .from(false, false, false, true, false, false)
+        Chainable<Boolean> bools = chain(false, false, false, true, false, false)
                 .transform(b -> Boolean.TRUE.equals(b) ? true : null)
                 .notAfter(b -> Boolean.TRUE.equals(b))
                 .chainIf(b -> b == null, b -> false);
 
-        Chainable<Boolean> bools2 = Chainable.from(false, false, true)
+        Chainable<Boolean> bools2 = chain(false, false, true)
                 .transform(b -> Boolean.TRUE.equals(b) ? true : null)
                 .notAfter(b -> Boolean.TRUE.equals(b))
                 .chainIf(b -> b == null, b -> false);
 
-        Chainable<Boolean> bools3 = Chainable.from(false, false, false)
+        Chainable<Boolean> bools3 = chain(false, false, false)
                 .transform(b -> Boolean.TRUE.equals(b) ? true : null)
                 .notAfter(b -> Boolean.TRUE.equals(b))
                 .chainIf(b -> b == null, b -> false);
 
-        Chainable<Boolean> bools4 = Chainable.from(new ArrayList<Boolean>())
+        Chainable<Boolean> bools4 = chain(new ArrayList<Boolean>())
                 .transform(b -> Boolean.TRUE.equals(b) ? true : null)
                 .notAfter(b -> Boolean.TRUE.equals(b))
                 .chainIf(b -> b == null, b -> false);
@@ -461,10 +423,25 @@ public class ChainableTest {
         assertEquals(expectedText2, actualText2);
     }
 
+    // Note this is a test case for a README example
+    @Test void testChainLastTwo() {
+        // Given
+        String expected = "0, 1, 1, 2, 3, 5, 8, 13";
+
+        // When
+        String actual = chain(0l, 1l)
+                .chain((i0, i1) -> i0 + i1) // Fibonacci sequence
+                .first(8)
+                .join(", ");
+
+        // Then
+        assertEquals(expected, actual);
+    }
+
     @Test
     public void testCollectInto() {
         // Given
-        final Chainable<Integer> items = Chainable.from(1, 2, 3, 4, 5, 6, 7);
+        final Chainable<Integer> items = chain(1, 2, 3, 4, 5, 6, 7);
         String expected = "135";
         List<String> collection = new ArrayList<>();
 
@@ -487,9 +464,8 @@ public class ChainableTest {
         Iterable<String> items1 = Arrays.asList("a", "b", "c");
 
         // When
-        String actual = Chainable
-                .from(items1)
-                .concat(i -> (i != "b") ? Chainable.from("1", "2", "3") : Chainable.from())
+        String actual = chain(items1)
+                .concat(i -> (i != "b") ? chain("1", "2", "3") : chain())
                 .join();
 
         // Then
@@ -512,10 +488,7 @@ public class ChainableTest {
                 .concat(items4);
 
         String list = combined.join();
-        String list2 = Chainable
-                .from(items1)
-                .concat(items2, items3, items4)
-                .join();
+        String list2 = chain(items1).concat(items2, items3, items4).join();
 
         // Then
         assertEquals(9, Chainables.count(combined));
@@ -526,7 +499,7 @@ public class ChainableTest {
     @Test
     public void testContains() {
         // Given
-        Chainable<String> items = Chainable.from("a", "b", "c");
+        Chainable<String> items = chain("a", "b", "c");
 
         // When/Then
         assertTrue(items.contains("b"));
@@ -541,7 +514,7 @@ public class ChainableTest {
     public void testContainsAll() {
         // Given
         String items[] = { "a", "b", "c", "d" };
-        Chainable<String> chain = Chainable.from(items);
+        Chainable<String> chain = chain(items);
 
         // When / Then
         assertTrue(chain.containsAll(items));
@@ -551,9 +524,9 @@ public class ChainableTest {
     public void testContainsOnly() {
         // Given
         String items[] = { "a", "b", "c", "d" };
-        Chainable<String> chainValid = Chainable.from(items).concat(Arrays.asList(items));
-        Chainable<String> chainNonValid = Chainable.from(items).concat("e");
-        Chainable<String> chainEmpty = Chainable.empty();
+        Chainable<String> chainValid = chain(items).concat(Arrays.asList(items));
+        Chainable<String> chainNonValid = chain(items).concat("e");
+        Chainable<String> chainEmpty = chain();
 
         // When / Then
         assertTrue(chainValid.containsOnly(items));
@@ -564,7 +537,7 @@ public class ChainableTest {
     @Test
     public void testContainsSubarray() {
         // Given
-        Chainable<String> items1 = Chainable.from("a", "b", "x", "a", "b", "c", "d");
+        Chainable<String> items1 = chain("a", "b", "x", "a", "b", "c", "d");
         Iterable<String> subarray1 = Arrays.asList("a", "b", "c");
         Iterable<String> notSubarray1 = Arrays.asList("a", "b", "x", "y");
 
@@ -579,8 +552,8 @@ public class ChainableTest {
         // Given
         List<Integer> items = Arrays.asList(1, 2, 3, 4, 5, 6, 7);
         int expectedItemsSize = items.size();
-        Chainable<Integer> itemsChain = Chainable.from(items);
-        Chainable<Integer> emptyChain = Chainable.empty();
+        Chainable<Integer> itemsChain = chain(items);
+        Chainable<Integer> emptyChain = chain();
         Chainable<String> transformedChain = itemsChain.transform(o -> o.toString());
 
         // When
@@ -595,11 +568,49 @@ public class ChainableTest {
     }
 
     @Test
+    public void testCross() {
+        // Given
+        Integer[] items1 = { 1, 2, 3, 4, 5 };
+        String[] items2 = { "a", "b", "c", "d" };
+        long expectedLength = items1.length * items2.length;
+
+        Chainable<Integer> chain1 = chain(items1);
+        Chainable<String> chain2 = chain(items2);
+
+        List<Pair<Integer, String>> expected12 = new ArrayList<>();
+        List<Pair<String, Integer>> expected21 = new ArrayList<>();
+
+        for (int i = 0; i < items1.length; i++) {
+            for (int j = 0; j < items2.length; j++) {
+                Pair<Integer, String> pair12 = Pair.from(items1[i], items2[j]);
+                Pair<String, Integer> pair21 = Pair.from(items2[j], items1[i]);
+                expected12.add(pair12);
+                expected21.add(pair21);
+            }
+        }
+
+        // When
+        Chainable<Pair<Integer, String>> crossChain12 = chain1.cross(chain2);
+        Chainable<Pair<String, Integer>> crossChain21 = chain2.cross(chain1);
+        Chainable<Pair<Integer, String>> crossChainEmpty = chain1.cross(Chainable.empty(String.class));
+
+        ChainableList<Pair<Integer, String>> actual12 = crossChain12.toList();
+        ChainableList<Pair<String, Integer>> actual21 = crossChain21.toList();
+
+        // Then
+        assertEquals(expectedLength, actual12.size());
+        assertEquals(expectedLength, actual21.size());
+        assertTrue(actual12.containsAll(expected12));
+        assertTrue(actual21.containsAll(expected21));
+        assertTrue(crossChainEmpty.isEmpty());
+    }
+
+    @Test
     public void testDepthFirst() {
         // Given
         final int depth = 4;
-        Chainable<String> initial = Chainable.from("1");
-        Function<String, Iterable<? extends String>> childExtractor = (s) -> (s.length() < (depth - 1)  * 2) ? Chainable.from(s + ".1", s + ".2") : null;
+        Chainable<String> initial = chain("1");
+        Function<String, Iterable<? extends String>> childExtractor = (s) -> (s.length() < (depth - 1)  * 2) ? chain(s + ".1", s + ".2") : null;
         String expectedDepthFirst = "1, 1.1, 1.1.1, 1.1.1.1, 1.1.1.2, 1.1.2, 1.1.2.1, 1.1.2.2, 1.2, 1.2.1, 1.2.1.1, 1.2.1.2, 1.2.2, 1.2.2.1, 1.2.2.2";
 
         // When
@@ -613,8 +624,8 @@ public class ChainableTest {
     public void testDepthFirstNotBelow() {
         // Given
         final int depth = 4;
-        Chainable<String> initial = Chainable.from("1");
-        Function<String, Iterable<? extends String>> childExtractor = (s) -> (s.length() < (depth - 1)  * 2) ? Chainable.from(s + ".1", s + ".2") : null;
+        Chainable<String> initial = chain("1");
+        Function<String, Iterable<? extends String>> childExtractor = (s) -> (s.length() < (depth - 1)  * 2) ? chain(s + ".1", s + ".2") : null;
         String expected = "1, 1.1, 1.1.1, 1.1.2, 1.2, 1.2.1, 1.2.2";
 
         // When
@@ -642,7 +653,7 @@ public class ChainableTest {
     @Test
     public void testDistinct() {
         // Given
-        Chainable<String> items = Chainable.from("a", "b", "c", "a", "d", "b");
+        Chainable<String> items = chain("a", "b", "c", "a", "d", "b");
         String expected = "abcd";
 
         // When
@@ -655,7 +666,7 @@ public class ChainableTest {
     @Test
     public void testDistinctKey() {
         // Given
-        Chainable<Integer> numbers = Chainable.from(1, 3, 4, 5, 8);
+        Chainable<Integer> numbers = chain(1, 3, 4, 5, 8);
         String expected = "14";
 
         // When
@@ -668,8 +679,8 @@ public class ChainableTest {
     @Test
     public void testEmpty() {
         // Given
-        Chainable<String> emptyChain = Chainable.empty();
-        Chainable<String> nonEmptyChain = Chainable.from("a");
+        Chainable<String> emptyChain = chain();
+        Chainable<String> nonEmptyChain = chain("a");
 
         // When/Then
         assertTrue(emptyChain.isEmpty());
@@ -699,11 +710,11 @@ public class ChainableTest {
     @Test
     public void testEquals() {
         // Given
-        Chainable<String> items1 = Chainable.from("A", "B", "C");
-        Chainable<String> equal = Chainable.from("A", "B", "C");
-        Chainable<String> superset = Chainable.from("A", "B", "C", "D");
-        Chainable<String> empty = Chainable.from();
-        Chainable<String> different = Chainable.from("A", "C", "X");
+        Chainable<String> items1 = chain("A", "B", "C");
+        Chainable<String> equal = chain("A", "B", "C");
+        Chainable<String> superset = chain("A", "B", "C", "D");
+        Chainable<String> empty = chain();
+        Chainable<String> different = chain("A", "C", "X");
 
         // When/Then
         assertTrue(Chainables.equal(items1, equal));
@@ -739,7 +750,7 @@ public class ChainableTest {
     @Test
     public void testFirstNumber() {
         // Given
-        final Chainable<String> items = Chainable.from("a", "b", "c", "d", "e", "f", "g", "h", "i");
+        final Chainable<String> items = chain("a", "b", "c", "d", "e", "f", "g", "h", "i");
 
         // When
         String actualFirst5 = items.first(5).join();
@@ -760,7 +771,7 @@ public class ChainableTest {
         String expectedTransformed = "abcd";
 
         // When
-        Chainable<String> items = Chainable.from("A", "B", "C", "D");
+        Chainable<String> items = chain("A", "B", "C", "D");
         String actual = items.join();
         String actualTransformed = items.transform(s -> s.toLowerCase()).join();
 
@@ -772,15 +783,11 @@ public class ChainableTest {
     @Test
     public void testGet() {
         // Given
-        Chainable<Integer> infiniteChain = Chainable
-                .from(0)
-                .chain(i -> i + 1);
+        Chainable<Integer> infiniteChain = chain(0).chain(i -> i + 1);
 
-        Chainable<Integer> listChain = Chainable
-                .from(Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10));
+        Chainable<Integer> listChain = chain(Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10));
 
-        Chainable<Long> cachedChain = Chainable
-                .empty(Long.class)
+        Chainable<Long> cachedChain = chain(Long.class)
                 .chain(i -> Math.round(Math.random() * 1000))
                 .first(10)
                 .cached();
@@ -799,15 +806,14 @@ public class ChainableTest {
         assertEquals(item5FromCache, item5FromCacheAgain);
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void testInterleave() {
         // Given
-        final Chainable<Long> odds = Chainable.from(1l).chain(o -> o + 2);
+        final Chainable<Long> odds = chain(1l).chain(o -> o + 2);
         final Chainable<Long> oddsFirst4 = odds.first(4);
-        final Chainable<Long> evens = Chainable.from(2l).chain(o -> o + 2);
+        final Chainable<Long> evens = chain(2l).chain(o -> o + 2);
         final Chainable<Long> evensFirst6 = evens.first(6);
-        final Chainable<Long> zeros = Chainable.from(0l, 0l, 0l);
+        final Chainable<Long> zeros = chain(0l, 0l, 0l);
         String expected = "123456781012";
         String expected2 = "102304506781012";
         String expectedNaturals = "1, 2, 3, 4, 5, 6, 7, 8, 9, 10";
@@ -857,7 +863,7 @@ public class ChainableTest {
     @Test
     public void testIterativeContains() {
         // Given
-        Chainable<String> items = Chainable.from("a", "b", "c", "d", "e");
+        Chainable<String> items = chain("a", "b", "c", "d", "e");
 
         // When/Then
         assertTrue(Boolean.TRUE.equals(items.iterativeContains("a").last()));
@@ -865,7 +871,7 @@ public class ChainableTest {
         assertTrue(Boolean.TRUE.equals(items.iterativeContains("e").last()));
         assertTrue(Boolean.FALSE.equals(items.iterativeContains("x").last()));
 
-        items = Chainable.from(new ArrayList<String>());
+        items = chain(new ArrayList<String>());
         assertTrue(Boolean.FALSE.equals(items.iterativeContains("x").last()));
     }
 
@@ -873,7 +879,7 @@ public class ChainableTest {
     public void testJoin() {
         // Given
         List<String> items = Arrays.asList("a", "b", "c", "d");
-        Chainable<String> chain = Chainable.from(items);
+        Chainable<String> chain = chain(items);
         String expected = String.join("", items);
 
         // When
@@ -912,7 +918,7 @@ public class ChainableTest {
     @Test
     public void testMap() {
         // Given
-        final Chainable<String> items = Chainable.from("a", "b", "c", "d", "e");
+        final Chainable<String> items = chain("a", "b", "c", "d", "e");
 
         // When
         Map<String, String> map = items.toMap(i -> i);
@@ -928,7 +934,7 @@ public class ChainableTest {
     @Test
     public void testMaxMin() {
         // Given
-        Chainable<Integer> ints = Chainable.from(1, 3, 2, 5, 2);
+        Chainable<Integer> ints = chain(1, 3, 2, 5, 2);
         int expectedMax = 5;
         int expectedMin = 1;
 
@@ -944,7 +950,7 @@ public class ChainableTest {
     @Test
     public void testNotAfter() {
         // Given
-        Chainable<Integer> integers = Chainable.from(1, 1, 1, 2, 3, 4);
+        Chainable<Integer> integers = chain(1, 1, 1, 2, 3, 4);
         String expectedTextNotAfter2 = "1112";
         String expectedTextNotAfter4 = "111234";
 
@@ -1006,7 +1012,7 @@ public class ChainableTest {
         // Given
         TypeA typeAExample = new TypeA();
         TypeB typeBExample = new TypeB();
-        Chainable<Object> chain = Chainable.from(new TypeA(), new TypeB(), new TypeA(), new TypeA(), new TypeB());
+        Chainable<Object> chain = chain(new TypeA(), new TypeB(), new TypeA(), new TypeA(), new TypeB());
         long expectedACount = 3, expectedBCount = 2;
 
         // When
@@ -1016,6 +1022,21 @@ public class ChainableTest {
         // Then
         assertTrue(aTypes.isCountExactly(expectedACount));
         assertTrue(bTypes.isCountExactly(expectedBCount));
+    }
+
+    @Test
+    public void testRange() {
+        // Given
+        int start = 2, end = 6;
+        String expectedFrom0 = "012345", expectedFromStart = "2345";
+
+        // When
+        String actualFrom0 = Chainable.range(end).join();
+        String actualFromStart = Chainable.range(start, end).join();
+
+        // Then
+        assertEquals(expectedFrom0, actualFrom0);
+        assertEquals(expectedFromStart, actualFromStart);
     }
 
     @Test
@@ -1034,7 +1055,7 @@ public class ChainableTest {
     @Test
     public void testReverse() {
         // Given
-        Chainable<String> items = Chainable.from("a", "b", "c", "d");
+        Chainable<String> items = chain("a", "b", "c", "d");
         String expected = "dcba";
 
         // When
@@ -1047,9 +1068,9 @@ public class ChainableTest {
     @Test
     public void testSorting() {
         // Given
-        Chainable<String> textChain = Chainable.from(Arrays.asList("c", "b", "a", "d"));
-        Chainable<Long> numericalChain = Chainable.from(Arrays.asList(3l, 2l, 1l, 4l));
-        Chainable<Double> decimalChain = Chainable.from(1.0, 3.0, 2.0, 5.0, 4.0);
+        Chainable<String> textChain = chain(Arrays.asList("c", "b", "a", "d"));
+        Chainable<Long> numericalChain = chain(Arrays.asList(3l, 2l, 1l, 4l));
+        Chainable<Double> decimalChain = chain(1.0, 3.0, 2.0, 5.0, 4.0);
 
         // When
         String actualTextAlphaAsc = textChain.ascending().join();
@@ -1110,10 +1131,10 @@ public class ChainableTest {
     public void testStreamBasics() {
         // Given
         Integer inputs[] = { 1, 2, 3, 4, 5, 6, 7, 8 };
-        String expected = Chainable.from(inputs).where(i -> i % 2 != 0).join();
+        String expected = chain(inputs).where(i -> i % 2 != 0).join();
 
         // When
-        String actual = Chainable.from(Stream
+        String actual = chain(Stream
                 .of(inputs)
                 .filter(i -> i % 2 != 0))
                 .join();
@@ -1125,7 +1146,7 @@ public class ChainableTest {
     @Test
     public void testStreamGeneration() {
         // Given
-        Chainable<Integer> ints = Chainable.from(1, 3, 2, 5, 2);
+        Chainable<Integer> ints = chain(1, 3, 2, 5, 2);
         String expected = "22";
 
         // When
@@ -1142,14 +1163,14 @@ public class ChainableTest {
     public void testStreamReEntry() {
         // Given
         Integer inputs[] = { 1, 2, 3, 4, 5, 6, 7, 8 };
-        String expected = Chainable.from(inputs).where(i -> i % 2 != 0).join();
+        String expected = chain(inputs).where(i -> i % 2 != 0).join();
 
         // When
-        Chainable<Integer> chain = Chainable.from(Stream
+        Chainable<Integer> chain = chain(Stream
                 .of(inputs)
                 .filter(i -> i % 2 != 0));
-        String actual = Chainables.join("", chain);
-        actual = Chainables.join("", chain); // Again, since streams are normally traversable only once
+        String actual = chain.join();
+        actual = chain.join(); // Again, since streams are normally traversable only once
 
         // Then
         assertEquals(expected, actual);
@@ -1158,11 +1179,11 @@ public class ChainableTest {
     @Test void testStreamPartialTraversal() {
         // Given
         Integer inputs[] = { 1, 2, 3, 4, 5, 6, 7, 8 };
-        Chainable<Integer> chain = Chainable.from(Stream.of(inputs));
-        String first4Expected = Chainable.from(inputs).first(4).join();
-        String first3Expected = Chainable.from(inputs).first(3).join();
-        String first6Expected = Chainable.from(inputs).first(6).join();
-        String allExpected = Chainable.from(inputs).join();
+        Chainable<Integer> chain = chain(Stream.of(inputs));
+        String first4Expected = chain(inputs).first(4).join();
+        String first3Expected = chain(inputs).first(3).join();
+        String first6Expected = chain(inputs).first(6).join();
+        String allExpected = chain(inputs).join();
 
         // When
         Chainable<Integer> first4 = chain.first(4);
@@ -1185,7 +1206,7 @@ public class ChainableTest {
     @Test
     public void testSum() {
         // Given
-        Chainable<Integer> ints = Chainable.from(1, 2, 3, 4);
+        Chainable<Integer> ints = chain(1, 2, 3, 4);
         long expected = 1 + 2 + 3 + 4;
 
         // When
@@ -1199,7 +1220,7 @@ public class ChainableTest {
     public void testToSet() {
         // Given
         String[] items = { "a", "b", "c", "b" };
-        Chainable<String> chain = Chainable.from(items);
+        Chainable<String> chain = chain(items);
         Set<String> expectedSet = new HashSet<>(Arrays.asList(items));
 
         // When
@@ -1213,7 +1234,7 @@ public class ChainableTest {
     @Test
     public void testToList() {
         // Given
-        Chainable<String> chain = Chainable.from("a", "b", "c");
+        Chainable<String> chain = chain("a", "b", "c");
         String expected = "abc";
 
         // When
@@ -1277,8 +1298,7 @@ public class ChainableTest {
         // When
         Iterable<Integer> greaterThan4 = Chainables.whereEither(testList, o -> o > 4);
 
-        String actual = Chainable
-                .from("a", "b", "c", "ab", "ac", "bc")
+        String actual = chain("a", "b", "c", "ab", "ac", "bc")
                 .where(s -> s.startsWith("a"))
                 .join();
 
