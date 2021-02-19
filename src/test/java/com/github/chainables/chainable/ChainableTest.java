@@ -4,13 +4,12 @@
  */
 package com.github.chainables.chainable;
 
+import static com.github.chainables.chainable.Chainable.chain;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import static com.github.chainables.chainable.Chainable.chain;
 
 import java.io.File;
 import java.nio.file.Paths;
@@ -821,11 +820,13 @@ public class ChainableTest {
         // When
         String actual = oddsFirst4.interleave(evensFirst6).join();
         String actual2 = Chainables.interleave(oddsFirst4, zeros, evensFirst6).join();
+        String actual2b = Chainables.interleave(Chainable.from(oddsFirst4, zeros, evensFirst6)).join();
         String actualNaturals = odds.interleave(evens).first(10).join(", ");
 
         // Then
         assertEquals(expected, actual);
         assertEquals(expected2, actual2);
+        assertEquals(expected2, actual2b);
         assertEquals(expectedNaturals, actualNaturals);
     }
 
