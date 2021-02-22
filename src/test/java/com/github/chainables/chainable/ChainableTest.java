@@ -1038,6 +1038,9 @@ public class ChainableTest {
         // Then
         assertEquals(expectedFrom0, actualFrom0);
         assertEquals(expectedFromStart, actualFromStart);
+        assertTrue(Chainable.range(1,1).isEmpty());
+        assertTrue(Chainable.range(0,0).isEmpty());
+        assertTrue(Chainable.range(1,0).isEmpty());
     }
 
     @Test
