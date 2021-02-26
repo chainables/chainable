@@ -71,11 +71,6 @@ public abstract class ChainableTrees {
         }
 
         @Override
-        public T value() {
-            return this.value;
-        }
-
-        @Override
         public ChainableTree<T> parent() {
             return this.parent;
         }
@@ -83,6 +78,11 @@ public abstract class ChainableTrees {
         @Override
         public String toString() {
             return (this.value == null) ? null : this.value.toString();
+        }
+
+        @Override
+        public T value() {
+            return this.value;
         }
 
         @Override

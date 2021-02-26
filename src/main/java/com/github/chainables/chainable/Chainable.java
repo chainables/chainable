@@ -230,7 +230,7 @@ public interface Chainable<T> extends Iterable<T> {
      * @return a chain of numbers from {@code start} to right before {@code end}
      */
     public static Chainable<Integer> range(int start, int end) {
-        return Chainable.from(start).chain(i -> i < end - 1 ? i + 1 : null);
+        return (start < end) ? Chainable.from(start).chain(i -> i < end - 1 ? i + 1 : null) : empty();
     }
 
     /**
