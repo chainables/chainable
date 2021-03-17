@@ -39,7 +39,6 @@ import java.util.stream.StreamSupport;
 import com.github.chainables.annotation.Experimental;
 import com.github.chainables.function.ToStringFunction;
 import com.github.chainables.tuple.Pair;
-import com.github.chainables.chainable.ChainableList;
 
 /**
  * This is the source of all the static methods underlying the default implementation of {@link Chainable} as well as some other conveniences.
@@ -1600,17 +1599,15 @@ public final class Chainables {
     }
 
     /**
-     * @param items1
-     * @param items2
-     * @return the resulting chain from the interleaved merger of the specified {@code items1} and {@code items2}
+     * @param chains
+     * @return the resulting chain from the interleaved merger of the specified {@code chains}
      * @see Chainable#interleave(Iterable...)
      */
-    @SafeVarargs
-    public static <T> Chainable<T> interleave(Iterable<T> items1, Iterable<T>...items2) {
-        return (items1 == null || items2 == null) ? Chainable.empty() : Chainable.fromIterator(() -> new Iterator<T>() {
+    public static <T> Chainable<T> interleave(Iterable<? extends Chainable<T>> chains) {
+        return Chainable.fromIterator(() -> new Iterator<T>() {
             Deque<Iterator<? extends T>> iters = new LinkedList<>(Chainable
-                    .from(items1.iterator())
-                    .concat(Chainable.from(items2).transform(i -> i.iterator()))
+                    .from(chains)
+                    .transform(c -> c.iterator())
                     .toList());
 
             @Override
@@ -1633,6 +1630,27 @@ public final class Chainables {
                 }
             }
         });
+    }
+
+    /**
+     * @param items1
+     * @param items2
+     * @return the resulting chain from the interleaved merger of the specified {@code items1} and {@code items2}
+     * @see Chainable#interleave(Iterable...)
+     */
+    @SafeVarargs
+    public static <T> Chainable<T> interleave(Iterable<T> items1, Iterable<T>...items2) {
+        if (items1 == null || items2 == null) {
+            return Chainable.empty();
+        } else {
+            List<Chainable<T>> chains = new ArrayList<>();
+            chains.add(Chainable.from(items1));
+            for (Iterable<T> i : items2) {
+                chains.add(Chainable.from(i));
+            }
+
+            return interleave(chains);
+        }
     }
 
     /**
