@@ -605,6 +605,30 @@ public class ChainableTest {
     }
 
     @Test
+    public void testCrossSelft() {
+        // Given
+        String[] items = { "a", "b", "c", "d" };
+        long expectedLength = items.length * items.length;
+        Chainable<String> chain = chain(items);
+        List<Pair<String, String>> expected = new ArrayList<>();
+
+        for (int i = 0; i < items.length; i++) {
+            for (int j = 0; j < items.length; j++) {
+                Pair<String, String> pair = Pair.from(items[i], items[j]);
+                expected.add(pair);
+            }
+        }
+
+        // When
+        Chainable<Pair<String, String>> crossChain = chain.crossSelf();
+        ChainableList<Pair<String, String>> actual = crossChain.toList();
+
+        // Then
+        assertEquals(expectedLength, actual.size());
+        assertTrue(actual.containsAll(expected));
+    }
+
+    @Test
     public void testDepthFirst() {
         // Given
         final int depth = 4;
