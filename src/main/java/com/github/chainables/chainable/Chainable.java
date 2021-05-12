@@ -865,6 +865,14 @@ public interface Chainable<T> extends Iterable<T> {
     }
 
     /**
+     * Produces all the pairwise combinations of this chain with itself.
+     * @return a chain of pairs of all the combinations of items from this chain
+     */
+    default <V> Chainable<Pair<T, T>> crossSelf() {
+        return Chainables.cross(this, this);
+    }
+
+    /**
      * Traverses the items in a depth-first (pre-order) manner, by visiting the children of each item in the chain, as returned by the
      * specified {@code childExtractor} before visting its siblings, in a de-facto recursive manner.
      * <p>
