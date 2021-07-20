@@ -20,6 +20,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -414,16 +415,17 @@ public class ChainableTest {
         String actualText2 = String.join("", actual2);
 
         // Then
-        assertTrue(Boolean.TRUE.equals(bools.last()));
-        assertTrue(Boolean.TRUE.equals(bools2.last()));
-        assertTrue(Boolean.FALSE.equals(bools3.last()));
-        assertTrue(Boolean.FALSE.equals(bools4.last()));
-        assertEquals(expectedText, actualText);
-        assertEquals(expectedText2, actualText2);
+        assert Boolean.TRUE.equals(bools.last());
+        assert Boolean.TRUE.equals(bools2.last());
+        assert Boolean.FALSE.equals(bools3.last());
+        assert Boolean.FALSE.equals(bools4.last());
+        assert Objects.equals(expectedText, actualText);
+        assert Objects.equals(expectedText2, actualText2);
     }
 
     // Note this is a test case for a README example
-    @Test void testChainLastTwo() {
+    @Test
+    void testChainLastTwo() {
         // Given
         String expected = "0, 1, 1, 2, 3, 5, 8, 13";
 
@@ -435,6 +437,27 @@ public class ChainableTest {
 
         // Then
         assertEquals(expected, actual);
+    }
+
+    // Number range enumerating for loop
+    @Test
+    void testChainNum() {
+        // Given
+        int first = 1, last = 10;
+        Object[] expected = Stream
+                .iterate(1, i -> i + 1)
+                .limit(last)
+                .toArray();
+
+        // When
+        Object[] actual = chain(first)
+                .chain(i -> i + 1)
+                .asLongAs(i -> i <= last)
+                .toList()
+                .toArray();
+
+        // Then
+        assert Arrays.equals(expected, actual);
     }
 
     @Test
