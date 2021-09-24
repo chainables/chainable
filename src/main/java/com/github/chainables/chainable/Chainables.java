@@ -708,7 +708,9 @@ public final class Chainables {
      * @see Chainable#chain(UnaryOperator)
      */
     public static <T> Chainable<T> chain(Iterable<? extends T> items, UnaryOperator<T> nextItemExtractor) {
-        return (items == null || nextItemExtractor == null) ? Chainable.from(items) : Chainable.fromIterator(() -> new Iterator<T>() {
+        return (items == null || nextItemExtractor == null)
+                ? Chainable.from(items)
+                : Chainable.fromIterator(() -> new Iterator<T>() {
             Iterator<? extends T> iter = items.iterator();
             T next = null;
             boolean isFetched = false; // If iter is empty, pretend it starts with null
