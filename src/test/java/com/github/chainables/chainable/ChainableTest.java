@@ -318,22 +318,6 @@ public class ChainableTest {
     }
 
     @Test
-    public void testChainIndexed() {
-        // Given
-        String expected = "01234";
-
-        // When
-        String actual = Chainable
-                .empty()
-                .chainIndexed((v, i) -> Long.toString(i))
-                .first(5)
-                .join();
-
-        // Then
-        assertEquals(expected, actual);
-    }
-
-    @Test
     public void testChain() {
         // Given
         Iterable<String> items = Arrays.asList("a", "b", "c", "d");
@@ -421,6 +405,40 @@ public class ChainableTest {
         assert Boolean.FALSE.equals(bools4.last());
         assert Objects.equals(expectedText, actualText);
         assert Objects.equals(expectedText2, actualText2);
+    }
+
+    @Test
+    public void testChainIndexed() {
+        // Given
+        String expected = "01234";
+
+        // When
+        String actual = Chainable
+                .empty()
+                .chainIndexed((v, i) -> Long.toString(i))
+                .first(5)
+                .join();
+
+        // Then
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testChainList() {
+        // Given
+        String[] expected = { "a", "b", "c" };
+
+        // When
+        ChainList<String> list = new ChainList<>(expected);
+
+        // Then
+        assertEquals(expected.length, list.size());
+
+        for (int i = 0; i < expected.length; i++) {
+            String e = expected[i];
+            String a = list.get(i);
+            assertEquals(e, a);
+        }
     }
 
     // Note this is a test case for a README example
