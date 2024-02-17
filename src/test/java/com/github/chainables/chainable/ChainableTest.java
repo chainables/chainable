@@ -551,6 +551,21 @@ public class ChainableTest {
     }
 
     @Test
+    public void testContainsAnyString() {
+        // Given
+        String text = "abcdefg";
+        String truths[] = { "a", "c", "g", "ab", "fg", "de" };
+        String lies[] = { "x", "ax", "cz" };
+
+        // When / Then
+        for (String truth : truths) {
+            assert Chainables.containsAny(text, chain(lies).concat(truth));
+        }
+
+        assert !Chainables.containsAny(text, chain(lies));
+    }
+
+    @Test
     public void testContainsAll() {
         // Given
         String items[] = { "a", "b", "c", "d" };

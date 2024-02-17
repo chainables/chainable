@@ -1020,6 +1020,26 @@ public final class Chainables {
     }
 
     /**
+     *
+     * @param text
+     * @param substrings
+     * @return {@code true} iff any of the specified {@code substrings} are contained inside the specified {@code text}
+     */
+    public static <T> boolean containsAny(String text, Iterable<String> substrings) {
+        if (text == null || Chainables.isNullOrEmpty(substrings)) {
+            return false;
+        }
+
+        for (String s : substrings) {
+            if (text.contains(s)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * @param container
      * @param items
      * @return {@code true} iff the specified {@code container} contains any of the specified {@code items}
