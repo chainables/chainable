@@ -14,6 +14,17 @@ import java.util.ArrayList;
  */
 public class ChainList<T> extends ArrayList<T> implements ChainableList<T> {
     private static final long serialVersionUID = 1L;
+    public ChainList() {
+    }
+
+    public ChainList(T[] items) {
+        if (items != null) {
+            for (T item : items) {
+                this.add(item);
+            }
+        }
+    }
+
     public ChainList(Iterable<? extends T> items) {
         if (items != null) {
             for (T item : items) {
