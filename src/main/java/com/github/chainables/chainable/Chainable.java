@@ -67,7 +67,7 @@ public interface Chainable<T> extends Iterable<T> {
      * @see #from(Iterable)
      */
     static <T> Chainable<T> chain(Iterable<? extends T> items) {
-        return Chain.from(items);        
+        return Chain.from(items);
     }
 
     /**
@@ -862,6 +862,15 @@ public interface Chainable<T> extends Iterable<T> {
      */
     default <V> Chainable<Pair<T, V>> cross(Iterable<? extends V> items) {
         return Chainables.cross(this, items);
+    }
+
+    /**
+     * Produces all the combinations of this chain with the specified items, traversing each of them incrementally.
+     * @param items items to cross with this chain
+     * @return a chain of pairs of all the combinations of items in this chain and the specified {@code items}
+     */
+    default <V> Chainable<Pair<T, V>> cross(V[] items) {
+        return Chainables.cross(this, Chainable.from(items));
     }
 
     /**

@@ -645,7 +645,7 @@ public class ChainableTest {
         }
 
         // When
-        Chainable<Pair<Integer, String>> crossChain12 = chain1.cross(chain2);
+        Chainable<Pair<Integer, String>> crossChain12 = chain1.cross(items2);
         Chainable<Pair<String, Integer>> crossChain21 = chain2.cross(chain1);
         Chainable<Pair<Integer, String>> crossChainEmpty = chain1.cross(Chainable.empty(String.class));
 
