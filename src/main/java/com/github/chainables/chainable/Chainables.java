@@ -2430,7 +2430,7 @@ public final class Chainables {
      * @param collection
      * @return the specified {@code collection} with the {@code items} added to it
      */
-    public static <T> Collection<T> toCollection(Iterable<? extends T> items, Collection<T> collection) {
+    public static <T> Collection<? super T> toCollection(Iterable<? extends T> items, Collection<? super T> collection) {
         if (items != null && collection != null) {
             for (T item : items) {
                 collection.add(item);

@@ -1579,7 +1579,7 @@ public interface Chainable<T> extends Iterable<T> {
      * @param collection
      * @return the specified {@code collection} with the {@code items} added
      */
-    default Collection<T> toCollection(Collection<T> collection) {
+    default Collection<? super T> toCollection(Collection<? super T> collection) {
         return Chainables.toCollection(this, collection);
     }
 
