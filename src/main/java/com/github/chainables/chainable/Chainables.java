@@ -2427,6 +2427,21 @@ public final class Chainables {
 
     /**
      * @param items
+     * @param collection
+     * @return the specified {@code collection} with the {@code items} added to it
+     */
+    public static <T> Collection<T> toCollection(Iterable<? extends T> items, Collection<T> collection) {
+        if (items != null && collection != null) {
+            for (T item : items) {
+                collection.add(item);
+            }
+        }
+
+        return collection;
+    }
+
+    /**
+     * @param items
      * @return a set consisting of unique members of the specified {@code items}
      * @see Chainable#toSet()
      */

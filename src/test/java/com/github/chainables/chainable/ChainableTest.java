@@ -15,6 +15,7 @@ import java.io.File;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -1298,6 +1299,22 @@ public class ChainableTest {
 
         // Then
         assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testToCollection() {
+        // Given
+        String[] items = {"a", "b", "c" };
+        Chainable<String> chain = chain(items);
+        Collection<String> expectedCollection = new ArrayList<>(Arrays.asList(items));
+
+        // When
+        Collection<String> actualCollection = new ArrayList<>();
+        assertNotNull(chain.toCollection(actualCollection));
+
+        // Then
+        assertEquals(actualCollection.size(), expectedCollection.size());
+        assertTrue(actualCollection.containsAll(expectedCollection));
     }
 
     @Test

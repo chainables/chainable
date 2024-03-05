@@ -1575,6 +1575,15 @@ public interface Chainable<T> extends Iterable<T> {
     }
 
     /**
+     * Puts the items from this chain into the specified {@code collection}.
+     * @param collection
+     * @return the specified {@code collection} with the {@code items} added
+     */
+    default Collection<T> toCollection(Collection<T> collection) {
+        return Chainables.toCollection(this, collection);
+    }
+
+    /**
      * Transforms each item into another item, of a possibly different type, by applying the specified {@code transformer}
      * @param transformer
      * @return the resulting items from the transformation
