@@ -747,17 +747,18 @@ public interface Chainable<T> extends Iterable<T> {
     }
 
     /**
-     * Appends the specified {@code item} to this chain.
-     * @param item
-     * @return the chain resulting from appending the specified single {@code item} to this chain
+     * Appends the specified {@code items} to this chain.
+     * @param items
+     * @return the chain resulting from appending the specified single {@code items} to this chain
      * @chainables.similar
      * <table summary="Similar to:">
      * <tr><td><i>C#:</i></td><td>{@code Enumerable.Append()}</td></tr>
      * </table>
      * @see #concat(Iterable)
      */
-    default Chainable<T> concat(T item) {
-        return Chainables.concat(this, item);
+    @SuppressWarnings("unchecked")
+    default Chainable<T> concat(T...items) {
+        return Chainables.concat(this, items);
     }
 
     /**

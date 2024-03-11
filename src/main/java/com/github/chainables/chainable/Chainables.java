@@ -882,13 +882,14 @@ public final class Chainables {
     }
 
     /**
-     * Concatenates the specified iterable with the specified single item.
-     * @param items the items to append the specified {@code item} to
-     * @param item the item to append to the specified {@code items}
-     * @return a chain of {@code items} followed by {@code item}
+     * Concatenates the specified {@code Iterable} with the specified {@code addedItems}.
+     * @param items the items to append the specified {@code addedItems} to
+     * @param addedItems the items to append to the specified {@code items}
+     * @return a chain of {@code items} followed by {@code addedItems}
      */
-    public static <T> Chainable<T> concat(Iterable<? extends T> items, T item) {
-        return concat(items, (Iterable<? extends T>) Arrays.asList(item));
+    @SafeVarargs
+    public static <T> Chainable<T> concat(Iterable<? extends T> items, T...addedItems) {
+        return concat(items, (Iterable<? extends T>) Arrays.asList(addedItems));
     }
 
     /**
