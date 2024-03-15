@@ -67,7 +67,7 @@ public interface Chainable<T> extends Iterable<T> {
      * @see #from(Iterable)
      */
     static <T> Chainable<T> chain(Iterable<? extends T> items) {
-        return Chain.from(items);        
+        return Chain.from(items);
     }
 
     /**
@@ -747,17 +747,18 @@ public interface Chainable<T> extends Iterable<T> {
     }
 
     /**
-     * Appends the specified {@code item} to this chain.
-     * @param item
-     * @return the chain resulting from appending the specified single {@code item} to this chain
+     * Appends the specified {@code items} to this chain.
+     * @param items
+     * @return the chain resulting from appending the specified single {@code items} to this chain
      * @chainables.similar
      * <table summary="Similar to:">
      * <tr><td><i>C#:</i></td><td>{@code Enumerable.Append()}</td></tr>
      * </table>
      * @see #concat(Iterable)
      */
-    default Chainable<T> concat(T item) {
-        return Chainables.concat(this, item);
+    @SuppressWarnings("unchecked")
+    default Chainable<T> concat(T...items) {
+        return Chainables.concat(this, items);
     }
 
     /**
@@ -862,6 +863,15 @@ public interface Chainable<T> extends Iterable<T> {
      */
     default <V> Chainable<Pair<T, V>> cross(Iterable<? extends V> items) {
         return Chainables.cross(this, items);
+    }
+
+    /**
+     * Produces all the combinations of this chain with the specified items, traversing each of them incrementally.
+     * @param items items to cross with this chain
+     * @return a chain of pairs of all the combinations of items in this chain and the specified {@code items}
+     */
+    default <V> Chainable<Pair<T, V>> cross(V[] items) {
+        return Chainables.cross(this, Chainable.from(items));
     }
 
     /**
@@ -1563,6 +1573,15 @@ public interface Chainable<T> extends Iterable<T> {
      */
     default Set<T> toSet() {
         return Chainables.toSet(this);
+    }
+
+    /**
+     * Puts the items from this chain into the specified {@code collection}.
+     * @param collection
+     * @return the specified {@code collection} with the {@code items} added
+     */
+    default Collection<? super T> toCollection(Collection<? super T> collection) {
+        return Chainables.toCollection(this, collection);
     }
 
     /**

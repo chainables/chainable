@@ -15,6 +15,7 @@ import java.io.File;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -551,6 +552,21 @@ public class ChainableTest {
     }
 
     @Test
+    public void testContainsAnyString() {
+        // Given
+        String text = "abcdefg";
+        String truths[] = { "a", "c", "g", "ab", "fg", "de" };
+        String lies[] = { "x", "ax", "cz" };
+
+        // When / Then
+        for (String truth : truths) {
+            assert Chainables.containsAny(text, chain(lies).concat(truth));
+        }
+
+        assert !Chainables.containsAny(text, chain(lies));
+    }
+
+    @Test
     public void testContainsAll() {
         // Given
         String items[] = { "a", "b", "c", "d" };
@@ -630,7 +646,7 @@ public class ChainableTest {
         }
 
         // When
-        Chainable<Pair<Integer, String>> crossChain12 = chain1.cross(chain2);
+        Chainable<Pair<Integer, String>> crossChain12 = chain1.cross(items2);
         Chainable<Pair<String, Integer>> crossChain21 = chain2.cross(chain1);
         Chainable<Pair<Integer, String>> crossChainEmpty = chain1.cross(Chainable.empty(String.class));
 
@@ -1283,6 +1299,22 @@ public class ChainableTest {
 
         // Then
         assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testToCollection() {
+        // Given
+        String[] items = {"a", "b", "c" };
+        Chainable<String> chain = chain(items);
+        Collection<String> expectedCollection = new ArrayList<>(Arrays.asList(items));
+
+        // When
+        Collection<String> actualCollection = new ArrayList<>();
+        assertNotNull(chain.toCollection(actualCollection));
+
+        // Then
+        assertEquals(actualCollection.size(), expectedCollection.size());
+        assertTrue(actualCollection.containsAll(expectedCollection));
     }
 
     @Test
