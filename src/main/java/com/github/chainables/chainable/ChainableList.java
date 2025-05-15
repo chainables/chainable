@@ -9,7 +9,7 @@ import java.util.stream.Stream;
 
 /**
  * A Java {@link List} that is also {@link Chainable}.
- * @author msawicki
+ * @author Martin Sawicki
  *
  * @param <T> the type of the stored items
  */
@@ -36,12 +36,21 @@ public interface ChainableList<T> extends Chainable<T>, List<T> {
      * @param items items to add
      * @return {@code true}} iff this operation resulted in a change to the list
      */
-    default boolean addAll(Iterable<T> items) {
-        boolean added = false;
-        for (T item : items) {
-            added |= this.add(item);
-        }
+    boolean addAll(Iterable<? extends T> items);
 
-        return added;
+    /**
+     * Returns an unmodifiable view of this list.
+     * @return an unmodifiable view of this list
+     */
+    Unmodifiable<T> unmodifiable();
+
+    /**
+     * An unmodifiable view of a {@link ChainableList}, that implements all of its members but throws {@link UnsupporterOperationException} when
+     * accessing any methods that would change its contents otherwise.
+     * @author Martin Sawicki
+     *
+     * @param <T> the type of the stored items
+     */
+    public interface Unmodifiable<T> extends ChainableList<T>{
     }
 }
