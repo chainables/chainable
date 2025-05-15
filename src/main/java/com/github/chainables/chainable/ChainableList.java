@@ -56,6 +56,13 @@ public interface ChainableList<T> extends Chainable<T>, List<T> {
     Unmodifiable<T> subList(int fromIndex, int toIndex);
 
     /**
+     * Returns an unmodifiable sublist view of this list starting from {@code fromIndex}.
+     * @param fromIndex the start of the returned sublist
+     * @return an unmodifiable sublist view of this list
+     */
+    Unmodifiable<T> subList(int fromIndex);
+
+    /**
      * An unmodifiable view of a {@link ChainableList}, that implements all of its members but throws {@link UnsupporterOperationException} when
      * accessing any methods that would change its contents otherwise.
      * @author Martin Sawicki

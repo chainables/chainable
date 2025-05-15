@@ -17,8 +17,6 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-import com.github.chainables.chainable.ChainableList.Unmodifiable;
-
 /**
  * Unit tests
  */
@@ -33,12 +31,24 @@ public class ChainableListTest {
 
         // When
         ChainableList<String> subList = list.subList(subStart, subStart + subLength);
-        Unmodifiable<String> subSubList = subList.subList(subSubStart, subSubLength + subSubStart);
+        ChainableList<String> subListRest = list.subList(subStart);
+        ChainableList<String> subSubList = subList.subList(subSubStart, subSubLength + subSubStart);
 
         // Then
         assertEquals(subList.size(), subLength);
-        for (int i = 0; i < subLength; i++) {
-            assertEquals(subList.get(i), list.get(subStart + i));
+        for (int i = 0; i < array.length; i++) {
+            int j = i - subStart;
+            assertEquals(array[i], list.get(i));
+            if (i >= subStart) {
+                assertEquals(array[i], subListRest.get(j));
+                if (i < subLength + subStart) {
+                    assertEquals(array[i], subList.get(j));
+                } else {
+                    assertThrows(IndexOutOfBoundsException.class, () -> subList.get(j));
+                }
+            } else {
+                assertThrows(IndexOutOfBoundsException.class, () -> subListRest.get(j));
+            }
         }
 
         assertThrows(IndexOutOfBoundsException.class, () -> list.subList(-1, array.length));

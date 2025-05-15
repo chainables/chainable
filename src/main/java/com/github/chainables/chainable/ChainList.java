@@ -55,6 +55,11 @@ public class ChainList<T> extends ArrayList<T> implements ChainableList<T> {
     }
 
     @Override
+    public Unmodifiable subList(int fromIndex) {
+        return this.subList(fromIndex, ChainList.this.size());
+    }
+
+    @Override
     public Unmodifiable unmodifiable() {
         return new Unmodifiable();
     }
@@ -293,6 +298,11 @@ public class ChainList<T> extends ArrayList<T> implements ChainableList<T> {
         @Override
         public ChainList<T>.Unmodifiable subList(int fromIndex, int toIndex) {
             return this.unmodifiable(fromIndex, toIndex);
+        }
+
+        @Override
+        public ChainList<T>.Unmodifiable subList(int fromIndex) {
+            return this.subList(fromIndex, this.size);
         }
 
         private void confirmRange(int fromIndex, int toIndex) {
