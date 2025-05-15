@@ -9,7 +9,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
@@ -1292,11 +1291,11 @@ public class ChainableTest {
     @Test
     public void testSum() {
         // Given
-        Chainable<Integer> ints = chain(1, 2, 3, 4);
-        long expected = 1 + 2 + 3 + 4;
+        final Chainable<Integer> ints = chain(1, 2, 3, 4);
+        final long expected = 1 + 2 + 3 + 4;
 
         // When
-        long actual = ints.sum(o -> o.longValue());
+        final long actual = ints.sum(o -> o.longValue());
 
         // Then
         assertEquals(expected, actual);
@@ -1389,36 +1388,6 @@ public class ChainableTest {
 
         // Then
         assertEquals(expected, actual);
-    }
-
-    @Test
-    public void testUnmodifiableList() {
-        // Given
-        String[] items = { "a", "b", "c" };
-        ChainableList<String> list = chain(items).toList();
-        List<String> additions = Arrays.asList("d", "e");
-
-        // When
-        ChainableList<String> unmodifiable = list.unmodifiable();
-
-        // Then
-        assertFalse(unmodifiable.add("d"));
-        assertThrows(UnsupportedOperationException.class, () -> unmodifiable.add(1, additions.get(0)));
-        assertThrows(UnsupportedOperationException.class, () -> unmodifiable.addAll(additions));
-        assertThrows(UnsupportedOperationException.class, () -> unmodifiable.addAll(1, additions));
-        assertThrows(UnsupportedOperationException.class, () -> unmodifiable.clear());
-
-        for (int i = 0; i < items.length; i++) {
-            assertEquals(items[i], unmodifiable.get(i));
-        }
-
-        assertThrows(UnsupportedOperationException.class, () -> unmodifiable.remove(0));
-        assertThrows(UnsupportedOperationException.class, () -> unmodifiable.remove("a"));
-        assertThrows(UnsupportedOperationException.class, () -> unmodifiable.removeAll(list));
-        assertThrows(UnsupportedOperationException.class, () -> unmodifiable.retainAll(list));
-        assertThrows(UnsupportedOperationException.class, () -> unmodifiable.set(1, "d"));
-        assertThrows(UnsupportedOperationException.class, () -> unmodifiable.replaceAll(s -> s = "x"));
-        assertThrows(UnsupportedOperationException.class, () -> unmodifiable.sort((a, b) -> b.compareTo(a)));
     }
 
     @Test

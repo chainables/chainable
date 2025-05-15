@@ -6,11 +6,10 @@ package com.github.chainables.chainable;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
-import java.util.List;
 import java.util.ListIterator;
+import java.util.Objects;
 import java.util.function.UnaryOperator;
 
 /**
@@ -22,8 +21,7 @@ import java.util.function.UnaryOperator;
 public class ChainList<T> extends ArrayList<T> implements ChainableList<T> {
     private static final long serialVersionUID = 1L;
 
-    public ChainList() {
-    }
+    public ChainList() { }
 
     public ChainList(T[] items) {
         if (items != null) {
@@ -51,10 +49,23 @@ public class ChainList<T> extends ArrayList<T> implements ChainableList<T> {
         return added;
     }
 
+    @Override
+    public Unmodifiable subList(int fromIndex, int toIndex) {
+        return this.unmodifiable(fromIndex, toIndex);
+    }
 
     @Override
-    public ChainableList.Unmodifiable<T> unmodifiable() {
-        return new Unmodifiable<>(this);
+    public Unmodifiable unmodifiable() {
+        return new Unmodifiable();
+    }
+
+    @Override
+    public Unmodifiable unmodifiable(int fromIndex, int toIndex) {
+        if (fromIndex < 0 || fromIndex >= this.size() || toIndex <= fromIndex || toIndex > this.size()) {
+            throw new IndexOutOfBoundsException();
+        } else {
+            return new Unmodifiable(fromIndex, toIndex);
+        }
     }
 
     /**
@@ -63,35 +74,43 @@ public class ChainList<T> extends ArrayList<T> implements ChainableList<T> {
      *
      * @param <U> the type of the stored items
      */
-    public class Unmodifiable<U> implements ChainableList.Unmodifiable<U> {
-        final ChainList<U> list;
+    public class Unmodifiable implements ChainableList.Unmodifiable<T> {
+        final int size;
+        final int offset;
+        final boolean isWhole;
 
-        protected Unmodifiable(ChainList<U> list) {
-            this.list = list;
+        protected Unmodifiable() {
+            this(0, ChainList.this.size());
+        }
+
+        protected Unmodifiable(int fromIndex, int toIndex) {
+            this.offset = fromIndex;
+            this.size = toIndex - fromIndex;
+            isWhole = this.offset == 0 && this.size == ChainList.this.size();
         }
 
         @Override
-        public void add(int index, U element) {
+        public void add(int index, T element) {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public boolean add(U e) {
-            return false;
-        }
-
-        @Override
-        public boolean addAll(Iterable<? extends U> items) {
+        public boolean add(T e) {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public boolean addAll(Collection<? extends U> c) {
+        public boolean addAll(Iterable<? extends T> items) {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public boolean addAll(int index, Collection<? extends U> c) {
+        public boolean addAll(Collection<? extends T> c) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean addAll(int index, Collection<? extends T> c) {
             throw new UnsupportedOperationException();
         }
 
@@ -101,7 +120,7 @@ public class ChainList<T> extends ArrayList<T> implements ChainableList<T> {
         }
 
         @Override
-        public U remove(int index) {
+        public T remove(int index) {
             throw new UnsupportedOperationException();
         }
 
@@ -116,7 +135,7 @@ public class ChainList<T> extends ArrayList<T> implements ChainableList<T> {
         }
 
         @Override
-        public void replaceAll(UnaryOperator<U> operator) {
+        public void replaceAll(UnaryOperator<T> operator) {
             throw new UnsupportedOperationException();
         }
 
@@ -126,73 +145,160 @@ public class ChainList<T> extends ArrayList<T> implements ChainableList<T> {
         }
 
         @Override
-        public U set(int index, U element) {
+        public T set(int index, T element) {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public void sort(Comparator<? super U> c) {
+        public void sort(Comparator<? super T> c) {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public ChainableList.Unmodifiable<U> unmodifiable() {
+        public ChainList<T>.Unmodifiable unmodifiable() {
             return this;
         }
 
         @Override
-        public Iterator<U> iterator() {
-            return this.list.iterator();
+        public ChainList<T>.Unmodifiable unmodifiable(int fromIndex, int toIndex) {
+            confirmRange(fromIndex, toIndex);
+            return ChainList.this.unmodifiable(this.offset + fromIndex, this.offset + toIndex);
         }
 
         @Override
         public int size() {
-            return this.list.size();
+            return this.size;
         }
 
         @Override
         public Object[] toArray() {
-            return this.list.toArray();
+            Object[] array = new Object[this.size];
+            for (int i = 0; i < this.size; i++) {
+                array[i] = ChainList.this.get(this.offset + i);
+            }
+
+            return array;
         }
 
         @Override
         public <V> V[] toArray(V[] a) {
-            return this.list.toArray(a);
+            if (this.isWhole) {
+                // Whole list
+                return ChainList.this.toArray(a);
+            } else {
+                // TODO?
+                throw new UnsupportedOperationException();
+            }
+        }
+
+        @Override
+        public boolean contains(Object item) {
+            if (this.isWhole) {
+                return ChainList.this.contains(item);
+            } else {
+                for (int i = 0; i < this.size; i++) {
+                    if (Objects.equals(item, ChainList.this.get(i + this.offset))) {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
         }
 
         @Override
         public boolean containsAll(Collection<?> c) {
-            return this.list.containsAll(c);
+            boolean resultOr = false;
+            for (Object item : c) {
+                for (int i = this.offset; i < this.offset + this.size; i++) {
+                    resultOr |= Objects.equals(item, ChainList.this.get(i));
+                    if (resultOr) {
+                        break;
+                    }
+                }
+
+                if (!resultOr) {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         @Override
-        public U get(int index) {
-            return this.list.get(index);
+        public T get(int index) {
+            confirmRange(index, index + 1);
+            return ChainList.this.get(this.offset + index);
         }
 
         @Override
         public int indexOf(Object o) {
-            return this.list.indexOf(o);
+            if (this.isWhole) {
+                return ChainList.this.indexOf(o);
+            } else {
+                for (int i = 0; i < this.size; i++) {
+                    if (Objects.equals(o, ChainList.this.get(i + this.offset))) {
+                        return i;
+                    }
+                }
+            }
+
+            return -1;
         }
 
         @Override
         public int lastIndexOf(Object o) {
-            return this.list.lastIndexOf(o);
+            if (this.isWhole) {
+                return ChainList.this.lastIndexOf(o);
+            } else {
+                for (int i = this.size - 1; i >= 0; i--) {
+                    if (Objects.equals(o, ChainList.this.get(i + this.offset))) {
+                        return i;
+                    }
+                }
+            }
+
+            return -1;
         }
 
         @Override
-        public ListIterator<U> listIterator() {
-            return this.list.listIterator();
+        public Iterator<T> iterator() {
+            if (this.isWhole) {
+                return ChainList.this.iterator();
+            } else {
+                return ChainList.this.afterFirst(this.offset).first(this.size).iterator();
+            }
         }
 
         @Override
-        public ListIterator<U> listIterator(int index) {
-            return this.list.listIterator(index);
+        public ListIterator<T> listIterator() {
+            if (this.isWhole) {
+                return ChainList.this.listIterator();
+            } else {
+                // TODO
+                throw new UnsupportedOperationException();
+            }
         }
 
         @Override
-        public List<U> subList(int fromIndex, int toIndex) {
-            return Collections.unmodifiableList(this.list.subList(fromIndex, toIndex));
+        public ListIterator<T> listIterator(int index) {
+            if (this.isWhole) {
+                return ChainList.this.listIterator(index);
+            } else {
+                // TODO
+                throw new UnsupportedOperationException();
+            }
+        }
+
+        @Override
+        public ChainList<T>.Unmodifiable subList(int fromIndex, int toIndex) {
+            return this.unmodifiable(fromIndex, toIndex);
+        }
+
+        private void confirmRange(int fromIndex, int toIndex) {
+            if (fromIndex < 0 || fromIndex >= this.size || toIndex <= fromIndex || toIndex > this.size) {
+                throw new IndexOutOfBoundsException();
+            }
         }
     }
 }
