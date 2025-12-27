@@ -1291,11 +1291,11 @@ public class ChainableTest {
     @Test
     public void testSum() {
         // Given
-        Chainable<Integer> ints = chain(1, 2, 3, 4);
-        long expected = 1 + 2 + 3 + 4;
+        final Chainable<Integer> ints = chain(1, 2, 3, 4);
+        final long expected = 1 + 2 + 3 + 4;
 
         // When
-        long actual = ints.sum(o -> o.longValue());
+        final long actual = ints.sum(o -> o.longValue());
 
         // Then
         assertEquals(expected, actual);
