@@ -1363,6 +1363,20 @@ public class ChainableTest {
     }
 
     @Test
+    public void testTransformWithIndex() {
+        // Given
+        Iterable<Integer> items = Arrays.asList(0, 1, 2, 3);
+
+        // When
+        Iterable<Integer> indices = Chainables.transform(items, (o, i) -> i);
+        int expected = 0;
+        for (int actual : indices) {
+            // Then
+            assertEquals(expected++, actual);
+        }
+    }
+
+    @Test
     public void testTransformAndFlatten() {
         // Given
         String[][] items = { { "a", "b" }, { "c", "d", "e" }, null, { "f" }};
