@@ -1671,6 +1671,15 @@ public interface Chainable<T> extends Iterable<T> {
     }
 
     /**
+     * Returns a chain of the specified {@code items} without the specified {@code item}
+     * @param item
+     * @return items that do not include the specified {@code items}
+     */
+    default Chainable<T> without(T item) {
+        return Chainables.without(this, item);
+    }
+
+    /**
      * Filters out {@code null} values from the underlying {@link Chainable}.
      * @return non-null items
      */

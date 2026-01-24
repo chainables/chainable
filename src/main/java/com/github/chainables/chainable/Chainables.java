@@ -2737,6 +2737,15 @@ public final class Chainables {
 
     /**
      * @param items
+     * @return a chain of the specified {@code items} without the specified {@code item}
+     * @return
+     */
+    public static <T> Chainable<T> without(Iterable<? extends T> items, T item) {
+        return (items != null) ? notWhere(items, i -> Objects.equals(item, i)) : null;
+    }
+
+    /**
+     * @param items
      * @return a chain of the specified {@code items} without {@code null} values
      * @see Chainable#withoutNull()
      */

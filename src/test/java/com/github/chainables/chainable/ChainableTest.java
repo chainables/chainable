@@ -1423,6 +1423,20 @@ public class ChainableTest {
     }
 
     @Test
+    public void testWithout() {
+        // Given
+        final String item = "a";
+        Chainable<String> chain = chain("a", "b", "aa", "ca", "a", "d", "a");
+        final String expected = "baacad";
+
+        // When
+        String actual = chain.without(item).join();
+
+        // Then
+        assertEquals(expected, actual);
+    }
+
+    @Test
     public void testWithoutNull() {
         // Given
         Iterable<String> items = Arrays.asList("a", null, "b", null);
