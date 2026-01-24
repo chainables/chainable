@@ -2741,7 +2741,7 @@ public final class Chainables {
      * @return
      */
     public static <T> Chainable<T> without(Iterable<? extends T> items, T item) {
-        return (items != null) ? notWhere(items, i -> Objects.equals(item, i)) : null;
+        return (items != null) ? notWhere(items, i -> (item == null) ? i == null : item.equals(i)) : null;
     }
 
     /**
@@ -2750,7 +2750,7 @@ public final class Chainables {
      * @see Chainable#withoutNull()
      */
     public static <T> Chainable<T> withoutNull(Iterable<? extends T> items) {
-        return (items != null) ? whereEither(items, i -> i != null) : null;
+        return (items != null) ? without(items, null) : null;
     }
 }
 
