@@ -178,7 +178,7 @@ Tightly integrated with `Chainable` chains, the functional programming-based tre
    - a lazily evaluated predicate condition that the lowermost descendants are to meet, using [`notBelowWhere()`](https://www.javadoc.io/static/com.github.chainables/chainable/0.5.2/com/github/chainables/chainable/ChainableTree.html#notBelowWhere-java.util.function.Predicate-)
    - or taking into consideration the depth of the tree so far, using the `BiPredicate` flavor of [`notBelowWhere()`](https://www.javadoc.io/static/com.github.chainables/chainable/0.5.2/com/github/chainables/chainable/ChainableTree.html#notBelowWhere-java.util.function.BiPredicate-).
 
-   This enables methods that may result in a full traversal of the tree (such as [`firstWhere()`])https://www.javadoc.io/static/com.github.chainables/chainable/0.5.2/com/github/chainables/chainable/ChainableTree.html#firstWhere-java.util.function.Predicate-)) to *eventually* return, which they might not otherwise do if the tree is infinite.
+   This enables methods that may result in a full traversal of the tree, such as [`firstWhere()`](https://www.javadoc.io/static/com.github.chainables/chainable/0.5.2/com/github/chainables/chainable/ChainableTree.html#firstWhere-java.util.function.Predicate-), to *eventually* return, which they might not otherwise do if the tree is infinite.
 
    For example, the following code, which builds on the previous example, results in a view of the previously defined tree that is limited to de-facto 3 layers of depth for any subsequent logic applied to it:
 

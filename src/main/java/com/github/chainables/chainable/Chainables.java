@@ -2544,6 +2544,35 @@ public final class Chainables {
     }
 
     /**
+     * Uses the specified {@code transformer} function to transform the specified items and returns the resulting items.
+     * @param items items to be transformed (LINQ: select())
+     * @param transformer function performing the transformation, which accepts an item and the ordinal number of that item within the chain
+     * @return the chain of resulting items after applying the specified {@code transformer} to each of the specified items
+     * @see Chainable#transform(Function)
+     */
+    public static <I, O> Chainable<O> transform(Iterable<? extends I> items, BiFunction<? super I, Integer, O> transformer) {
+        return (items == null || transformer == null) ? Chainable.empty() : Chainable.fromIterator(() -> new Iterator<O>() {
+            int i = 0;
+            Iterator<? extends I> iterator = items.iterator();
+
+            @Override
+            public boolean hasNext() {
+                if (Chainables.isNullOrEmpty(this.iterator)) {
+                    this.iterator = null;
+                    return false;
+                } else {
+                    return true;
+                }
+            }
+
+            @Override
+            public O next() {
+                return transformer.apply(this.iterator.next(), this.i++);
+            }
+        });
+    }
+
+    /**
      * @param items
      * @param transformer
      * @return a merged chain of items output by the specified {@code transformer} applied to each of the specified {@code items}
@@ -2708,11 +2737,20 @@ public final class Chainables {
 
     /**
      * @param items
+     * @return a chain of the specified {@code items} without the specified {@code item}
+     * @return
+     */
+    public static <T> Chainable<T> without(Iterable<? extends T> items, T item) {
+        return (items != null) ? notWhere(items, i -> (item == null) ? i == null : item.equals(i)) : null;
+    }
+
+    /**
+     * @param items
      * @return a chain of the specified {@code items} without {@code null} values
      * @see Chainable#withoutNull()
      */
     public static <T> Chainable<T> withoutNull(Iterable<? extends T> items) {
-        return (items != null) ? whereEither(items, i -> i != null) : null;
+        return (items != null) ? without(items, null) : null;
     }
 }
 

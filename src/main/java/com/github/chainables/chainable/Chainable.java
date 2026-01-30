@@ -1600,6 +1600,22 @@ public interface Chainable<T> extends Iterable<T> {
     }
 
     /**
+     * Transforms each item into another item, of a possibly different type, by applying the specified {@code transformer} which
+     * accepts an item and the ordinal number for that item within the chain
+     * @param transformer
+     * @return the resulting items from the transformation
+     * @chainables.similar
+     * <table summary="Similar to:">
+     * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#map(Function)}</td></tr>
+     * <tr><td><i>C#:</i></td><td>{@code Enumerable.Select()}</td></tr>
+     * </table>
+     * @see #transformAndFlatten(Function)
+     */
+    default <O> Chainable<O> transform(BiFunction<? super T, Integer, O> transformer) {
+        return Chainables.transform(this, transformer);
+    }
+
+    /**
      * Transforms each item into several other items, possibly of a different type, using the specified {@code transformer}.
      * @param transformer the function to apply to each item whose output items will become part of the chain
      * @return the resulting items from the transformation
@@ -1652,6 +1668,15 @@ public interface Chainable<T> extends Iterable<T> {
     @SuppressWarnings("unchecked")
     default Chainable<T> whereEither(Predicate<? super T>... conditions) {
         return Chainables.whereEither(this, conditions);
+    }
+
+    /**
+     * Returns a chain of the specified {@code items} without the specified {@code item}
+     * @param item
+     * @return items that do not include the specified {@code items}
+     */
+    default Chainable<T> without(T item) {
+        return Chainables.without(this, item);
     }
 
     /**
