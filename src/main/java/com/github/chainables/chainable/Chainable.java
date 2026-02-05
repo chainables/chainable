@@ -6,7 +6,6 @@ package com.github.chainables.chainable;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -98,11 +97,6 @@ public interface Chainable<T> extends Iterable<T> {
     /**
      * Returns an empty chain that can be used as a starting point to build a non-empty chain.
      * @return an empty chain
-     * @chainables.similar
-     * <table summary="Similar to:">
-     * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#empty()}</td></tr>
-     * <tr><td><i>C#:</i></td><td>{@code Enumerable.Empty()}</td></tr>
-     * </table>
      * @see #any()
      */
     static <T> Chainable<T> empty() {
@@ -123,11 +117,6 @@ public interface Chainable<T> extends Iterable<T> {
      * Creates a new chain from the specified {@code items}.
      * @param items the items to create the chain from
      * @return a chain for the specified {@code items}
-     * @chainables.similar
-     * <table summary="Similar to:">
-     * <tr><td><i>Java:</i></td><td>{@link Collection#stream()} but operating on {@link Iterable}, so not requiring a {@link Collection} as its starting point</td></tr>
-     * <tr><td><i>C#:</i></td><td>{@code Enumerable.AsEnumerable()}</td></tr>
-     * </table>
      */
     static <T> Chainable<T> from(Iterable<? extends T> items) {
         return Chain.from(items);
@@ -137,11 +126,6 @@ public interface Chainable<T> extends Iterable<T> {
      * Creates a new chain from the specified {@code items} array.
      * @param items the items to create a chain from
      * @return an {@link Chainable} wrapper for the specified {@code items}
-     * @chainables.similar
-     * <table summary="Similar to:">
-     * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#of(Object...)}</td></tr>
-     * <tr><td><i>C#:</i></td><td>{@code Enumerable.AsEnumerable()}</td></tr>
-     * </table>
      */
     @SafeVarargs
     static <T> Chainable<T> from(T...items) {
@@ -280,11 +264,6 @@ public interface Chainable<T> extends Iterable<T> {
     /**
      * Returns a chain of items that follow the first one in this chain.
      * @return items following the first one
-     * @chainables.similar
-     * <table summary="Similar to:">
-     * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#skip(long)} with 1 as the number to skip</td></tr>
-     * <tr><td><i>C#:</i></td><td>{@code Enumerable.Skip()}</td></tr>
-     * </table>
      */
     default Chainable<T> afterFirst() {
         return Chainables.afterFirst(this);
@@ -294,11 +273,6 @@ public interface Chainable<T> extends Iterable<T> {
      * Returns a chain of items that follow the first specified {@code number} of skipped items.
      * @param number the number of initial items to skip
      * @return the remaining chain
-     * @chainables.similar
-     * <table summary="Similar to:">
-     * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#skip(long)}</td></tr>
-     * <tr><td><i>C#:</i></td><td>{@code Enumerable.Skip()}</td></tr>
-     * </table>
      */
     default Chainable<T> afterFirst(long number) {
         return Chainables.afterFirst(this, number);
@@ -308,11 +282,6 @@ public interface Chainable<T> extends Iterable<T> {
      * Determines whether all the items in this chain satisfy the specified {@code condition}.
      * @param condition the condition for all the items to satisfy
      * @return {@code true} if all items satisfy the specified {@code condition}, otherwise {@code false}
-     * @chainables.similar
-     * <table summary="Similar to:">
-     * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#allMatch(Predicate)}</td></tr>
-     * <tr><td><i>C#:</i></td><td>{@code Enumerable.All()}</td></tr>
-     * </table>
      */
     default boolean allWhere(Predicate<? super T> condition) {
         return Chainables.allWhere(this, condition);
@@ -332,10 +301,6 @@ public interface Chainable<T> extends Iterable<T> {
     /**
      * Determines whether this chain contains any items.
      * @return {@code true} if not empty (i.e. the opposite of {@link #isEmpty()})
-     * @chainables.similar
-     * <table summary="Similar to:">
-     * <tr><td><i>C#:</i></td><td>{@code Enumerable.Any()}</td></tr>
-     * </table>
      */
     default boolean any() {
         return !Chainables.isNullOrEmpty(this);
@@ -345,11 +310,6 @@ public interface Chainable<T> extends Iterable<T> {
      * Determines whether any of the items in this chain satisfy the specified {@code condition}.
      * @param condition the condition to satisfy
      * @return {@code true} if there are any items that satisfy the specified {@code condition}
-     * @chainables.similar
-     * <table summary="Similar to:">
-     * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#anyMatch(Predicate)}</td></tr>
-     * <tr><td><i>C#:</i></td><td>{@code Enumerable.Any(Func)}</td></tr>
-     * </table>
      */
     default boolean anyWhere(Predicate<? super T> condition) {
         return Chainables.anyWhere(this, condition);
@@ -381,10 +341,6 @@ public interface Chainable<T> extends Iterable<T> {
      * <p>Note that if this chain is functionally defined as de-facto infinite, this will never return.
      * @param action
      * @return self
-     * @chainables.similar
-     * <table summary="Similar to:">
-     * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#forEach(Consumer)}</td></tr>
-     * </table>
      */
     default Chainable<T> apply(Consumer<? super T> action) {
         return Chainables.apply(this, action);
@@ -395,11 +351,6 @@ public interface Chainable<T> extends Iterable<T> {
      * evaluation of the entire chain, but only to the extent that the returned chain is evaluated using a subsequent function applied to it after this one.
      * @param action
      * @return self
-     * @chainables.similar
-     * <table summary="Similar to:">
-     * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#peek(Consumer)}</td></tr>
-     * <tr><td><i>C#:</i></td><td>{@code Enumerable.Select()}</td></tr>
-     * </table>
      * @see #apply()
      * @see #apply(Consumer)
      */
@@ -428,11 +379,6 @@ public interface Chainable<T> extends Iterable<T> {
      * Note this triggers a full traversal/evaluation of the chain, so for for chains functionally defined as infinite, this will never return.
      * @param keyExtractor
      * @return sorted items
-     * @chainables.similar
-     * <table summary="Similar to:">
-     * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#sorted(Comparator)}, but specific to {@link String} outputs</td></tr>
-     * <tr><td><i>C#:</i></td><td>{@code Enumerable.ThenBy()}</td></tr>
-     * </table>
      * @see #descending(ToStringFunction)
      */
     default Chainable<T> ascending(ToStringFunction<? super T> keyExtractor) {
@@ -446,11 +392,6 @@ public interface Chainable<T> extends Iterable<T> {
      * Note this triggers a full traversal/evaluation of the chain, so for for chains functionally defined as infinite, this will never return.
      * @param keyExtractor
      * @return sorted items
-     * @chainables.similar
-     * <table summary="Similar to:">
-     * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#sorted(Comparator)}, but specific to {@link Long} outputs</td></tr>
-     * <tr><td><i>C#:</i></td><td>{@code Enumerable.ThenBy()}</td></tr>
-     * </table>
      * @see #descending(ToLongFunction)
      */
     default Chainable<T> ascending(ToLongFunction<? super T> keyExtractor) {
@@ -464,11 +405,6 @@ public interface Chainable<T> extends Iterable<T> {
      * Note this triggers a full traversal/evaluation of the chain, so for for chains functionally defined as infinite, this will never return.
      * @param keyExtractor
      * @return sorted items
-     * @chainables.similar
-     * <table summary="Similar to:">
-     * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#sorted(Comparator)}, but specific to {@link Double} outputs</td></tr>
-     * <tr><td><i>C#:</i></td><td>{@code Enumerable.ThenBy()}</td></tr>
-     * </table>
      * @see #descending(ToDoubleFunction)
      */
     default Chainable<T> ascending(ToDoubleFunction<? super T> keyExtractor) {
@@ -482,10 +418,6 @@ public interface Chainable<T> extends Iterable<T> {
      * then the returned chain will consist of only { 1, 3, 5 }
      * @param condition
      * @return items <i>before</i> the first one that fails the specified {@code condition}
-     * @chainables.similar
-     * <table summary="Similar to:">
-     * <tr><td><i>C#:</i></td><td>{@code Enumerable.TakeWhile()}</td></tr>
-     * </table>
      * @see #asLongAsEquals(Object)
      */
     default Chainable<T> asLongAs(Predicate<? super T> condition) {
@@ -522,10 +454,6 @@ public interface Chainable<T> extends Iterable<T> {
      * will consist of {@code 1, 3 }.
      * @param condition
      * @return the initial items before and not including the one that meets the specified {@code condition}
-     * @chainables.similar
-     * <table summary="Similar to:">
-     * <tr><td><i>C#:</i></td><td>{@code Enumerable.TakeWhile(), but with a negated predicate}</td></tr>
-     * </table>
      * @see #notBefore(Predicate)
      * @see #notAsLongAs(Predicate)
      * @see #asLongAs(Predicate)
@@ -633,11 +561,6 @@ public interface Chainable<T> extends Iterable<T> {
      * Casts the items in this chain to the specified class.
      * @param clazz
      * @return items as cast to the type indicated by the specified {@code clazz}
-     * @chainables.similar
-     * <table summary="Similar to:">
-     * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#map(Function)}, where the specified function casts each item to the specified type</td></tr>
-     * <tr><td><i>C#:</i></td><td>{@code Enumerable.Cast()}</td></tr>
-     * </table>
      */
     default <T2> Chainable<T2> cast(Class<T2> clazz) {
         return Chainables.cast(this, clazz);
@@ -653,11 +576,6 @@ public interface Chainable<T> extends Iterable<T> {
      * an opportunity to create a non-empty chain out of an empty one.
      * @param nextItemExtractor a function returning the next item given the item it is fed, or null if it is the first item
      * @return resulting chain
-     * @chainables.similar
-     * <table summary="Similar to:">
-     * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#iterate(Object, java.util.function.UnaryOperator)}, except that
-     * the "seed" is just the last item of the underlying chain, or {@code null} if empty.</td></tr>
-     * </table>
      */
     default Chainable<T> chain(UnaryOperator<T> nextItemExtractor) {
         return Chainables.chain(this, nextItemExtractor);
@@ -686,7 +604,7 @@ public interface Chainable<T> extends Iterable<T> {
      * Works the same way as {@link #chain(UnaryOperator)}, except that the specified {@code nextItemExtractor} will also be fed its index in the chain,
      * starting with 0.
      * @param nextItemExtractor a function returning the next item given the item it is fed or null if it is the first item, and its index in the chain,
-     * startint with 0
+     * starting with 0
      * @return the resulting chain
      */
     default Chainable<T> chainIndexed(BiFunction<? super T, Long, T> nextItemExtractor) {
@@ -709,11 +627,6 @@ public interface Chainable<T> extends Iterable<T> {
      * Collects all the items into the specified collection.
      * @param targetCollection
      * @return self
-     * @chainables.similar
-     * <table summary="Similar to:">
-     * <tr><td><i>Java:</i></td><td>Note this is NOT like {@link java.util.stream.Stream#collect(java.util.stream.Collector)}</td></tr>
-     * <tr><td><i>C#:</i></td><td>{@code Enumerable.ToList()} and the like</td></tr>
-     * </table>
      */
     default Chainable<T> collectInto(Collection<? super T> targetCollection) {
         return Chainables.collectInto(this, targetCollection);
@@ -723,12 +636,6 @@ public interface Chainable<T> extends Iterable<T> {
      * Appends the specified {@code items} to this chain.
      * @param items
      * @return the chain resulting from appending the specified {@code items} to this chain
-     * @chainables.similar
-     * <table summary="Similar to:">
-     * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#concat(Stream, Stream)}, except that this is a chainable method that concatenates the specified {@code items}
-     * to the {@link Chainable} it is invoked on)</td></tr>
-     * <tr><td><i>C#:</i></td><td>{@code Enumerable.Concat()}</td></tr>
-     * </table>
      * @see #concat(Object)
      */
     default Chainable<T> concat(Iterable<? extends T> items) {
@@ -750,10 +657,6 @@ public interface Chainable<T> extends Iterable<T> {
      * Appends the specified {@code items} to this chain.
      * @param items
      * @return the chain resulting from appending the specified single {@code items} to this chain
-     * @chainables.similar
-     * <table summary="Similar to:">
-     * <tr><td><i>C#:</i></td><td>{@code Enumerable.Append()}</td></tr>
-     * </table>
      * @see #concat(Iterable)
      */
     @SuppressWarnings("unchecked")
@@ -775,10 +678,6 @@ public interface Chainable<T> extends Iterable<T> {
      * Determines whether this chain contains the specified {@code item}.
      * @param item the item to look for
      * @return {@code true} if this contains the specified {@code item}
-     * @chainables.similar
-     * <table summary="Similar to:">
-     * <tr><td><i>C#:</i></td><td>{@code Enumerable.Contains()}</td></tr>
-     * </table>
      * @see #containsAll(Object...)
      * @see #containsAny(Object...)
      * @see #containsSubarray(Iterable)
@@ -843,11 +742,6 @@ public interface Chainable<T> extends Iterable<T> {
      * confirm the expectation, it should be generally more efficient to use {@link #isCountAtLeast(long)}, {@link #isCountAtMost(long)} or {{@link #isCountExactly(long)}
      * for that purpose, especially if the chain is defined dynamically/functionally and is potentially infinite.
      * @return total number of items
-     * @chainables.similar
-     * <table summary="Similar to:">
-     * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#count()}</td></tr>
-     * <tr><td><i>C#:</i></td><td>{@code Enumerable.Count()}</td></tr>
-     * </table>
      * @see #isCountAtLeast(long)
      * @see #isCountAtMost(long)
      * @see #isCountExactly(long)
@@ -938,11 +832,6 @@ public interface Chainable<T> extends Iterable<T> {
      * Note this triggers a full traversal/evaluation of the chain.
      * @param keyExtractor
      * @return sorted items
-     * @chainables.similar
-     * <table summary="Similar to:">
-     * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#sorted(Comparator)}, but specific to {@link Long} outputs</td></tr>
-     * <tr><td><i>C#:</i></td><td>{@code Enumerable.ThenByDescending()}</td></tr>
-     * </table>
      * @see #ascending(ToLongFunction)
      */
     default Chainable<T> descending(ToLongFunction<? super T> keyExtractor) {
@@ -956,11 +845,6 @@ public interface Chainable<T> extends Iterable<T> {
      * Note this triggers a full traversal/evaluation of the chain.
      * @param keyExtractor
      * @return sorted items
-     * @chainables.similar
-     * <table summary="Similar to:">
-     * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#sorted(Comparator)}, but specific to {@link Double} outputs</td></tr>
-     * <tr><td><i>C#:</i></td><td>{@code Enumerable.ThenByDescending()}</td></tr>
-     * </table>
      * @see #ascending(ToDoubleFunction)
      */
     default Chainable<T> descending(ToDoubleFunction<? super T> keyExtractor) {
@@ -974,11 +858,6 @@ public interface Chainable<T> extends Iterable<T> {
      * Note this triggers a full traversal/evaluation of the chain.
      * @param keyExtractor
      * @return sorted items
-     * @chainables.similar
-     * <table summary="Similar to:">
-     * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#sorted(Comparator)}, but specific to {@link String} outputs</td></tr>
-     * <tr><td><i>C#:</i></td><td>{@code Enumerable.ThenByDescending()}</td></tr>
-     * </table>
      * @see #ascending(ToStringFunction)
      */
     default Chainable<T> descending(ToStringFunction<? super T> keyExtractor) {
@@ -988,11 +867,6 @@ public interface Chainable<T> extends Iterable<T> {
     /**
      * Returns a chain of items from this chain that are not duplicated.
      * @return items that are unique (no duplicates)
-     * @chainables.similar
-     * <table summary="Similar to:">
-     * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#distinct()}</td></tr>
-     * <tr><td><i>C#:</i></td><td>{@code Enumerable.Distinct()}</td></tr>
-     * </table>
      */
     default Chainable<T> distinct() {
         return Chainables.distinct(this);
@@ -1004,10 +878,6 @@ public interface Chainable<T> extends Iterable<T> {
      * In case of duplicates, the first item survives.
      * @param keyExtractor
      * @return first items whose keys, as extracted by the specified {@code keyExtractor}, are unique
-     * @chainables.similar
-     * <table summary="Similar to:">
-     * <tr><td><i>C#:</i></td><td>{@code Enumerable.Distinct()} with a custom comparer</td></tr>
-     * </table>
      */
     default <V> Chainable<T> distinct(Function<? super T, V> keyExtractor) {
         return Chainables.distinct(this, keyExtractor);
@@ -1043,10 +913,6 @@ public interface Chainable<T> extends Iterable<T> {
      * Determines whether this chain consists of the same items, in the same order, as those in the specified {@code items}, triggering a full traversal/evaluation of the chain if needed.
      * @param items
      * @return {@code true} the items match exactly
-     * @chainables.similar
-     * <table summary="Similar to:">
-     * <tr><td><i>C#:</i></td><td>{@code Enumerable.SequenceEqual()}</td></tr>
-     * </table>
      * @see #equalsEither(Iterable...)
      */
     default boolean equals(Iterable<?> items) {
@@ -1080,11 +946,6 @@ public interface Chainable<T> extends Iterable<T> {
     /**
      * Returns the first item in the chain.
      * @return the first item or {@code null} if none
-     * @chainables.similar
-     * <table summary="Similar to:">
-     * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#findFirst()}</td></tr>
-     * <tr><td><i>C#:</i></td><td>{@code Enumerable.FirstOrDefault()}</td></tr>
-     * </table>
      */
     default T first() {
         return Chainables.first(this);
@@ -1094,11 +955,6 @@ public interface Chainable<T> extends Iterable<T> {
      * Returns the first {@code count} of items in this chain.
      * @param count
      * @return the specified {@code count} of items from the beginning
-     * @chainables.similar
-     * <table summary="Similar to:">
-     * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#limit(long)}</td></tr>
-     * <tr><td><i>C#:</i></td><td>{@code Enumerable.Take()}</td></tr>
-     * </table>
      */
     default Chainable<T> first(long count) {
         return Chainables.first(this, count);
@@ -1108,11 +964,6 @@ public interface Chainable<T> extends Iterable<T> {
      * Returns the first item satisfying the specified {@code condition}, or {@code null} if none.
      * @param condition the condition for the returned item to satisfy
      * @return the first item satisfying the specified {@code condition}, or {@code null} if none.
-     * @chainables.similar
-     * <table summary="Similar to:">
-     * <tr><td><i>Java:</i></td><td>a combination of {@link java.util.stream.Stream#filter(Predicate)} and {@link java.util.stream.Stream#findFirst()}</td></tr>
-     * <tr><td><i>C#:</i></td><td>{@code Enumerable.FirstOrDefault()}</td></tr>
-     * </table>
      * @see #firstWhereEither(Predicate...)
      */
     default T firstWhere(Predicate<? super T> condition) {
@@ -1232,10 +1083,6 @@ public interface Chainable<T> extends Iterable<T> {
     /**
      * Determines whether this chain contains any items.
      * @return {@code true} if empty, else {@code false}
-     * @chainables.similar
-     * <table summary="Similar to:">
-     * <tr><td><i>C#:</i></td><td>{@code Enumerable.Any()}, but negated</td></tr>
-     * </table>
      * @see #any()
      */
     default boolean isEmpty() {
@@ -1278,10 +1125,6 @@ public interface Chainable<T> extends Iterable<T> {
      * <p>
      * This triggers a full traversal/evaluation of all the items.
      * @return the last item
-     * @chainables.similar
-     * <table summary="Similar to:">
-     * <tr><td><i>C#:</i></td><td>{@code Enumerable.LastOrDefault()}</td></tr>
-     * </table>
      */
     default T last() {
         return Chainables.last(this);
@@ -1293,10 +1136,6 @@ public interface Chainable<T> extends Iterable<T> {
      * This triggers a full tarversal/evaluation of all the items.
      * @param count number of items to return from the end
      * @return up to the specified {@code count} of items from the end (or fewer if the chain is shorter than that)
-     * @chainables.similar
-     * <table summary="Similar to:">
-     * <tr><td><i>C#:</i></td><td>{@code Enumerable.TakeLast()}</td></tr>
-     * </table>
      */
     default Chainable<T> last(int count) {
         return Chainables.last(this, count);
@@ -1308,11 +1147,6 @@ public interface Chainable<T> extends Iterable<T> {
      * This triggers a full traversal/evaluation of the items.
      * @param valueExtractor
      * @return the item for which the specified {@code valueExtrator} returns the highest value
-     * @chainables.similar
-     * <table summary="Similar to:">
-     * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#max(Comparator)}</td></tr>
-     * <tr><td><i>C#:</i></td><td>{@code Enumerable.Max()}</td></tr>
-     * </table>
      * @see #min(Function)
      */
     default T max(Function<? super T, Double> valueExtractor) {
@@ -1325,11 +1159,6 @@ public interface Chainable<T> extends Iterable<T> {
      * This triggers a full traversal/evaluation of the items.
      * @param valueExtractor
      * @return the item for which the specified {@code valueExtrator} returns the lowest value
-     * @chainables.similar
-     * <table summary="Similar to:">
-     * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#min(Comparator)}</td></tr>
-     * <tr><td><i>C#:</i></td><td>{@code Enumerable.Min()}</td></tr>
-     * </table>
      * @see #max(Function)
      */
     default T min(Function<? super T, Double> valueExtractor) {
@@ -1340,11 +1169,6 @@ public interface Chainable<T> extends Iterable<T> {
      * Determines whether none of the items in this chain satisfy the specified {@code condition}.
      * @param condition
      * @return {@code true} if there are no items that meet the specified {@code condition}
-     * @chainables.similar
-     * <table summary="Similar to:">
-     * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#noneMatch(Predicate)}</td></tr>
-     * <tr><td><i>C#:</i></td><td>{@code Enumerable.Where()}, but with a negated predicate</td></tr>
-     * </table>
      * @see #noneWhereEither(Predicate...)
      */
     default boolean noneWhere(Predicate<? super T> condition) {
@@ -1384,10 +1208,6 @@ public interface Chainable<T> extends Iterable<T> {
      * then the resulting chain will be { 2, 7, 9, ... }.
      * @param condition
      * @return items starting with the first one where the specified {@code condition} is no longer met
-     * @chainables.similar
-     * <table summary="Similar to:">
-     * <tr><td><i>C#:</i></td><td>{@code Enumerable.SkipWhile()}</td></tr>
-     * </table>
      * @see #notAfter(Predicate)
      * @see #notBefore(Predicate)
      * @see #asLongAs(Predicate)
@@ -1415,10 +1235,6 @@ public interface Chainable<T> extends Iterable<T> {
      * chain will consist of { 2, 7, 9, ... }.
      * @param condition
      * @return items starting with the one where the specified {@code condition} is met
-     * @chainables.similar
-     * <table summary="Similar to:">
-     * <tr><td><i>C#:</i></td><td>{@code Enumerable.SkipWhile()}, but with a negated predicate</td></tr>
-     * </table>
      * @see #notAfter(Predicate)
      * @see #asLongAs(Predicate)
      * @see #notAsLongAs(Predicate)
@@ -1445,11 +1261,6 @@ public interface Chainable<T> extends Iterable<T> {
      * Returns the items from this chain that do not satisy the specified {@code condition}.
      * @param condition
      * @return items that do not meet the specified {@code condition}
-     * @chainables.similar
-     * <table summary="Similar to:">
-     * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#filter(Predicate)}, but with a negated predicate</td></tr>
-     * <tr><td><i>C#:</i></td><td>{@code Enumerable.Where()}, but with a negated predicate</td></tr>
-     * </table>
      * @see #where(Predicate)
      */
     default Chainable<T> notWhere(Predicate<? super T> condition) {
@@ -1462,11 +1273,6 @@ public interface Chainable<T> extends Iterable<T> {
      * Whenever the replacer returns {@code null}, the item is skipped (de-facto removed) from the resulting chain altogether.
      * @param replacer
      * @return replacement items
-     * @chainables.similar
-     * <table summary="Similar to:">
-     * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#flatMap(Function)}, but with the return type the same as the input type</td></tr>
-     * <tr><td><i>C#:</i></td><td>{@code Enumerable.Select()}, but with the return type the same as the input type</td></tr>
-     * </table>
      * @see #transformAndFlatten(Function)
      */
     default Chainable<T> replace(Function<? super T, Iterable<? extends T>> replacer) {
@@ -1478,10 +1284,6 @@ public interface Chainable<T> extends Iterable<T> {
      * <p>
      * This triggers a full traversal/evaluation of the items.
      * @return items in the opposite order
-     * @chainables.similar
-     * <table summary="Similar to:">
-     * <tr><td><i>C#:</i></td><td>{@code Enumerable.Reverse()}</td></tr>
-     * </table>
      */
     default Chainable<T> reverse() {
         return Chainables.reverse(this);
@@ -1523,11 +1325,6 @@ public interface Chainable<T> extends Iterable<T> {
      * This triggers a full traversal/evaluation of the items.
      * @param valueExtractor
      * @return sum of all the values returned by the specified {@code valueExtractor} applied to each item
-     * @chainables.similar
-     * <table summary="Similar to:">
-     * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#reduce(java.util.function.BinaryOperator)} or {@link java.util.stream.Stream#collect(java.util.stream.Collector)}, but specifically for summation</td></tr>
-     * <tr><td><i>C#:</i></td><td>{@code Enumerable.Aggregate()}, but specifically for summation</td></tr>
-     * </table>
      */
     default long sum(Function<? super T, Long> valueExtractor) {
         return Chainables.sum(this, valueExtractor);
@@ -1536,10 +1333,6 @@ public interface Chainable<T> extends Iterable<T> {
     /**
      * Transforms this chain into a list, tigerring a full evaluation.
      * @return a new list containing all the items
-     * @chainables.similar
-     * <table summary="Similar to:">
-     * <tr><td><i>C#:</i></td><td>{@code Enumerable.ToList()}</td></tr>
-     * </table>
      */
     default ChainableList<T> toList() {
         return Chainables.toList(this);
@@ -1549,10 +1342,6 @@ public interface Chainable<T> extends Iterable<T> {
      * Puts the items from this chain into a map indexed by the specified {@code keyExtractor} applied to each item.
      * @param keyExtractor
      * @return a map of the items indexed by the key produced by the specified {@code keyExtractor}
-     * @chainables.similar
-     * <table summary="Similar to:">
-     * <tr><td><i>C#:</i></td><td>{@code Enumerable.ToDictionary()}</td></tr>
-     * </table>
      */
     default <K> Map<K, T> toMap(Function<? super T, K> keyExtractor) {
         return Chainables.toMap(this, keyExtractor);
@@ -1588,11 +1377,6 @@ public interface Chainable<T> extends Iterable<T> {
      * Transforms each item into another item, of a possibly different type, by applying the specified {@code transformer}
      * @param transformer
      * @return the resulting items from the transformation
-     * @chainables.similar
-     * <table summary="Similar to:">
-     * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#map(Function)}</td></tr>
-     * <tr><td><i>C#:</i></td><td>{@code Enumerable.Select()}</td></tr>
-     * </table>
      * @see #transformAndFlatten(Function)
      */
     default <O> Chainable<O> transform(Function<? super T, O> transformer) {
@@ -1604,11 +1388,6 @@ public interface Chainable<T> extends Iterable<T> {
      * accepts an item and the ordinal number for that item within the chain
      * @param transformer
      * @return the resulting items from the transformation
-     * @chainables.similar
-     * <table summary="Similar to:">
-     * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#map(Function)}</td></tr>
-     * <tr><td><i>C#:</i></td><td>{@code Enumerable.Select()}</td></tr>
-     * </table>
      * @see #transformAndFlatten(Function)
      */
     default <O> Chainable<O> transform(BiFunction<? super T, Integer, O> transformer) {
@@ -1619,11 +1398,6 @@ public interface Chainable<T> extends Iterable<T> {
      * Transforms each item into several other items, possibly of a different type, using the specified {@code transformer}.
      * @param transformer the function to apply to each item whose output items will become part of the chain
      * @return the resulting items from the transformation
-     * @chainables.similar
-     * <table summary="Similar to:">
-     * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#flatMap(Function)}</td></tr>
-     * <tr><td><i>C#:</i></td><td>{@code Enumerable.SelectMany()}</td></tr>
-     * </table>
      * @see #transform(Function)
      */
     default <O> Chainable<O> transformAndFlattenArray(Function<? super T, O[]> transformer) {
@@ -1634,11 +1408,6 @@ public interface Chainable<T> extends Iterable<T> {
      * Transforms each item into several other items, possibly of a different type, using the specified {@code transformer}.
      * @param transformer the function to apply to each item whose output items will become part of the chain
      * @return the resulting items from the transformation
-     * @chainables.similar
-     * <table summary="Similar to:">
-     * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#flatMap(Function)}</td></tr>
-     * <tr><td><i>C#:</i></td><td>{@code Enumerable.SelectMany()}</td></tr>
-     * </table>
      * @see #transform(Function)
      */
     default <O> Chainable<O> transformAndFlatten(Function<? super T, Iterable<? extends O>> transformer) {
@@ -1649,11 +1418,6 @@ public interface Chainable<T> extends Iterable<T> {
      * Returns a chain of items from this chain that satisfy the specified {@code condition}.
      * @param condition
      * @return matching items
-     * @chainables.similar
-     * <table summary="Similar to:">
-     * <tr><td><i>Java:</i></td><td>{@link java.util.stream.Stream#filter(Predicate)}</td></tr>
-     * <tr><td><i>C#:</i></td><td>{@code Enumerable.Where()}</td></tr>
-     * </table>
      */
     default Chainable<T> where(Predicate<? super T> condition) {
         return Chainables.whereEither(this, condition);
